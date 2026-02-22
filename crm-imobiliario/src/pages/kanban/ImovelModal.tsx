@@ -42,7 +42,7 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
     const [vendedorNome, setVendedorNome] = useState(imovel.vendedor_nome || '')
     const [vendedorEmail, setVendedorEmail] = useState(imovel.vendedor_email || '')
     const [telefone, setTelefone] = useState(imovel.telefone_mascara || imovel.telefone || '')
-    const [whatsapp, setWhatsapp] = useState(imovel.vendedor_whatsapp || '')
+    const [temWhatsapp, setTemWhatsapp] = useState(imovel.vendedor_whatsapp ?? false)
     const [autorizado, setAutorizado] = useState(imovel.autorizado ?? false)
     const [comissaoPct, setComissaoPct] = useState(imovel.comissao_pct?.toString() || '')
     const [permuta, setPermuta] = useState(imovel.aceita_permuta)
@@ -106,7 +106,7 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
         setVendedorNome(imovel.vendedor_nome || '')
         setVendedorEmail(imovel.vendedor_email || '')
         setTelefone(imovel.telefone_mascara || imovel.telefone || '')
-        setWhatsapp(imovel.vendedor_whatsapp || '')
+        setTemWhatsapp(imovel.vendedor_whatsapp ?? false)
         setAutorizado(imovel.autorizado ?? false)
         setComissaoPct(imovel.comissao_pct?.toString() || '')
         setPermuta(imovel.aceita_permuta)
@@ -133,7 +133,7 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
             vendedor_email: vendedorEmail || null,
             telefone: telefone.replace(/\D/g, '') || null,
             telefone_mascara: telefone || null,
-            vendedor_whatsapp: whatsapp || null,
+            vendedor_whatsapp: temWhatsapp,
             autorizado,
             comissao_pct: comissaoPct ? parseFloat(comissaoPct) : null,
             aceita_permuta: permuta,
@@ -271,8 +271,14 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                                     : <div style={{ padding: '0.65rem 0.9rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', fontSize: '0.88rem' }}>{telefone || '—'}</div>}
                             </Field>
                             <Field label="WhatsApp">
-                                {editando ? <input className="form-input" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="(11) 99999-9999" />
-                                    : <div style={{ padding: '0.65rem 0.9rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', fontSize: '0.88rem' }}>{whatsapp || '—'}</div>}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.65rem 0.9rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', cursor: editando ? 'pointer' : 'default' }}
+                                    onClick={() => editando && setTemWhatsapp(!temWhatsapp)}>
+                                    <input type="checkbox" checked={temWhatsapp} readOnly disabled={!editando}
+                                        style={{ width: 16, height: 16, accentColor: '#4ade80', cursor: editando ? 'pointer' : 'default' }} />
+                                    <span style={{ fontSize: '0.85rem', color: temWhatsapp ? '#4ade80' : 'var(--text-muted)' }}>
+                                        {temWhatsapp ? '✅ Disponível (usa o telefone acima)' : 'Sem WhatsApp'}
+                                    </span>
+                                </div>
                             </Field>
                         </div>
 
@@ -306,10 +312,10 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                         </div>
 
                         {/* Contato rápido quando leitura */}
-                        {!editando && (whatsapp || telefone || imovel.ad_id) && (
+                        {!editando && (temWhatsapp || telefone || imovel.ad_id) && (
                             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
                                 {telephoneLink(telefone)}
-                                {whatsapp && <a href={`https://wa.me/55${whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                                {temWhatsapp && telefone && <a href={`https://wa.me/55${telefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
                                     style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 600 }}>
                                     💬 WhatsApp
                                 </a>}
@@ -317,6 +323,53 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                                     style={{ background: 'rgba(251,191,36,0.15)', color: 'var(--gold-400)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 600 }}>
                                     💬 Chat OLX
                                 </a>}
+                            </div>
+                        )}
+
+                        {/* Botão importar como contato */}
+                        {!editando && imovel.vendedor_nome && (
+                            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+                                <button
+                                    onClick={async () => {
+                                        const { supabase: sb } = await import('../../lib/supabase')
+                                        const payload = {
+                                            nome_completo: imovel.vendedor_nome || 'Sem nome',
+                                            telefone: imovel.telefone || null,
+                                            whatsapp: imovel.vendedor_whatsapp && imovel.telefone ? imovel.telefone : null,
+                                            email: imovel.vendedor_email || null,
+                                            tipo_contato: 'proprietario',
+                                            cidade: imovel.cidade || null,
+                                            estado: imovel.estado || null,
+                                            bairro: imovel.bairro || null,
+                                            logradouro: imovel.rua || null,
+                                            numero: imovel.numero || null,
+                                            cep: imovel.cep || null,
+                                            origem: 'OLX',
+                                            vinculo_imovel_id: String(imovel.id),
+                                        }
+                                        const { error } = await sb.from('contatos').insert(payload)
+                                        if (error) {
+                                            if (error.code === '23505') {
+                                                const toast = await import('react-hot-toast')
+                                                toast.default.error('Este proprietário já foi importado como contato.')
+                                            } else {
+                                                const toast = await import('react-hot-toast')
+                                                toast.default.error('Erro ao importar: ' + error.message)
+                                            }
+                                        } else {
+                                            const toast = await import('react-hot-toast')
+                                            toast.default.success('✅ Proprietário importado como Contato!')
+                                        }
+                                    }}
+                                    style={{
+                                        background: 'rgba(59,130,246,0.12)', color: 'var(--brand-500)',
+                                        border: '1px solid rgba(59,130,246,0.3)', borderRadius: 'var(--radius-sm)',
+                                        padding: '0.5rem 1rem', fontSize: '0.82rem', fontWeight: 600,
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem'
+                                    }}
+                                >
+                                    👤 Importar proprietário como Contato
+                                </button>
                             </div>
                         )}
                     </div>

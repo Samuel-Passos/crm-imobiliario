@@ -58,13 +58,14 @@ export interface ImovelKanban {
     vendedor_chat_ativo: boolean
     telefone: string | null
     telefone_mascara: string | null
-    vendedor_whatsapp: string | null
+    vendedor_whatsapp: boolean       // true = WA ativo (número é imovel.telefone)
     autorizado: boolean
     comissao_pct: number | null
     // Fotos
     foto_capa: string | null
     fotos: string[] | null
     // CRM
+    origem: string | null             // OLX, Indicação, Site, etc.
     aceita_permuta: 'aceita' | 'nao_aceita' | 'nao_informado'
     notas_corretor: string | null
     historico_kanban: Array<{ coluna: string; data: string }> | null

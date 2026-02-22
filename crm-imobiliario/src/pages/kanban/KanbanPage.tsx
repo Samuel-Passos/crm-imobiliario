@@ -136,7 +136,7 @@ export function KanbanPage() {
             area_construida_m2, area_terreno_m2, salas, tem_cozinha,
             outras_caracteristicas, descricao,
             condominio, condominio_str, iptu, iptu_str,
-            aceita_permuta, notas_corretor, historico_kanban,
+            origem, aceita_permuta, notas_corretor, historico_kanban,
             kanban_coluna_id, kanban_ordem
           `)
                     .not('kanban_coluna_id', 'is', null)

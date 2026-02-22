@@ -18,8 +18,9 @@ function formatPreco(preco: number | null, precoStr: string | null): string {
 export function KanbanCard({ imovel, onUpdate, isDragging }: KanbanCardProps) {
     const [modalOpen, setModalOpen] = useState(false)
 
-    const waLink = imovel.vendedor_whatsapp
-        ? `https://wa.me/55${imovel.vendedor_whatsapp.replace(/\D/g, '')}`
+    // vendedor_whatsapp é boolean — o número de WA é o mesmo de telefone
+    const waLink = imovel.vendedor_whatsapp && imovel.telefone
+        ? `https://wa.me/55${imovel.telefone.replace(/\D/g, '')}`
         : null
     const chatUrl = getChatUrl(imovel)
 

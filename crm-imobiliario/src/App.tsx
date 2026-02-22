@@ -16,6 +16,7 @@ import { UsersPage } from './pages/admin/UsersPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { KanbanPage } from './pages/kanban/KanbanPage'
 import { PesquisaPage } from './pages/pesquisa/PesquisaPage'
+import { ContatosPage } from './pages/contatos/ContatosPage'
 
 // Placeholder pages (serão implementados nos próximos módulos)
 const ComingSoon = ({ title }: { title: string }) => (
@@ -89,7 +90,7 @@ export default function App() {
           <Route path="/contatos" element={
             <PrivateRoute>
               <AppLayout>
-                <ComingSoon title="Contatos" />
+                <ContatosPage />
               </AppLayout>
             </PrivateRoute>
           } />
