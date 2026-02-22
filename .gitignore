@@ -34,3 +34,6 @@ Thumbs.db
 
 # Arquivos temporários
 *.sw?
+
+# Referências e logs privados
+Referencia/
