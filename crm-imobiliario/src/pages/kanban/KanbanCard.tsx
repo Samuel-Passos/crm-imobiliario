@@ -42,8 +42,10 @@ export function KanbanCard({ imovel, onUpdate, isDragging, onClick }: KanbanCard
                     borderTop: `3px solid ${imovel.telefone_pesquisado && !imovel.telefone && !imovel.telefone_mascara && !imovel.anuncio_expirado ? 'var(--error)' : 'transparent'}`,
                 }}
                 onClick={() => {
-                    if (onClick) onClick()
-                    else setModalOpen(true)
+                    if (!isDragging) {
+                        setModalOpen(true)
+                        if (onClick) onClick()
+                    }
                 }}
             >
                 {/* Foto */}
