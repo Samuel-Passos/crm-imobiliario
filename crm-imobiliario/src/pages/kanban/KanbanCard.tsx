@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { ImovelKanban } from './types'
 import { getChatUrl } from './types'
 import { ImovelModal } from './ImovelModal'
@@ -18,6 +18,13 @@ function formatPreco(preco: number | null, precoStr: string | null): string {
 
 export function KanbanCard({ imovel, onUpdate, isDragging, onClick }: KanbanCardProps) {
     const [modalOpen, setModalOpen] = useState(false)
+
+    useEffect(() => {
+        const modalIdUrl = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('modal')
+        if (modalIdUrl === String(imovel.id)) {
+            setModalOpen(true)
+        }
+    }, [imovel.id])
 
     // vendedor_whatsapp é boolean — o número de WA é o mesmo de telefone
     const waLink = imovel.vendedor_whatsapp && imovel.telefone
