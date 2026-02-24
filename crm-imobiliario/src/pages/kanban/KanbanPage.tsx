@@ -33,7 +33,15 @@ function SortableCard({ imovel, onUpdate }: {
             {...attributes}
             {...listeners}
         >
-            <KanbanCard imovel={imovel} onUpdate={onUpdate} isDragging={isDragging} />
+            <KanbanCard imovel={imovel} onUpdate={onUpdate} isDragging={isDragging}
+                onClick={() => {
+                    const urlParams = new URLSearchParams(window.location.search)
+                    urlParams.set('modal', imovel.id.toString())
+                    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`)
+                    // Trigger custom event to open modal
+                    window.dispatchEvent(new CustomEvent('openModal', { detail: imovel.id.toString() }))
+                }}
+            />
         </div>
     )
 }
