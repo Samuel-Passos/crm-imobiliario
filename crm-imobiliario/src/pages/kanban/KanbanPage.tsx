@@ -138,7 +138,7 @@ export function KanbanPage() {
             outras_caracteristicas, descricao,
             condominio, condominio_str, iptu, iptu_str,
             origem, aceita_permuta, notas_corretor, historico_kanban,
-            kanban_coluna_id, kanban_ordem
+            kanban_coluna_id, kanban_ordem, telefone_pesquisado, anuncio_expirado
           `)
                     .not('kanban_coluna_id', 'is', null)
                     .eq('ativo', true)

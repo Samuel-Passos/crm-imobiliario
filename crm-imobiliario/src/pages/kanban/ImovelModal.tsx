@@ -102,6 +102,17 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
         return () => { if (notasTimer.current) clearTimeout(notasTimer.current) }
     }, [notas])
 
+    // Sincronizar dados vindos de websockets externamente (ex: telefone extraido em background)
+    useEffect(() => {
+        if (imovel.telefone_pesquisado && imovel.telefones_extraidos && imovel.telefones_extraidos.length > 0) {
+            if (telefonesExtraidos.length === 0) {
+                setTelefonesExtraidos(imovel.telefones_extraidos)
+                if (imovel.telefone && !telefone) setTelefone(imovel.telefone)
+            }
+        }
+    }, [imovel.telefone_pesquisado, imovel.telefones_extraidos, imovel.telefone])
+
+
     function handleCancelar() {
         setTitulo(imovel.titulo || '')
         setVendedorNome(imovel.vendedor_nome || '')
@@ -328,6 +339,11 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                                                 </a>
                                             )}
                                             <input className="form-input" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(11) 99999-9999" style={{ flex: 1, minWidth: '130px' }} />
+                                            {imovel.telefone_pesquisado && !telefone && (
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--error)', fontWeight: 600 }}>
+                                                    🚨 Nenhum telefone na OLX
+                                                </span>
+                                            )}
                                         </div>
                                     </Field>
                                 )}
