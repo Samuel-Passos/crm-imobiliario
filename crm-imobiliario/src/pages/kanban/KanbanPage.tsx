@@ -153,6 +153,28 @@ export function KanbanPage() {
             setLoading(false)
         }
         load()
+
+        // Inscreve no Supabase Realtime para ouvir atualizações no banco (ex: scraper em background)
+        const channel = supabase.channel('schema-db-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'imoveis'
+                },
+                (payload) => {
+                    const newImovel = payload.new as Partial<ImovelKanban>
+                    if (newImovel.id) {
+                        setImoveis(prev => prev.map(im => im.id === newImovel.id ? { ...im, ...newImovel } : im))
+                    }
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [])
 
     const updateImovel = useCallback((id: number, fields: Partial<ImovelKanban>) => {
