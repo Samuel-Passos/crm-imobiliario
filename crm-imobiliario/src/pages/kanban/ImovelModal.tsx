@@ -32,7 +32,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
     const { profile } = useAuth()
     const [aba, setAba] = useState<Aba>('proprietario')
-    const [editando, setEditando] = useState(false)
+    const [editando, setEditando] = useState(true)
     const [saving, setSaving] = useState(false)
 
     // ── Campos editáveis ──────────────────────────────────────
@@ -41,7 +41,8 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
     const [titulo, setTitulo] = useState(imovel.titulo || '')
     const [vendedorNome, setVendedorNome] = useState(imovel.vendedor_nome || '')
     const [vendedorEmail, setVendedorEmail] = useState(imovel.vendedor_email || '')
-    const [telefone, setTelefone] = useState(imovel.telefone_mascara || imovel.telefone || '')
+    const [telefone, setTelefone] = useState(imovel.telefone || imovel.telefone_mascara || '')
+    const [telefonesExtraidos, setTelefonesExtraidos] = useState<{ origem?: string, telefone: string, nome?: string | null }[]>(imovel.telefones_extraidos || [])
     const [temWhatsapp, setTemWhatsapp] = useState(imovel.vendedor_whatsapp ?? false)
     const [autorizado, setAutorizado] = useState(imovel.autorizado ?? false)
     const [comissaoPct, setComissaoPct] = useState(imovel.comissao_pct?.toString() || '')
@@ -105,7 +106,8 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
         setTitulo(imovel.titulo || '')
         setVendedorNome(imovel.vendedor_nome || '')
         setVendedorEmail(imovel.vendedor_email || '')
-        setTelefone(imovel.telefone_mascara || imovel.telefone || '')
+        setTelefone(imovel.telefone || imovel.telefone_mascara || '')
+        setTelefonesExtraidos(imovel.telefones_extraidos || [])
         setTemWhatsapp(imovel.vendedor_whatsapp ?? false)
         setAutorizado(imovel.autorizado ?? false)
         setComissaoPct(imovel.comissao_pct?.toString() || '')
@@ -122,7 +124,6 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
         setBanheiros(imovel.banheiros?.toString() || ''); setVagas(imovel.vagas?.toString() || ''); setSalas(imovel.salas?.toString() || '')
         setCozinha(imovel.tem_cozinha ?? true); setOutrasCarac(imovel.outras_caracteristicas || '')
         setFotos(imovel.fotos || [])
-        setEditando(false)
     }
 
     async function handleSalvar() {
@@ -133,6 +134,7 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
             vendedor_email: vendedorEmail || null,
             telefone: telefone.replace(/\D/g, '') || null,
             telefone_mascara: telefone || null,
+            telefones_extraidos: telefonesExtraidos.length > 0 ? telefonesExtraidos.map(t => ({ ...t, nome: t.nome || null })) : undefined,
             vendedor_whatsapp: temWhatsapp,
             autorizado,
             comissao_pct: comissaoPct ? parseFloat(comissaoPct) : null,
@@ -176,6 +178,26 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
         setNovaFotoUrl('')
     }
     function removeFoto(idx: number) { setFotos(prev => prev.filter((_, i) => i !== idx)) }
+
+    // Chamadas para o Robô Local (FastAPI)
+    async function callBot(endpoint: 'extract-phone' | 'prospect') {
+        const tId = toast.loading('Acordando robô...')
+        try {
+            const res = await fetch(`http://localhost:8765/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imovel_id: imovel.id })
+            })
+            const data = await res.json()
+            if (res.ok) {
+                toast.success(data.message || 'Comando enviado ao robô!', { id: tId })
+            } else {
+                toast.error(data.message || 'Erro no robô', { id: tId })
+            }
+        } catch (err) {
+            toast.error('Erro de conexão com o Robô Local (porta 8765)', { id: tId })
+        }
+    }
 
     const abas: { id: Aba; label: string }[] = [
         { id: 'proprietario', label: '👤 Proprietário' },
@@ -265,21 +287,63 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                                     : <div style={{ padding: '0.65rem 0.9rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', fontSize: '0.88rem' }}>{vendedorEmail || '—'}</div>}
                             </Field>
                         </div>
-                        <div className="form-row">
-                            <Field label="Telefone">
-                                {editando ? <input className="form-input" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(11) 99999-9999" />
-                                    : <div style={{ padding: '0.65rem 0.9rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', fontSize: '0.88rem' }}>{telefone || '—'}</div>}
-                            </Field>
-                            <Field label="WhatsApp">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.65rem 0.9rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', cursor: editando ? 'pointer' : 'default' }}
-                                    onClick={() => editando && setTemWhatsapp(!temWhatsapp)}>
-                                    <input type="checkbox" checked={temWhatsapp} readOnly disabled={!editando}
-                                        style={{ width: 16, height: 16, accentColor: '#4ade80', cursor: editando ? 'pointer' : 'default' }} />
-                                    <span style={{ fontSize: '0.85rem', color: temWhatsapp ? '#4ade80' : 'var(--text-muted)' }}>
-                                        {temWhatsapp ? '✅ Disponível (usa o telefone acima)' : 'Sem WhatsApp'}
-                                    </span>
-                                </div>
-                            </Field>
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                            <div style={{ flex: editando ? 1 : 2, minWidth: editando ? '150px' : '300px', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                                {(telefonesExtraidos && telefonesExtraidos.length > 0) ? (
+                                    telefonesExtraidos.map((t, idx) => {
+                                        const origName = t.origem ? t.origem.charAt(0).toUpperCase() + t.origem.slice(1) : 'Botão';
+                                        const labelBase = telefonesExtraidos.length === 1 ? 'Telefone Origem' : `Telefone ${origName}`;
+
+                                        return (
+                                            <Field key={idx} label={labelBase}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                                                    {telephoneLink(t.telefone)}
+                                                    <a href={`https://wa.me/55${t.telefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                                                        style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', borderRadius: 99, padding: '0.2rem 0.6rem', fontSize: '0.7rem', textDecoration: 'none', fontWeight: 600 }}>
+                                                        💬 WhatsApp
+                                                    </a>
+                                                    {/* Mantém estado no array, e caso seja o primeiro sincroniza com state principal */}
+                                                    <input className="form-input"
+                                                        value={t.telefone}
+                                                        onChange={e => {
+                                                            const arr = [...telefonesExtraidos]
+                                                            arr[idx] = { ...arr[idx], telefone: e.target.value }
+                                                            setTelefonesExtraidos(arr)
+                                                            if (idx === 0) setTelefone(e.target.value)
+                                                        }}
+                                                        style={{ flex: 1, minWidth: '130px' }}
+                                                    />
+                                                </div>
+                                            </Field>
+                                        )
+                                    })
+                                ) : (
+                                    <Field label="Telefone Origem">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                                            {telefone && telephoneLink(telefone)}
+                                            {telefone && temWhatsapp && (
+                                                <a href={`https://wa.me/55${telefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                                                    style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', borderRadius: 99, padding: '0.2rem 0.6rem', fontSize: '0.7rem', textDecoration: 'none', fontWeight: 600 }}>
+                                                    💬 WhatsApp
+                                                </a>
+                                            )}
+                                            <input className="form-input" value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(11) 99999-9999" style={{ flex: 1, minWidth: '130px' }} />
+                                        </div>
+                                    </Field>
+                                )}
+                            </div>
+                            <div style={{ flex: editando ? 1 : 'none', minWidth: editando ? '150px' : '150px' }}>
+                                <Field label={editando ? 'WhatsApp' : 'Status Wpp'}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 0.9rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', cursor: editando ? 'pointer' : 'default' }}
+                                        onClick={() => editando && setTemWhatsapp(!temWhatsapp)}>
+                                        <input type="checkbox" checked={temWhatsapp} readOnly disabled={!editando}
+                                            style={{ width: 14, height: 14, accentColor: '#4ade80', cursor: editando ? 'pointer' : 'default' }} />
+                                        <span style={{ fontSize: '0.8rem', color: temWhatsapp ? '#4ade80' : 'var(--text-muted)' }}>
+                                            {temWhatsapp ? '✅ Ativo' : 'Sem Wpp'}
+                                        </span>
+                                    </div>
+                                </Field>
+                            </div>
                         </div>
 
                         {/* Autorização */}
@@ -312,30 +376,47 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                         </div>
 
                         {/* Contato rápido quando leitura */}
-                        {!editando && (temWhatsapp || telefone || imovel.ad_id) && (
+                        {(imovel.ad_id || imovel.url) && (
                             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                                {telephoneLink(telefone)}
-                                {temWhatsapp && telefone && <a href={`https://wa.me/55${telefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                                    style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 600 }}>
-                                    💬 WhatsApp
-                                </a>}
                                 {getChatUrl(imovel) && <a href={getChatUrl(imovel)!} target="_blank" rel="noopener noreferrer"
                                     style={{ background: 'rgba(251,191,36,0.15)', color: 'var(--gold-400)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 600 }}>
                                     💬 Chat OLX
                                 </a>}
+
+                                {/* Botões do Robô FastAPI */}
+                                {imovel.url?.includes('olx') && (!telefone || telefone.includes('.')) && !imovel.telefone_pesquisado && !imovel.anuncio_expirado && (
+                                    <button onClick={() => callBot('extract-phone')} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        🤖 Buscar Telefone
+                                    </button>
+                                )}
+                                {imovel.url?.includes('olx') && !imovel.anuncio_expirado && (
+                                    <button onClick={() => callBot('prospect')} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        🤖 Prospectar no Chat
+                                    </button>
+                                )}
+                                {imovel.anuncio_expirado && (
+                                    <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                        ❌ Anúncio Expirado
+                                    </span>
+                                )}
+                                {imovel.telefone_pesquisado && (!telefone || telefone.includes('.')) && !imovel.anuncio_expirado && (
+                                    <span style={{ background: 'rgba(156, 163, 175, 0.1)', color: 'var(--text-muted)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                                        🚫 S/ Telefone
+                                    </span>
+                                )}
                             </div>
                         )}
 
                         {/* Botão importar como contato */}
-                        {!editando && imovel.vendedor_nome && (
+                        {vendedorNome && (
                             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
                                 <button
                                     onClick={async () => {
                                         const { supabase: sb } = await import('../../lib/supabase')
                                         const payload = {
-                                            nome_completo: imovel.vendedor_nome || 'Sem nome',
-                                            telefone: imovel.telefone || null,
-                                            whatsapp: imovel.vendedor_whatsapp && imovel.telefone ? imovel.telefone : null,
+                                            nome_completo: vendedorNome || 'Sem nome',
+                                            telefone: telefone && !telefone.includes('.') ? telefone : null,
+                                            whatsapp: temWhatsapp && telefone && !telefone.includes('.') ? telefone : null,
                                             email: imovel.vendedor_email || null,
                                             tipo_contato: 'proprietario',
                                             cidade: imovel.cidade || null,
@@ -527,7 +608,7 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                             </div>
                         )}
 
-                        {!editando && fotos.length === 0 && (
+                        {fotos.length === 0 && (
                             <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>Nenhuma foto cadastrada</p>
                         )}
                     </div>
@@ -565,20 +646,14 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                 {/* ── Rodapé: Editar / Salvar / Cancelar ── */}
                 {aba !== 'notas' && aba !== 'historico' && (
                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-                        {!editando ? (
-                            <button className="btn btn-primary" onClick={() => setEditando(true)} style={{ width: 'auto' }}>
-                                ✏️ Editar dados
+                        <>
+                            <button className="btn btn-primary" onClick={handleSalvar} disabled={saving} style={{ width: 'auto' }}>
+                                {saving ? <><span className="spinner" /> Salvando...</> : '💾 Salvar'}
                             </button>
-                        ) : (
-                            <>
-                                <button className="btn btn-primary" onClick={handleSalvar} disabled={saving} style={{ width: 'auto' }}>
-                                    {saving ? <><span className="spinner" /> Salvando...</> : '💾 Salvar'}
-                                </button>
-                                <button className="btn btn-danger" onClick={handleCancelar} disabled={saving} style={{ width: 'auto', padding: '0.8rem 1.25rem' }}>
-                                    Cancelar
-                                </button>
-                            </>
-                        )}
+                            <button className="btn btn-danger" onClick={handleCancelar} disabled={saving} style={{ width: 'auto', padding: '0.8rem 1.25rem' }}>
+                                Cancelar
+                            </button>
+                        </>
                     </div>
                 )}
             </div>
@@ -588,7 +663,7 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
 
 // Helper para link de telefone
 function telephoneLink(tel: string) {
-    if (!tel) return null
+    if (!tel || tel.includes('.')) return null
     return (
         <a href={`tel:${tel.replace(/\D/g, '')}`}
             style={{ background: 'rgba(59,130,246,0.15)', color: 'var(--brand-500)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 600 }}>

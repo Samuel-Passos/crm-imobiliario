@@ -46,9 +46,25 @@ export function KanbanFilters({ filtros, onChange, cidades, tipos }: KanbanFilte
                 <option value="nao_informado">❓ Não informado</option>
             </select>
 
-            {(filtros.tipo_negocio || filtros.tipo_imovel || filtros.cidade || filtros.aceita_permuta) && (
+            <select className="form-select" style={{ width: 160 }}
+                value={filtros.telefone_status} onChange={e => set('telefone_status', e.target.value as FiltrosKanban['telefone_status'])}>
+                <option value="">Telefone (todos)</option>
+                <option value="com_telefone">📞 Com número</option>
+                <option value="sem_telefone">❓ Sem telefone</option>
+            </select>
+
+            <select className="form-select" style={{ width: 170, fontWeight: 600 }}
+                value={filtros.ordenacao} onChange={e => set('ordenacao', e.target.value as FiltrosKanban['ordenacao'])}>
+                <option value="">🖐️ Ordem manual</option>
+                <option value="recente_antigo">🕒 Mais recentes ▼</option>
+                <option value="antigo_recente">🕒 Mais antigos ▲</option>
+                <option value="preco_maior">💰 Maior valor ▼</option>
+                <option value="preco_menor">💰 Menor valor ▲</option>
+            </select>
+
+            {(filtros.tipo_negocio || filtros.tipo_imovel || filtros.cidade || filtros.aceita_permuta || filtros.telefone_status || filtros.ordenacao !== '') && (
                 <button className="btn btn-ghost btn-sm"
-                    onClick={() => onChange({ tipo_negocio: '', tipo_imovel: '', cidade: '', aceita_permuta: '' })}>
+                    onClick={() => onChange({ tipo_negocio: '', tipo_imovel: '', cidade: '', aceita_permuta: '', telefone_status: '', ordenacao: '' })}>
                     ✕ Limpar
                 </button>
             )}

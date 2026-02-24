@@ -56,10 +56,14 @@ export interface ImovelKanban {
     vendedor_email: string | null
     vendedor_user_id: string | null
     vendedor_chat_ativo: boolean
+    telefone_existe: boolean
     telefone: string | null
     telefone_mascara: string | null
+    telefones_extraidos?: { nome: string | null; telefone: string; origem?: string }[]
     vendedor_whatsapp: boolean       // true = WA ativo (número é imovel.telefone)
     autorizado: boolean
+    telefone_pesquisado?: boolean
+    anuncio_expirado?: boolean
     comissao_pct: number | null
     // Fotos
     foto_capa: string | null
@@ -87,4 +91,6 @@ export interface FiltrosKanban {
     tipo_imovel: string
     cidade: string
     aceita_permuta: '' | 'aceita' | 'nao_aceita' | 'nao_informado'
+    telefone_status: '' | 'com_telefone' | 'sem_telefone'
+    ordenacao: '' | 'recente_antigo' | 'antigo_recente' | 'preco_maior' | 'preco_menor'
 }

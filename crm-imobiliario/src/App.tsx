@@ -17,6 +17,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { KanbanPage } from './pages/kanban/KanbanPage'
 import { PesquisaPage } from './pages/pesquisa/PesquisaPage'
 import { ContatosPage } from './pages/contatos/ContatosPage'
+import { AutomacoesPage } from './pages/automacoes/AutomacoesPage'
 
 // Placeholder pages (serão implementados nos próximos módulos)
 const ComingSoon = ({ title }: { title: string }) => (
@@ -99,6 +100,14 @@ export default function App() {
             <PrivateRoute>
               <AppLayout>
                 <ComingSoon title="Mapa de Imóveis" />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/automacoes" element={
+            <PrivateRoute>
+              <AppLayout>
+                <AutomacoesPage />
               </AppLayout>
             </PrivateRoute>
           } />

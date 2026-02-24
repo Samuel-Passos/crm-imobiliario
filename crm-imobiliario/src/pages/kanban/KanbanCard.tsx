@@ -51,7 +51,9 @@ export function KanbanCard({ imovel, onUpdate, isDragging }: KanbanCardProps) {
                     }}>
                         {imovel.tipo_imovel || 'Imóvel'} · {imovel.tipo_negocio || '—'}
                     </span>
-                    <div style={{ display: 'flex', gap: '0.3rem' }}>
+                    <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+                        {imovel.anuncio_expirado && <span title="Anúncio Expirado" style={{ fontSize: '0.6rem', color: 'var(--error)', background: 'rgba(239, 68, 68, 0.15)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>❌ EXPIRADO</span>}
+                        {imovel.telefone_pesquisado && !imovel.telefone && !imovel.telefone_mascara && !imovel.anuncio_expirado && <span title="Telefone não encontrado" style={{ fontSize: '0.6rem', color: 'var(--text-muted)', background: 'rgba(156, 163, 175, 0.15)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>🚫 S/ TEL</span>}
                         {imovel.autorizado && <span title="Autorizado" style={{ fontSize: '0.68rem', color: 'var(--success)' }}>✅</span>}
                         {imovel.aceita_permuta === 'aceita' && <span title="Aceita permuta" style={{ fontSize: '0.68rem', color: 'var(--success)' }}>🔄</span>}
                     </div>
@@ -117,15 +119,29 @@ export function KanbanCard({ imovel, onUpdate, isDragging }: KanbanCardProps) {
                         </a>
                     )}
 
-                    {/* Telefone */}
-                    {imovel.telefone && !waLink && !chatUrl && (
+                    {/* Telefone Principal (Fallback se não houver extraídos) */}
+                    {imovel.telefone && !waLink && !chatUrl && (!imovel.telefones_extraidos || imovel.telefones_extraidos.length === 0) && (
                         <span style={{ fontSize: '0.68rem', color: 'var(--success)' }}>
-                            📞 {imovel.telefone_mascara || imovel.telefone}
+                            📞 {imovel.telefone || imovel.telefone_mascara}
                         </span>
                     )}
 
-                    {!imovel.telefone && !waLink && !chatUrl && (
+                    {!imovel.telefone && !waLink && !chatUrl && (!imovel.telefones_extraidos || imovel.telefones_extraidos.length === 0) && (
                         <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Sem contato</span>
+                    )}
+
+                    {/* Telefones Extraídos Detalhados */}
+                    {imovel.telefones_extraidos && imovel.telefones_extraidos.length > 0 && (
+                        <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem' }}>
+                            {imovel.telefones_extraidos.map((t, i) => (
+                                <span key={i} style={{ fontSize: '0.65rem', color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(34,197,94,0.08)', padding: '2px 6px', borderRadius: 4 }}>
+                                    <span style={{ fontSize: '0.5rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                                        {t.origem || 'Botão'}
+                                    </span>
+                                    {t.nome ? `${t.nome}: ` : ''} <a href={`https://wa.me/55${t.telefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none', fontWeight: 600 }}>{t.telefone}</a>
+                                </span>
+                            ))}
+                        </div>
                     )}
 
                     {/* Comissão */}

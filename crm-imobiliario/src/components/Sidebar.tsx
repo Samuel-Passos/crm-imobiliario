@@ -10,6 +10,7 @@ const navItems = [
     { path: '/pesquisa', label: 'Pesquisar Imóvel', icon: '🔍' },
     { path: '/contatos', label: 'Contatos', icon: '👥' },
     { path: '/mapa', label: 'Mapa de Imóveis', icon: '🗺️' },
+    { path: '/automacoes', label: 'Automações', icon: '⚙️' },
 ]
 
 export function Sidebar() {

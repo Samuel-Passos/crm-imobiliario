@@ -105,7 +105,8 @@ export function KanbanPage() {
     const [loading, setLoading] = useState(true)
     const [activeCard, setActiveCard] = useState<ImovelKanban | null>(null)
     const [filtros, setFiltros] = useState<FiltrosKanban>({
-        tipo_negocio: '', tipo_imovel: '', cidade: '', aceita_permuta: ''
+        tipo_negocio: '', tipo_imovel: '', cidade: '', aceita_permuta: '',
+        telefone_status: '', ordenacao: ''
     })
 
     const sensors = useSensors(
@@ -130,7 +131,7 @@ export function KanbanPage() {
             rua, numero, complemento, bairro, cidade, estado, cep,
             em_condominio, nome_condominio, bloco, numero_apartamento,
             latitude, longitude,
-            vendedor_nome, telefone, telefone_mascara, vendedor_whatsapp,
+            vendedor_nome, telefone_existe, telefone, telefone_mascara, telefones_extraidos, vendedor_whatsapp,
             ad_id, foto_capa, fotos,
             vendedor_chat_ativo, vendedor_email, autorizado, comissao_pct,
             area_construida_m2, area_terreno_m2, salas, tem_cozinha,
@@ -233,13 +234,23 @@ export function KanbanPage() {
         }
     }
 
-    // ── Filtros ───────────────────────────────────────────────
+    // ── Filtros e Ordenação ───────────────────────────────────────────────
     const imovelFiltrado = imoveis.filter(im => {
         if (filtros.tipo_negocio && im.tipo_negocio !== filtros.tipo_negocio) return false
         if (filtros.tipo_imovel && im.tipo_imovel !== filtros.tipo_imovel) return false
         if (filtros.cidade && im.cidade !== filtros.cidade) return false
         if (filtros.aceita_permuta && im.aceita_permuta !== filtros.aceita_permuta) return false
+
+        if (filtros.telefone_status === 'com_telefone' && !im.telefone_existe) return false
+        if (filtros.telefone_status === 'sem_telefone' && im.telefone_existe) return false
+
         return true
+    }).sort((a, b) => {
+        if (filtros.ordenacao === 'recente_antigo') return b.id - a.id // Assumo que ID maior seja mais recente no BD auto_increment
+        if (filtros.ordenacao === 'antigo_recente') return a.id - b.id
+        if (filtros.ordenacao === 'preco_maior') return (b.preco || 0) - (a.preco || 0)
+        if (filtros.ordenacao === 'preco_menor') return (a.preco || 999999999) - (b.preco || 999999999)
+        return 0
     })
 
     const cidades = [...new Set(imoveis.map(im => im.cidade).filter(Boolean) as string[])].sort()
@@ -271,7 +282,14 @@ export function KanbanPage() {
                     {colunas.map(col => {
                         const cards = imovelFiltrado
                             .filter(im => im.kanban_coluna_id === col.id)
-                            .sort((a, b) => a.kanban_ordem - b.kanban_ordem)
+                            .sort((a, b) => {
+                                if (filtros.ordenacao === 'recente_antigo') return b.id - a.id
+                                if (filtros.ordenacao === 'antigo_recente') return a.id - b.id
+                                if (filtros.ordenacao === 'preco_maior') return (b.preco || 0) - (a.preco || 0)
+                                if (filtros.ordenacao === 'preco_menor') return (a.preco || 999999999) - (b.preco || 999999999)
+                                // Default: Ordem do Quadro Kanban
+                                return a.kanban_ordem - b.kanban_ordem
+                            })
                         return (
                             <DroppableColuna
                                 key={col.id}

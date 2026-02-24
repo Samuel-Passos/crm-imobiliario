@@ -37,3 +37,8 @@ Thumbs.db
 
 # Referências e logs privados
 Referencia/
+
+# Scraper Python
+scraper/.env
+scraper/.venv/
+scraper/__pycache__/
