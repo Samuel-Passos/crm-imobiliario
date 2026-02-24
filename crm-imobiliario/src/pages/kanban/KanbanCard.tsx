@@ -7,6 +7,7 @@ interface KanbanCardProps {
     imovel: ImovelKanban
     onUpdate: (updated: Partial<ImovelKanban>) => void
     isDragging?: boolean
+    onClick?: () => void
 }
 
 function formatPreco(preco: number | null, precoStr: string | null): string {
@@ -15,7 +16,7 @@ function formatPreco(preco: number | null, precoStr: string | null): string {
     return 'Sob consulta'
 }
 
-export function KanbanCard({ imovel, onUpdate, isDragging }: KanbanCardProps) {
+export function KanbanCard({ imovel, onUpdate, isDragging, onClick }: KanbanCardProps) {
     const [modalOpen, setModalOpen] = useState(false)
 
     // vendedor_whatsapp é boolean — o número de WA é o mesmo de telefone
@@ -27,9 +28,16 @@ export function KanbanCard({ imovel, onUpdate, isDragging }: KanbanCardProps) {
     return (
         <>
             <div
-                className="kanban-card"
-                style={{ opacity: isDragging ? 0.4 : 1 }}
-                onClick={() => setModalOpen(true)}
+                className={`kanban-card ${isDragging ? 'dragging' : ''}`}
+                style={{
+                    opacity: isDragging ? 0.4 : 1,
+                    borderLeft: `3px solid ${imovel.autorizado ? 'var(--success)' : 'transparent'}`,
+                    borderTop: `3px solid ${imovel.telefone_pesquisado && !imovel.telefone && !imovel.telefone_mascara && !imovel.anuncio_expirado ? 'var(--error)' : 'transparent'}`,
+                }}
+                onClick={() => {
+                    if (onClick) onClick()
+                    else setModalOpen(true)
+                }}
             >
                 {/* Foto */}
                 {imovel.foto_capa && (
@@ -167,7 +175,12 @@ export function KanbanCard({ imovel, onUpdate, isDragging }: KanbanCardProps) {
             {modalOpen && (
                 <ImovelModal
                     imovel={imovel}
-                    onClose={() => setModalOpen(false)}
+                    onClose={() => {
+                        setModalOpen(false)
+                        const currentUrl = new URL(window.location.href)
+                        currentUrl.searchParams.delete('modal')
+                        window.history.replaceState({}, '', currentUrl.toString())
+                    }}
                     onUpdate={u => { onUpdate(u); setModalOpen(false) }}
                 />
             )}

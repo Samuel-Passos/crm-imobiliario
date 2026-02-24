@@ -104,10 +104,53 @@ export function KanbanPage() {
     const [imoveis, setImoveis] = useState<ImovelKanban[]>([])
     const [loading, setLoading] = useState(true)
     const [activeCard, setActiveCard] = useState<ImovelKanban | null>(null)
-    const [filtros, setFiltros] = useState<FiltrosKanban>({
-        tipo_negocio: '', tipo_imovel: '', cidade: '', aceita_permuta: '',
-        telefone_status: '', ordenacao: ''
+    const initParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+    const [filtros, setFiltrosState] = useState<FiltrosKanban>({
+        tipo_negocio: (initParams.get('tipo_negocio') || '') as FiltrosKanban['tipo_negocio'],
+        tipo_imovel: initParams.get('tipo_imovel') || '',
+        cidade: initParams.get('cidade') || '',
+        aceita_permuta: (initParams.get('aceita_permuta') || '') as FiltrosKanban['aceita_permuta'],
+        telefone_status: (initParams.get('telefone_status') || '') as FiltrosKanban['telefone_status'],
+        ordenacao: (initParams.get('ordenacao') || '') as FiltrosKanban['ordenacao']
     })
+
+    const setFiltros = (f: FiltrosKanban) => {
+        setFiltrosState(f)
+        const newParams = new URLSearchParams()
+        Object.entries(f).forEach(([key, val]) => {
+            if (val) newParams.set(key, val as string)
+        })
+        const newUrl = `${window.location.pathname}${newParams.toString() ? ('?' + newParams.toString()) : ''}`
+        window.history.replaceState({}, '', newUrl)
+    }
+
+    const setUrlModalInfo = (id: number | null) => {
+        const urlParams = new URLSearchParams(window.location.search)
+        if (id !== null) {
+            urlParams.set('modal', id.toString())
+        } else {
+            urlParams.delete('modal')
+        }
+        const newStr = urlParams.toString()
+        window.history.replaceState({}, '', `${window.location.pathname}${newStr ? '?' + newStr : ''}`)
+    }
+
+    // Escutar eventos locais na janela com useCallback pra prevenir deps infinitas
+    useEffect(() => {
+        const handleOpenModalEvent = (e: CustomEvent<string>) => {
+            setUrlModalInfo(Number(e.detail))
+        }
+        const handleCloseModalEvent = () => {
+            setUrlModalInfo(null)
+        }
+        window.addEventListener('openModal' as any, handleOpenModalEvent)
+        window.addEventListener('closeModal' as any, handleCloseModalEvent)
+
+        return () => {
+            window.removeEventListener('openModal' as any, handleOpenModalEvent)
+            window.removeEventListener('closeModal' as any, handleCloseModalEvent)
+        }
+    }, [])
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
