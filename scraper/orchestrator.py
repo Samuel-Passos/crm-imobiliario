@@ -19,6 +19,16 @@ from tools.chat_reader import read_latest_chat_reply
 load_dotenv()
 supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
+# Sinais de controle global
+STOP_SIGNAL = False
+PAUSE_SIGNAL = False
+IS_RUNNING = False
+
+async def check_pause():
+    """Aguarda enquanto o sinal de pausa estiver ativo."""
+    while PAUSE_SIGNAL:
+        await asyncio.sleep(1)
+
 # ==========================================
 # 1. FLUXO DE EXTRAÇÃO DE TELEFONES
 # ==========================================
@@ -68,6 +78,12 @@ async def process_batch_phone_extraction():
     
     # Roda sequencial p/ não sobrecarregar PC e contornar detecção de bot
     for imovel in imoveis:
+        if STOP_SIGNAL:
+            print("\n🛑 [LOTE EXTRAÇÃO] Parada solicitada pelo usuário.")
+            break
+        
+        await check_pause()
+        
         # AQUI - Importante capturar a data para tratar corretamente na query async
         await extract_phone_single_lead(imovel["id"])
         await asyncio.sleep(5)  # Pausa humana
@@ -132,6 +148,11 @@ async def process_batch_first_prospects():
     print(f"\n[LOTE INIT CHAT] {len(leads)} novos leads prontos para prospecção.")
     
     for lead in leads:
+        if STOP_SIGNAL:
+            print("\n🛑 [LOTE INIT CHAT] Parada solicitada pelo usuário.")
+            break
+            
+        await check_pause()
         await prospect_single_lead(lead["id"])
         await asyncio.sleep(8)
 
@@ -194,16 +215,20 @@ async def run_daily_scraper_cycle():
     print("🚀 INICIANDO CICLO DIÁRIO DE SCRAPING E PROSPECÇÃO")
     print("="*50)
     
-    # 1. Busca novos dados (Telefones)
-    await process_batch_phone_extraction()
-    
-    # 2. Inicia conversas novas
-    await process_batch_first_prospects()
-    
-    # 3. Dá manutenção nas conversas ativas
-    # await process_batch_follow_ups()  # TODO Habilitar após testes das 2 primeiras
-    
-    print("\n🏁 CICLO FINALIZADO!")
+    global IS_RUNNING
+    IS_RUNNING = True
+    try:
+        # 1. Busca novos dados (Telefones)
+        await process_batch_phone_extraction()
+        
+        # 2. Inicia conversas novas
+        await process_batch_first_prospects()
+        
+        # 3. Dá manutenção nas conversas ativas
+        # await process_batch_follow_ups()  # TODO Habilitar após testes das 2 primeiras
+    finally:
+        IS_RUNNING = False
+        print("\n🏁 CICLO FINALIZADO!")
 
 if __name__ == "__main__":
     # Teste unitário direto

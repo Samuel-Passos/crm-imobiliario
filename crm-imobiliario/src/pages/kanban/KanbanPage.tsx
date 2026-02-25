@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo, memo } from 'react'
 import {
     DndContext,
     DragOverlay,
@@ -18,14 +18,27 @@ import { KanbanFilters } from './KanbanFilters'
 import toast from 'react-hot-toast'
 
 // ── Sortable card wrapper ─────────────────────────────────
-function SortableCard({ imovel, onUpdate }: {
+const SortableCard = memo(function SortableCard({ imovel, onUpdate }: {
     imovel: ImovelKanban
-    onUpdate: (u: Partial<ImovelKanban>) => void
+    onUpdate: (id: number, u: Partial<ImovelKanban>) => void
 }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: imovel.id,
         data: { type: 'card', coluna: imovel.kanban_coluna_id }
     })
+
+    const handleClick = useCallback(() => {
+        const urlParams = new URLSearchParams(window.location.search)
+        urlParams.set('modal', imovel.id.toString())
+        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`)
+        // Trigger custom event to open modal
+        window.dispatchEvent(new CustomEvent('openModal', { detail: imovel.id.toString() }))
+    }, [imovel.id])
+
+    const handleUpdate = useCallback((u: Partial<ImovelKanban>) => {
+        onUpdate(imovel.id, u)
+    }, [imovel.id, onUpdate])
+
     return (
         <div
             ref={setNodeRef}
@@ -33,24 +46,21 @@ function SortableCard({ imovel, onUpdate }: {
             {...attributes}
             {...listeners}
         >
-            <KanbanCard imovel={imovel} onUpdate={onUpdate} isDragging={isDragging}
-                onClick={() => {
-                    const urlParams = new URLSearchParams(window.location.search)
-                    urlParams.set('modal', imovel.id.toString())
-                    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`)
-                    // Trigger custom event to open modal
-                    window.dispatchEvent(new CustomEvent('openModal', { detail: imovel.id.toString() }))
-                }}
-            />
+            <KanbanCard imovel={imovel} onUpdate={handleUpdate} isDragging={isDragging} onClick={handleClick} />
         </div>
     )
-}
+}, (prev, next) => {
+    return prev.imovel === next.imovel && prev.onUpdate === next.onUpdate;
+})
 
 // ── Droppable column ──────────────────────────────────────
-function DroppableColuna({ coluna, cards, onUpdate }: {
+const DroppableColuna = memo(function DroppableColuna({ coluna, cards, allCards, totalCount, onUpdate, onLoadMore }: {
     coluna: KanbanColuna
     cards: ImovelKanban[]
+    allCards: ImovelKanban[]
+    totalCount: number
     onUpdate: (id: number, u: Partial<ImovelKanban>) => void
+    onLoadMore: () => void
 }) {
     // A própria coluna é droppable (para cards vindos de outras colunas)
     const { setNodeRef, isOver } = useDroppable({
@@ -87,9 +97,9 @@ function DroppableColuna({ coluna, cards, onUpdate }: {
                     transition: 'background 150ms'
                 }}
             >
-                <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                <SortableContext items={allCards.map(c => c.id)} strategy={verticalListSortingStrategy}>
                     {cards.map(card => (
-                        <SortableCard key={card.id} imovel={card} onUpdate={u => onUpdate(card.id, u)} />
+                        <SortableCard key={card.id} imovel={card} onUpdate={onUpdate} />
                     ))}
                 </SortableContext>
 
@@ -101,16 +111,57 @@ function DroppableColuna({ coluna, cards, onUpdate }: {
                         Vazio
                     </div>
                 )}
+
+                {cards.length > 0 && totalCount > cards.length && (
+                    <button
+                        onClick={onLoadMore}
+                        style={{
+                            width: '100%',
+                            padding: '0.6rem',
+                            marginTop: '0.5rem',
+                            background: 'var(--bg-surface)',
+                            border: '1px solid var(--border)',
+                            borderRadius: 'var(--radius-sm)',
+                            color: 'var(--brand-500)',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.background = 'rgba(59,130,246,0.05)'
+                            e.currentTarget.style.borderColor = 'rgba(59,130,246,0.2)'
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.background = 'var(--bg-surface)'
+                            e.currentTarget.style.borderColor = 'var(--border)'
+                        }}
+                    >
+                        Carregar mais {totalCount - cards.length} cards ⬇️
+                    </button>
+                )}
             </div>
         </div>
     )
-}
+}, (prev, next) => {
+    return prev.coluna === next.coluna &&
+        prev.cards === next.cards &&
+        prev.totalCount === next.totalCount &&
+        prev.onUpdate === next.onUpdate &&
+        prev.onLoadMore === next.onLoadMore;
+})
 
 // ── Página principal ──────────────────────────────────────
 export function KanbanPage() {
     const [colunas, setColunas] = useState<KanbanColuna[]>([])
     const [imoveis, setImoveis] = useState<ImovelKanban[]>([])
     const [loading, setLoading] = useState(true)
+    const [executing, setExecuting] = useState(false)
+    const [isPaused, setIsPaused] = useState(false)
     const [activeCard, setActiveCard] = useState<ImovelKanban | null>(null)
     const initParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
     const [filtros, setFiltrosState] = useState<FiltrosKanban>({
@@ -119,8 +170,19 @@ export function KanbanPage() {
         cidade: initParams.get('cidade') || '',
         aceita_permuta: (initParams.get('aceita_permuta') || '') as FiltrosKanban['aceita_permuta'],
         telefone_status: (initParams.get('telefone_status') || '') as FiltrosKanban['telefone_status'],
-        ordenacao: (initParams.get('ordenacao') || '') as FiltrosKanban['ordenacao']
+        ordenacao: (initParams.get('ordenacao') || '') as FiltrosKanban['ordenacao'],
+        busca: initParams.get('busca') || ''
     })
+
+    // Limits the amount of items shown per column initially to 50
+    const [limitesPorColuna, setLimitesPorColuna] = useState<Record<string, number>>({})
+
+    const handleLoadMore = useCallback((colunaId: string) => {
+        setLimitesPorColuna(prev => ({
+            ...prev,
+            [colunaId]: (prev[colunaId] || 50) + 50
+        }))
+    }, [])
 
     const setFiltros = (f: FiltrosKanban) => {
         setFiltrosState(f)
@@ -142,6 +204,81 @@ export function KanbanPage() {
         const newStr = urlParams.toString()
         window.history.replaceState({}, '', `${window.location.pathname}${newStr ? '?' + newStr : ''}`)
     }
+
+    const handleRunExtractor = async () => {
+        if (!confirm('Deseja iniciar o ciclo completo de extração de telefones e prospecção? (Isso rodará em background)')) return
+
+        setExecuting(true)
+        setIsPaused(false)
+        try {
+            const response = await fetch('http://localhost:8765/run', {
+                method: 'POST',
+            })
+            const data = await response.json()
+            if (response.ok) {
+                toast.success('Extrator iniciado com sucesso em background!')
+            } else {
+                toast.error(`Erro ao iniciar: ${data.message || 'Erro desconhecido'}`)
+                setExecuting(false)
+            }
+        } catch (error) {
+            console.error('Erro ao chamar o scraper:', error)
+            toast.error('Não foi possível conectar ao servidor do extrator (FastAPI). Verifique se ele está rodando na porta 8765.')
+            setExecuting(false)
+        }
+    }
+
+    const handleStop = async () => {
+        try {
+            const response = await fetch('http://localhost:8765/stop', { method: 'POST' })
+            if (response.ok) {
+                toast.success('Sinal de parada enviado!')
+                setExecuting(false)
+                setIsPaused(false)
+            }
+        } catch (error) {
+            toast.error('Erro ao conectar ao servidor para parar.')
+        }
+    }
+
+    const handlePauseToggle = async () => {
+        const endpoint = isPaused ? 'resume' : 'pause'
+        try {
+            const response = await fetch(`http://localhost:8765/${endpoint}`, { method: 'POST' })
+            if (response.ok) {
+                setIsPaused(!isPaused)
+                toast.success(isPaused ? 'Extração retomada!' : 'Extração pausada!')
+            }
+        } catch (error) {
+            toast.error('Erro ao conectar ao servidor para pausar/retomar.')
+        }
+    }
+
+    // Polling para sincronizar status com o backend
+    useEffect(() => {
+        let interval: any;
+        if (executing) {
+            interval = setInterval(async () => {
+                try {
+                    const response = await fetch('http://localhost:8765/status-execution')
+                    if (response.ok) {
+                        const data = await response.json()
+                        // Se o backend diz que NÃO está executando, mas o front acha que está
+                        if (!data.executing && executing) {
+                            setExecuting(false)
+                            setIsPaused(false)
+                            clearInterval(interval)
+                        } else if (data.isPaused !== isPaused) {
+                            setIsPaused(data.isPaused)
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro no polling de status:', error)
+                }
+            }, 3000)
+        }
+        return () => clearInterval(interval)
+    }, [executing, isPaused])
 
     // Escutar eventos locais na janela com useCallback pra prevenir deps infinitas
     useEffect(() => {
@@ -266,79 +403,215 @@ export function KanbanPage() {
         const imovel = imoveis.find(im => im.id === activeId)
         if (!imovel || !targetColunaId || imovel.kanban_coluna_id === targetColunaId) return
 
-        // Move visualmente sem persistir ainda
-        updateImovel(activeId, { kanban_coluna_id: targetColunaId })
+        // Guardamos de onde ele veio na variável estática em tela caso precise reverter
+        if (!activeCard) {
+            setActiveCard(imovel)
+        }
     }
 
     // Ao soltar — persiste no Supabase
     const handleDragEnd = async (e: DragEndEvent) => {
-        const card = activeCard
+        const cardOriginal = activeCard
         setActiveCard(null)
-        if (!card) return
+        if (!cardOriginal) return
 
-        const { active } = e
-        const imovelAtual = imoveis.find(im => im.id === active.id)
-        if (!imovelAtual) return
+        const { over } = e
+        if (!over) {
+            updateImovel(cardOriginal.id, { kanban_coluna_id: cardOriginal.kanban_coluna_id, kanban_ordem: cardOriginal.kanban_ordem })
+            return
+        }
 
-        const targetColunaId = imovelAtual.kanban_coluna_id
-        if (!targetColunaId || targetColunaId === card.kanban_coluna_id) return
+        const overType = over.data.current?.type
+        let targetColunaId: string | null = null
+
+        if (overType === 'coluna') {
+            targetColunaId = over.data.current?.colunaId as string
+        } else if (overType === 'card' || over.data.current?.coluna) {
+            targetColunaId = over.data.current?.coluna as string
+            if (!targetColunaId) {
+                targetColunaId = imoveis.find(im => im.id === over.id)?.kanban_coluna_id || null
+            }
+        } else {
+            const isColuna = colunas.some(c => c.id === over.id)
+            if (isColuna) targetColunaId = over.id as string
+            else targetColunaId = imoveis.find(im => im.id === over.id)?.kanban_coluna_id || null
+        }
+
+        if (!targetColunaId || targetColunaId === cardOriginal.kanban_coluna_id) {
+            // Reverte visual se soltou fora ou na mesma coluna
+            updateImovel(cardOriginal.id, { kanban_coluna_id: cardOriginal.kanban_coluna_id, kanban_ordem: cardOriginal.kanban_ordem })
+            return
+        }
 
         const colunaDestino = colunas.find(c => c.id === targetColunaId)
-        if (!colunaDestino) return
+        if (!colunaDestino) {
+            updateImovel(cardOriginal.id, { kanban_coluna_id: cardOriginal.kanban_coluna_id, kanban_ordem: cardOriginal.kanban_ordem })
+            return
+        }
 
-        const cardsNaColuna = imoveis.filter(im => im.kanban_coluna_id === targetColunaId && im.id !== card.id)
+        const cardsNaColuna = imoveis.filter(im => im.kanban_coluna_id === targetColunaId && im.id !== cardOriginal.id)
         const novaOrdem = cardsNaColuna.length + 1
-        const historico = [...(card.historico_kanban || []), { coluna: colunaDestino.nome, data: new Date().toISOString() }]
+        const historico = [...(cardOriginal.historico_kanban || []), { coluna: colunaDestino.nome, data: new Date().toISOString() }]
 
-        updateImovel(card.id, { kanban_ordem: novaOrdem, historico_kanban: historico })
+        // Commit state
+        updateImovel(cardOriginal.id, { kanban_coluna_id: targetColunaId, kanban_ordem: novaOrdem, historico_kanban: historico })
 
         const { error } = await supabase.from('imoveis').update({
             kanban_coluna_id: targetColunaId,
             kanban_ordem: novaOrdem,
             historico_kanban: historico,
-        }).eq('id', card.id)
+        }).eq('id', cardOriginal.id)
 
         if (error) {
             toast.error('Erro ao mover card')
             // Reverte para coluna original
-            updateImovel(card.id, { kanban_coluna_id: card.kanban_coluna_id, kanban_ordem: card.kanban_ordem })
+            updateImovel(cardOriginal.id, { kanban_coluna_id: cardOriginal.kanban_coluna_id, kanban_ordem: cardOriginal.kanban_ordem })
         } else {
             toast.success(`→ ${colunaDestino.nome}`, { duration: 1500 })
         }
     }
 
     // ── Filtros e Ordenação ───────────────────────────────────────────────
-    const imovelFiltrado = imoveis.filter(im => {
-        if (filtros.tipo_negocio && im.tipo_negocio !== filtros.tipo_negocio) return false
-        if (filtros.tipo_imovel && im.tipo_imovel !== filtros.tipo_imovel) return false
-        if (filtros.cidade && im.cidade !== filtros.cidade) return false
-        if (filtros.aceita_permuta && im.aceita_permuta !== filtros.aceita_permuta) return false
+    const imovelFiltrado = useMemo(() => {
+        return imoveis.filter(im => {
+            if (filtros.tipo_negocio && im.tipo_negocio !== filtros.tipo_negocio) return false
+            if (filtros.tipo_imovel && im.tipo_imovel !== filtros.tipo_imovel) return false
+            if (filtros.cidade && im.cidade !== filtros.cidade) return false
+            if (filtros.aceita_permuta && im.aceita_permuta !== filtros.aceita_permuta) return false
 
-        if (filtros.telefone_status === 'com_telefone' && !im.telefone_existe) return false
-        if (filtros.telefone_status === 'sem_telefone' && im.telefone_existe) return false
+            if (filtros.telefone_status === 'com_telefone' && !im.telefone_existe) return false
+            if (filtros.telefone_status === 'sem_telefone' && im.telefone_existe) return false
 
-        return true
-    }).sort((a, b) => {
-        if (filtros.ordenacao === 'recente_antigo') return b.id - a.id // Assumo que ID maior seja mais recente no BD auto_increment
-        if (filtros.ordenacao === 'antigo_recente') return a.id - b.id
-        if (filtros.ordenacao === 'preco_maior') return (b.preco || 0) - (a.preco || 0)
-        if (filtros.ordenacao === 'preco_menor') return (a.preco || 999999999) - (b.preco || 999999999)
-        return 0
-    })
+            if (filtros.busca) {
+                const termo = filtros.busca.toLowerCase()
+                const matchesId = im.id.toString() === termo
+                const matchesAdId = im.ad_id?.toString() === termo
+                const matchesListId = im.list_id?.toString() === termo
+                const matchesTitulo = im.titulo.toLowerCase().includes(termo)
 
-    const cidades = [...new Set(imoveis.map(im => im.cidade).filter(Boolean) as string[])].sort()
-    const tipos = [...new Set(imoveis.map(im => im.tipo_imovel).filter(Boolean) as string[])].sort()
+                if (!matchesId && !matchesAdId && !matchesListId && !matchesTitulo) return false
+            }
+
+            return true
+        })
+    }, [imoveis, filtros])
+
+    const cardsPorColuna = useMemo(() => {
+        const map = new Map<string, ImovelKanban[]>()
+        colunas.forEach(col => map.set(col.id, []))
+
+        imovelFiltrado.forEach(im => {
+            if (im.kanban_coluna_id && map.has(im.kanban_coluna_id)) {
+                map.get(im.kanban_coluna_id)!.push(im)
+            }
+        })
+
+        map.forEach(cards => {
+            cards.sort((a, b) => {
+                if (filtros.ordenacao === 'recente_antigo') return b.id - a.id // ID maior é mais recente no auto_increment
+                if (filtros.ordenacao === 'antigo_recente') return a.id - b.id
+                if (filtros.ordenacao === 'preco_maior') return (b.preco || 0) - (a.preco || 0)
+                if (filtros.ordenacao === 'preco_menor') return (a.preco || 999999999) - (b.preco || 999999999)
+                // Default: Ordem do Quadro Kanban
+                return a.kanban_ordem - b.kanban_ordem
+            })
+        })
+        return map
+    }, [imovelFiltrado, colunas, filtros.ordenacao])
+
+    const cidades = useMemo(() => [...new Set(imoveis.map(im => im.cidade).filter(Boolean) as string[])].sort(), [imoveis])
+    const tipos = useMemo(() => [...new Set(imoveis.map(im => im.tipo_imovel).filter(Boolean) as string[])].sort(), [imoveis])
 
     if (loading) return <div className="loading-screen"><div className="spinner" /></div>
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', margin: '-2rem', overflow: 'hidden' }}>
             {/* Header */}
-            <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
-                <h1 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.1rem' }}>CRM Kanban</h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                    {imovelFiltrado.length} imóveis · {colunas.length} colunas
-                </p>
+            <div style={{
+                padding: '1rem 1.5rem',
+                borderBottom: '1px solid var(--border)',
+                background: 'var(--bg-surface)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2rem'
+            }}>
+                <div>
+                    <h1 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.1rem' }}>CRM Kanban</h1>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                        {imovelFiltrado.length} imóveis · {colunas.length} colunas
+                    </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    {!executing ? (
+                        <button
+                            onClick={handleRunExtractor}
+                            style={{
+                                padding: '0.6rem 1.2rem',
+                                background: 'var(--brand-500)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 'var(--radius-md)',
+                                fontSize: '0.87rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                boxShadow: '0 4px 6px -1px rgba(59,130,246,0.2)',
+                                transition: 'all 0.2s',
+                                zIndex: 100,
+                            }}
+                        >
+                            <span>🚀</span>
+                            Executar Extrator em Lote
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                onClick={handlePauseToggle}
+                                style={{
+                                    padding: '0.6rem 1.2rem',
+                                    background: isPaused ? 'var(--brand-500)' : '#f59e0b',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: 'var(--radius-md)',
+                                    fontSize: '0.87rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    transition: 'all 0.2s',
+                                }}
+                            >
+                                <span>{isPaused ? '▶️' : '⏸️'}</span>
+                                {isPaused ? 'Retomar' : 'Pausar'}
+                            </button>
+
+                            <button
+                                onClick={handleStop}
+                                style={{
+                                    padding: '0.6rem 1.2rem',
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: 'var(--radius-md)',
+                                    fontSize: '0.87rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    transition: 'all 0.2s',
+                                }}
+                            >
+                                <span>⏹️</span>
+                                Parar Extração
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
             <KanbanFilters filtros={filtros} onChange={setFiltros} cidades={cidades} tipos={tipos} />
@@ -353,22 +626,19 @@ export function KanbanPage() {
             >
                 <div className="kanban-board">
                     {colunas.map(col => {
-                        const cards = imovelFiltrado
-                            .filter(im => im.kanban_coluna_id === col.id)
-                            .sort((a, b) => {
-                                if (filtros.ordenacao === 'recente_antigo') return b.id - a.id
-                                if (filtros.ordenacao === 'antigo_recente') return a.id - b.id
-                                if (filtros.ordenacao === 'preco_maior') return (b.preco || 0) - (a.preco || 0)
-                                if (filtros.ordenacao === 'preco_menor') return (a.preco || 999999999) - (b.preco || 999999999)
-                                // Default: Ordem do Quadro Kanban
-                                return a.kanban_ordem - b.kanban_ordem
-                            })
+                        const allCards = cardsPorColuna.get(col.id) || []
+                        const maxLimit = limitesPorColuna[col.id] || 50
+                        const visibleCards = allCards.slice(0, maxLimit)
+
                         return (
                             <DroppableColuna
                                 key={col.id}
                                 coluna={col}
-                                cards={cards}
-                                onUpdate={(id, u) => updateImovel(id, u)}
+                                cards={visibleCards}
+                                allCards={allCards}
+                                totalCount={allCards.length}
+                                onUpdate={updateImovel}
+                                onLoadMore={() => handleLoadMore(col.id)}
                             />
                         )
                     })}

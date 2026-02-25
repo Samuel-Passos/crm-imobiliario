@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import asyncio
 
 # Aqui vamos importar o orquestrador que roda os ciclos de IA
+import orchestrator
 from orchestrator import run_daily_scraper_cycle, prospect_single_lead, extract_phone_single_lead
 
 app = FastAPI(title="OLX Scraper Pro", description="Orquestrador Python com Browser Use")
@@ -23,19 +24,45 @@ class ImovelRequest(BaseModel):
 @app.get("/status")
 def health_check():
     return {"status": "online", "message": "Scraper FastAPI is running smoothly."}
-
 @app.post("/run")
 async def run_full_cycle(background_tasks: BackgroundTasks):
     """
-    Acorda o orquestrador e roda o fluxo completo diário:
-    1. Achar pendentes sem telefone -> Extrair
-    2. Achar leads frios/novos -> Enviar 1ª msg
-    3. Achar follow-ups na Inbox -> Ler e Mandar MSG correta
+    Acorda o orquestrador e roda o fluxo completo diário.
     """
+    # Reseta sinais antes de iniciar
+    orchestrator.STOP_SIGNAL = False
+    orchestrator.PAUSE_SIGNAL = False
+    
     # Jogamos para background task para não travar a UI (pode levar 30+ minutos no browser)
     background_tasks.add_task(run_daily_scraper_cycle)
     return {"status": "started", "message": "Ciclo completo de extração e prospecção iniciado em background."}
 
+@app.post("/stop")
+async def stop_cycle():
+    """Sinaliza para o orquestrador parar o loop atual."""
+    orchestrator.STOP_SIGNAL = True
+    orchestrator.PAUSE_SIGNAL = False # Garante que sai da pausa se estiver nela
+    return {"status": "stopping", "message": "Sinal de parada enviado. O scraper terminará o item atual e parará."}
+
+@app.post("/pause")
+async def pause_cycle():
+    """Sinaliza para o orquestrador pausar o loop."""
+    orchestrator.PAUSE_SIGNAL = True
+    return {"status": "paused", "message": "Sinal de pausa enviado."}
+
+@app.post("/resume")
+async def resume_cycle():
+    """Sinaliza para o orquestrador retomar o loop."""
+    orchestrator.PAUSE_SIGNAL = False
+    return {"status": "resumed", "message": "Sinal de retomada enviado."}
+
+@app.get("/status-execution")
+async def get_execution_status():
+    """Retorna se o robô está executando e se está pausado."""
+    return {
+        "executing": orchestrator.IS_RUNNING,
+        "isPaused": orchestrator.PAUSE_SIGNAL
+    }
 
 @app.post("/extract-phone")
 async def extract_one_phone(payload: ImovelRequest, background_tasks: BackgroundTasks):
