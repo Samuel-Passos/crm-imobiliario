@@ -41,16 +41,6 @@
             "sameSite": "Lax"
         },
         {
-            "name": "_lr_sampling_rate",
-            "value": "100",
-            "domain": "www.olx.com.br",
-            "path": "/",
-            "expires": 1772031881,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
             "name": "newIsGrid",
             "value": "false",
             "domain": "www.olx.com.br",
@@ -61,71 +51,51 @@
             "sameSite": "Lax"
         },
         {
-            "name": "_lr_geo_location",
-            "value": "BR",
-            "domain": "www.olx.com.br",
-            "path": "/",
-            "expires": 1772028070,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_lr_geo_location_state",
-            "value": "SP",
-            "domain": "www.olx.com.br",
-            "path": "/",
-            "expires": 1772028070,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
             "name": "idl_env",
-            "value": "AhpYQpxh1qDtVz4frm4EBsBnN2dgWZI6phAVJmLdvJ0LVDzrBJpqMKK49pjWJR2BrumGFKoTZnuQgO6kb4TJbLZvjyyZFZ0B1tNTn0AiOPrfMRdFMLbrUOCiL_L_aTC2G1jb2aPoXlG5fYhw8-G1dIHM2o9Mp-KX_DRjEYPfuHMS6UVEAYfXDiuXZtZgLAnexlx3Vh18j_2xxU6U7BY-O2dWg6CG2J_LL-kPpk_tI4Mio3EBFIMuaoXhA5XdEvA2-vKRnIK8xNIXKvExTiHJuOxJzPJzhBoEc-eKRF0ZA9jfPfcx5oliY3HqIIo-RunaDp-5CPXI9ZW0QDDv-duUk6MElrFx8psjQ6Un4oKpYtQAMU9iqCpwgBfLaA",
+            "value": "AsSb98cleOsPUQGRKf7CZdseNRifzhS8ng9g-pIoeAREL0GSzvEO01Ko4C_7cM0zsWIDIcK6whv9nVUU3X2UOk4_bM60Rh-N4u8pR2-QzzkhMhnYBMvMiELM6YPPqaBYAd4Q9ti6XfcR6mAK9zQ8MOk1dCV4jyVgZsIPf8P5vhpKUGrTSk9SKkONUTNjbD8aVQCrVVUneX0kSB26EtnQ03pMEcKEVnwmHh0hRDY0ViLIHLhqEo_q3W9xNAx9zWoKgvOCv3KRuoivnJ7cglz6ZCVHtFGlhSecVu4VPlapuQazK2el8C9Mr1vr28Y6jtYAwSemAaXZafFdSZPPplJKgF02jQpn3UDs6WCgjBzRdi93R3uTjumJqK1-BA",
             "domain": "www.olx.com.br",
             "path": "/",
-            "expires": 1773154842,
+            "expires": 1773258535,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
             "name": "idl_env_cst",
-            "value": "znv0HA%3D%3D",
+            "value": "eFj5gQ%3D%3D",
             "domain": "www.olx.com.br",
             "path": "/",
-            "expires": 1773154842,
+            "expires": 1773258535,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
             "name": "idl_env_last",
-            "value": "Mon%2C%2023%20Feb%202026%2015%3A00%3A42%20GMT",
+            "value": "Tue%2C%2024%20Feb%202026%2019%3A48%3A55%20GMT",
             "domain": "www.olx.com.br",
             "path": "/",
-            "expires": 1773154842,
+            "expires": 1773258535,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
             "name": "__rtbh.lid",
-            "value": "%7B%22eventType%22%3A%22lid%22%2C%22id%22%3A%22gTVnHL1IxRrToBLoPT3R%22%2C%22expiryDate%22%3A%222027-02-23T15%3A07%3A57.574Z%22%7D",
+            "value": "%7B%22eventType%22%3A%22lid%22%2C%22id%22%3A%22gTVnHL1IxRrToBLoPT3R%22%2C%22expiryDate%22%3A%222027-02-25T15%3A06%3A52.112Z%22%7D",
             "domain": "www.olx.com.br",
             "path": "/",
-            "expires": 1803395277,
+            "expires": 1803568012,
             "httpOnly": false,
             "secure": true,
             "sameSite": "Lax"
         },
         {
             "name": "__rtbh.uid",
-            "value": "%7B%22eventType%22%3A%22uid%22%2C%22id%22%3A%2215e01c3d-7b63-4ab1-985f-5b8e97136952%22%2C%22hash%22%3A%22wBiML0Lv0cEh18cEd5DU%22%2C%22expiryDate%22%3A%222027-02-23T15%3A07%3A57.567Z%22%7D",
+            "value": "%7B%22eventType%22%3A%22uid%22%2C%22id%22%3A%2215e01c3d-7b63-4ab1-985f-5b8e97136952%22%2C%22hash%22%3A%22wBiML0Lv0cEh18cEd5DU%22%2C%22expiryDate%22%3A%222027-02-25T15%3A06%3A52.111Z%22%7D",
             "domain": "www.olx.com.br",
             "path": "/",
-            "expires": 1803395277,
+            "expires": 1803568012,
             "httpOnly": false,
             "secure": true,
             "sameSite": "Lax"
@@ -171,26 +141,6 @@
             "sameSite": "Lax"
         },
         {
-            "name": "pbjs_sharedId",
-            "value": "ca347304-d05a-4ad6-9151-0c890ec68b90",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1773324309,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "pbjs_sharedId_cst",
-            "value": "znv0HA%3D%3D",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1773324309,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
             "name": "_gcl_gs",
             "value": "2.1.k1$i1770732308$u99227456",
             "domain": ".olx.com.br",
@@ -226,76 +176,6 @@
             "domain": ".olx.com.br",
             "path": "/",
             "expires": 1778601167,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_cc_id",
-            "value": "1cc71f6180a8d343ce636e67cd74534c",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1794761408,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "panoramaId",
-            "value": "07c99e744b3de1e92f0eb1d0da26185ca02cb5374e6765ce4562266c7aaf54af",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1772038208,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "panoramaId_expiry",
-            "value": "1772038208531",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1772038208,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_clck",
-            "value": "xr5fwu%5E2%5Eg3t%5E0%5E2245",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1803343063,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_clsk",
-            "value": "14htmhc%5E1771807064237%5E1%5E1%5Ek.clarity.ms%2Fcollect",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1771893464,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "cf_clearance",
-            "value": "3Mq9TrVB5bCmNPk9PdGiEb8zAosqmD1qMWtVvNXxiOA-1771855236-1.2.1.1-WKJkqLpys76jrg_U1sPlRuSRqkqKXeaMoxHcmJZRVa2G6kJp7oOgfPuYDgKXsbmUeM4pGSKm25.xxDipNQyBZRkvq1a4NrJLwkS8DJ7DVrarolDSeXUf_wMD6P9MHBcRou4VdAwqZXZH2N7TxiPwi1gPPzylgF1NVau2xy0ngjnNnqs3E7AfsEg_8dkK5bx02r0UucTAtOlRmO9x4.ZNi9vETquKjt5qAt6CHjvl8.c",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1803391236,
-            "httpOnly": false,
-            "secure": true,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_gid",
-            "value": "GA1.3.1365492186.1771855357",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1771941757,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
@@ -391,161 +271,31 @@
             "sameSite": "Lax"
         },
         {
-            "name": "__cf_bm",
-            "value": "5uObc9B6HVkju1f8xqcLVQjccb43U5slWYW2ktq_6KI-1771858842-1.0.1.1-gDue0EJrneVFpYHPsd3g..Yzhb76ZTF039R_ZouWf0Vf_7oe7pC0nwwOi_a0ukACYmV4jb.s78vh1SJQYazWfO1aOecnyJtjbvAMD2aeB18",
+            "name": "pbjs_sharedId",
+            "value": "ca347304-d05a-4ad6-9151-0c890ec68b90",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1771860642,
-            "httpOnly": false,
-            "secure": true,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_lr_env",
-            "value": "eyJ0aW1lc3RhbXAiOjE3NzE4NTg4NDk1OTAsInZlcnNpb24iOiIxLjYuMCIsImVudmVsb3BlIjoiQWxaSWlHQUF0RXJVQkhYWHJxTno1eE5kYXVFN1hpNTQzX2R1UnNZci1qd1V1cnNZVUFEYWNPejYwZVVxeUVnNG5MRUNuZEJhZHh0RzZnVVVkSUpjRVgzcl9KTmtmdFVOQ1hnVkNoOWJleHRkMF8yMjBYdno3OG0wR0wwdDl1bGsxVHgzUV95by1mNnBOSDJIOVk0cTdocmFFYUhoZEpzX0tmOUl6RVE2eVRxbkRyNjhJZVBRbm9abEh5TVBwQUE0X3E1VFpoVXd1aHppM0JuaDRDZ3dPVGtRVnhDdDgyLUlMclJPZFdjZFlvOE5yanpYY3JHS0gyU2szWFdCTUZ4X0N6cmFCMTlIMzItV1g5VVpJWnhnS0ZLR3lPanBPeFhPVWFkcmVMYjlwcno5bHNZRmVXY25taVVZMURNX29NM0JyLWJSR2tRU05aSmNtUDliZkpxamtWNXFfUWR2QWRGSG1LYXlGRkd2dEE5VFh3Q0lqS2ZyOXhDeDZ3IiwiY3JlYXRpb25UaW1lc3RhbXAiOjE3NzE3NTY0Nzk4Mzl9",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1803394849,
+            "expires": 1774617721,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
-            "name": "_lr_pairId",
-            "value": "eyJ0aW1lc3RhbXAiOjE3NzE4NTg4NDk1OTgsInZlcnNpb24iOiIxLjYuMCIsImVudmVsb3BlIjpbIkEvV1hrY0dGYlpDYnVYMEQ5RGdzeFFhcTB6VGM4a0l3Rk9lb21KeTg5V3RZIl0sImNyZWF0aW9uVGltZXN0YW1wIjoxNzcxNzU2NDc5ODQwfQ%3D%3D",
+            "name": "pbjs_sharedId_cst",
+            "value": "znv0HA%3D%3D",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1803394849,
+            "expires": 1774617721,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
-            "name": "nvg83482",
-            "value": "172b79c5ac8dc631ad39aa432710|0_55",
+            "name": "_clck",
+            "value": "xr5fwu%5E2%5Eg3v%5E0%5E2245",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1803394848,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "TestAB_Groups",
-            "value": "payg-discount-re-julius_ml-ranges.sanityweb50_A.adv-ad17d8_enabled.lp45_control.earlyrnw_enabled.aa-wpp_enabled.ln-midiav1_A.ln-gchatv4_A.rp-central_control.chk-pixaut_B.palq1271_enabled.pp-ml-disc_enabled.sa-ship-sc_control.two-cards_enabled.ln-minchat_A.lp50_control.ai-km-item_control.sa-ai-fg_control.adv-hi3cal_enabled.brz-web_control.new-price_control.rec-hb2c66_enabled.ne-midiav2_control.sa-inf-ml_control.ai-splash_control.adv-lit4bo_control.lp43_enabled.opt-renew_enabled.ai-ktools_enabled.palq-1528_control",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1771861073,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "r_id",
-            "value": "96e2243e-f2a6-4ed4-b4f5-ca79b93cae72",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1806419273,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "s_id",
-            "value": "186eb2da-3a23-4535-99e6-aa3c36a570192026-02-23T14:00:28.753507Z",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1771861075,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "AdoptVisitorId",
-            "value": "EYEwxgbAjDAsC0BDApq+tEFYBM8AcAZgOxjyZQRFSIGwhQEFA===",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1777043281,
-            "httpOnly": false,
-            "secure": true,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "FCCDCF",
-            "value": "%5Bnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B32%2C%22%5B%5C%2213e3cd01-2272-44de-a7d2-35d4566e9f76%5C%22%2C%5B1770662199%2C872000000%5D%5D%22%5D%5D%5D",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1805555278,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "FCNEC",
-            "value": "%5B%5B%22AKsRol_-dXoH-EIuKzRKhZh5q7lyoDdtdfTevE_5Oi2ydJSyJAcX62LY5ZzmwHRoSG4SYHAfv3S_kjW6DRyXAg7OctGRbzRa1TwhzcoLfKB6VNd-UUgeIdP_5Tv1VtoSaAugrpF6eHa1CIP--JPL-C-m9vxE-p3kDA%3D%3D%22%5D%5D",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1803395279,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "___iat_ses",
-            "value": "137B1B4DC240F9C8",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1771861082,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "___iat_vis",
-            "value": "137B1B4DC240F9C8.9cbf3d1f13a465742227285b806308c9.1771859282152.499a3b9f474e183f09fe539db98ef6e6.JMIMJZURMA.11111111.1-0.9cbf3d1f13a465742227285b806308c9",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1787411282,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "__eoi",
-            "value": "ID=bf341e8437607354:T=1770662200:RT=1771859275:S=AA-AfjZUvTXfIsmYTOgIK_EU7H3c",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1786214200,
-            "httpOnly": false,
-            "secure": true,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "__gads",
-            "value": "ID=ea2567e47ab32379:T=1770662200:RT=1771859275:S=ALNI_MZ288G3JugqJjESJ6D6e5tNNaLK9Q",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1804358200,
-            "httpOnly": false,
-            "secure": true,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "__gpi",
-            "value": "UID=000012d446b0656d:T=1770662200:RT=1771859275:S=ALNI_MZ-Jh2pvGbMIdrVAFx-y2IniDv31g",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1804358200,
-            "httpOnly": false,
-            "secure": true,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_fbp",
-            "value": "fb.2.1770662203901.4653627498652449",
-            "domain": ".olx.com.br",
-            "path": "/",
-            "expires": 1779635278,
+            "expires": 1803568018,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
@@ -555,37 +305,187 @@
             "value": "15e01c3d-7b63-4ab1-985f-5b8e97136952",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1777043279,
+            "expires": 1777216021,
             "httpOnly": false,
             "secure": true,
             "sameSite": "Lax"
         },
         {
-            "name": "cto_bidid",
-            "value": "4IcP519MbXY1R24lMkJjd3l0SmV2Q2NTYmd5NzMwTFRuN3A3RG1qcVdQVG9aSVdKRWhIN1NVV3ZSJTJGaElkWmhXNGZ2Q1dMRkdKcGhENm4xJTJGb0IlMkZhd2xWdlNtNFloYXB4R2x4V1NraUZJSHp5N0ZGN0J3JTNE",
+            "name": "_cfuvid",
+            "value": "oOB1QImSw33i3oW0EZZ9LTVMsbLBH6fbNuvVzTT7bik-1772107858180-0.0.1.1-604800000",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1805544756,
+            "expires": -1,
+            "httpOnly": false,
+            "secure": true,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "nvg83482",
+            "value": "172b79c5ac8dc631ad39aa432710|0_58",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1803643865,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
-            "name": "cto_bundle",
-            "value": "p7lqAF84YTJSaFdVYnlVekpLdjVncSUyRkJSeWFPcjZ1Yk5ZJTJGR3pvSWxKZ0ZCd2JCN0NhY3J3aGRRZWFocDFoaDR2VCUyQmxOYUV1S0I4N2R6TWtJMlNmM2dja2czZWpEM3puSWZOMnJOd3RSM083NVozbDNWN2QyMFRGU0dHTUxadDVjeDBMQ3lHZ2FDellnbllhRkV6SXlVcHNkYmclM0QlM0Q",
+            "name": "_cc_id",
+            "value": "1cc71f6180a8d343ce636e67cd74534c",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1805544756,
+            "expires": 1795435879,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
-            "name": "_ga_50C013M2CC",
-            "value": "GS2.1.s1771855226$o40$g1$t1771859716$j60$l0$h0",
+            "name": "panoramaId",
+            "value": "83da60704b10976ec1cf8ddd85a94945a702f0add304babdaa14ccc2475a6c13",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1806419717,
+            "expires": 1772712678,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "panoramaId_expiry",
+            "value": "1772712678490",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1772712678,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "__cf_bm",
+            "value": "4Q9XJGrYFiRV4cWxtj0TxhXHLFoY1Ib91KjNzMT9kUw-1772126854-1.0.1.1-W9OsmGY__f_JdaccF5cWkvU_PO40IV0QyB5MumpRbQByfb0dCkzBm4d1eyku8qY.UREUfxqmu447PmJnS0fFsBGScbe0DhQFvrBfeBW_OU0",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1772128654,
+            "httpOnly": false,
+            "secure": true,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "_lr_env",
+            "value": "eyJ0aW1lc3RhbXAiOjE3NzIxMjY4NzIzOTYsInZlcnNpb24iOiIxLjYuMCIsImVudmVsb3BlIjoiQWlWZ3pTSlJsNHlNRVNfWl81ejJtRk5ETmhlV21DeEhxLUU0TUYyeDRuZ2x0d3J4UHowTFY1d1Fpc2Iwa0xqR2NZQnNmNGJMcm9KVE1vSDJuZTBYdzFxUkRULUNWZjNhYVpxWEZ2RmlEZkpvOGprb1p6VTRQUi14bmRVaEZJanBkeVk2VWJ4Q1NBaXZ0NHhxdFRhRjRnRnZ2ZlE4MUpKZXE0UVBsZi1BdVZva09IRHViS0s3ZmpuTXN4Q09VRFd0a3pxSnV0ZVlFaF9KcTVLWVByeHNNWWY5aTJEM3AtZTlDNl80M1NEWDQ4WHpEUUZzUTVodDk2RE9oMGNvNVI5RFVyaGd5V01YdlM3OXh3N1VRYXFDX0Zvc1hYbUMwX2R0RWZOeTFXbUtWYW8tTlNOakpOV1k0T21WWGxta1FFUGc2aTdEWnlOcVpqV3lXS1VtaTRscmNwc3JFVXpWQTUwOE9yajRxY2R2NHN2OHQxOE5ZTnlQdVVKeUh3IiwiY3JlYXRpb25UaW1lc3RhbXAiOjE3NzIxMTk1ODY3MDl9",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1803662872,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "_lr_pairId",
+            "value": "eyJ0aW1lc3RhbXAiOjE3NzIxMjY4NzIzOTcsInZlcnNpb24iOiIxLjYuMCIsImVudmVsb3BlIjpbIkEvV1hrY0dGYlpDYnVYMEQ5RGdzeFFhcTB6VGM4a0l3Rk9lb21KeTg5V3RZIl0sImNyZWF0aW9uVGltZXN0YW1wIjoxNzcyMTE5NTg2NzEwfQ%3D%3D",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1803662872,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "cf_clearance",
+            "value": "ud6t_nBIT2TBpCo63w357R8m_7Z.LRQb_rIAfKMjy.M-1772126866-1.2.1.1-DFXohe8iwvSIB.u1eI.imTWzGvpSx08vmpoXZ9Bbfh8CdKYRYK3OhWbRgv.CsE9KHHNM7bfSjfblzYowIgdcdsgrQGhyVWnYQ6CIucIH5Qj7tDueOqiOYvDWJr1h_OmHwjnhwippIjOqwEh1J3fTWmJefaezImbqHfA2OgecLV.7eZz5LiNvh0ONdFZyXrygRDwpTHz6ly4sIOncSsdvIcKtguDVbQwUEDhkwWDhpag",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1803662866,
+            "httpOnly": false,
+            "secure": true,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "TestAB_Groups",
+            "value": "payg-discount-re-julius_ml-ranges.tenerity_ckt.adv-ad17d8_enabled.aps-autos-fair-banner_enabled.aps-autos-fair-badge_enabled.rec-fair_enabled.lp45_control.earlyrnw_enabled.aa-wpp_enabled.ln-midiav1_A.ln-gchatv4_A.rp-central_control.chk-pixaut_B.palq1271_enabled.pp-ml-disc_enabled.sa-ship-sc_control.two-cards_enabled.aa-id-pos_control.ln-minchat_A.lp50_control.sa-ai-fg_control.adv-hi3cal_enabled.brz-web_control.new-price_control.rec-hb2c66_enabled.ne-midiav2_control.sa-inf-ml_control.ai-splash_control.adv-lit4bo_control.lp43_enabled.opt-renew_enabled.ai-ktools_enabled.palq-1528_control.bjTPZ-aps_enabled.sanityweb50_A",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1772128747,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "r_id",
+            "value": "96e2243e-f2a6-4ed4-b4f5-ca79b93cae72",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1806686947,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "mf_b837e449-83ee-457f-9ef5-8f976953f2bc",
+            "value": "||1772107864591||0||||0|0|22.03041|0|",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": -1,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "AdoptVisitorId",
+            "value": "EYEwxgbAjDAsC0BDApq+tEFYBM8AcAZgOxjyZQRFSIGwhQEFA===",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1777311019,
+            "httpOnly": false,
+            "secure": true,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "FCCDCF",
+            "value": "%5Bnull%2Cnull%2Cnull%2Cnull%2Cnull%2Cnull%2C%5B%5B32%2C%22%5B%5C%2213e3cd01-2272-44de-a7d2-35d4566e9f76%5C%22%2C%5B1770662199%2C872000000%5D%5D%22%5D%5D%5D",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1805823032,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "FCNEC",
+            "value": "%5B%5B%22AKsRol_k4ROsJMN0XuG5bdIYrF-0I1J-kUCPeRijbJfYRGzD_GQ6nPlXPNDz8FEVunmqaSfPcv--p7cuTHiuX54ae3I_35MzSkdj_kxtZAHVQ7rMJoQc3l7oALMJ4I2-G6wsaszSdTWfBDZemBUloKt7PZRjuGoMhw%3D%3D%22%5D%5D",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1803663033,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "___iat_ses",
+            "value": "137B1B4DC240F9C8",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1772128825,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "___iat_vis",
+            "value": "137B1B4DC240F9C8.9cbf3d1f13a465742227285b806308c9.1772127025259.499a3b9f474e183f09fe539db98ef6e6.JMIMJZURMA.11111111.1-0.9cbf3d1f13a465742227285b806308c9",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1787679025,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "_fbp",
+            "value": "fb.2.1770662203901.4653627498652449",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1779903505,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
@@ -595,17 +495,77 @@
             "value": "fa99e3f7-2678-4429-8610-adec0f7be294",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1806419717,
+            "expires": 1806687546,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
-            "name": "_dd_s",
-            "value": "rum=0&expire=1771860595150",
+            "name": "_ga_50C013M2CC",
+            "value": "GS2.1.s1772126979$o1$g1$t1772127547$j7$l0$h0",
             "domain": ".olx.com.br",
             "path": "/",
-            "expires": 1771860617,
+            "expires": 1806687547,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "s_id",
+            "value": "9d5c71c2-f005-4698-b579-8b7d5879515e2026-02-26T17:27:42.007130Z",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1772129346,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "__eoi",
+            "value": "ID=bf341e8437607354:T=1770662200:RT=1772128226:S=AA-AfjZUvTXfIsmYTOgIK_EU7H3c",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1786214200,
+            "httpOnly": false,
+            "secure": true,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "__gads",
+            "value": "ID=ea2567e47ab32379:T=1770662200:RT=1772128226:S=ALNI_MZ288G3JugqJjESJ6D6e5tNNaLK9Q",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1804358200,
+            "httpOnly": false,
+            "secure": true,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "__gpi",
+            "value": "UID=000012d446b0656d:T=1770662200:RT=1772128226:S=ALNI_MZ-Jh2pvGbMIdrVAFx-y2IniDv31g",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1804358200,
+            "httpOnly": false,
+            "secure": true,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "cto_bidid",
+            "value": "Mscmk19MbXY1R24lMkJjd3l0SmV2Q2NTYmd5NzMwTFRuN3A3RG1qcVdQVG9aSVdKRWhIN1NVV3ZSJTJGaElkWmhXNGZ2Q1dMRkdKcGhENm4xJTJGb0IlMkZhd2xWdlNtNFluTG90eklZNlp6eFlGSkJmelMyRWhrJTNE",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1805813431,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "cto_bundle",
+            "value": "IYF2D184YTJSaFdVYnlVekpLdjVncSUyRkJSeVg3bGtGTWFTOE9kQ1FWJTJCZ0clMkZNYnRnUk5oSzVHd0hRTlpVSHdIVUtDUjY2N050emJ4U25WJTJGRnZndUQlMkJMWmJHNXl3M1VDNnBtUCUyRk9nSDNuTSUyRlclMkYlMkIlMkI2TFQ2UHBCUUpHSEolMkZQVldqdjZneGRyT0pyY3FYNVNNZ2JMRUZBJTJCcE50blElM0QlM0Q",
+            "domain": ".olx.com.br",
+            "path": "/",
+            "expires": 1805813431,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
@@ -651,21 +611,11 @@
             "sameSite": "Lax"
         },
         {
-            "name": "_lr_sampling_rate",
-            "value": "100",
-            "domain": "sp.olx.com.br",
-            "path": "/",
-            "expires": 1772064815,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
             "name": "_lr_geo_location",
             "value": "BR",
             "domain": "sp.olx.com.br",
             "path": "/",
-            "expires": 1771984351,
+            "expires": 1772198526,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
@@ -675,17 +625,27 @@
             "value": "SP",
             "domain": "sp.olx.com.br",
             "path": "/",
-            "expires": 1771984351,
+            "expires": 1772198526,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "_lr_sampling_rate",
+            "value": "100",
+            "domain": "sp.olx.com.br",
+            "path": "/",
+            "expires": 1772712671,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
             "name": "idl_env",
-            "value": "ArUSZlbqD4mHGQxXiW96ujFoE3OIMVOL03LOdyAZKR7XbTpZ1QKNKkCiAOt53wzR5tMb0RiEAqgcbM5C9SzwGCX2j2p4tvsIuL2Wa_ahnJKIC0KpY59g34wrQoZ54Anv0tSH4YlR7n7NSHM3ZPIM_0WlqGyI04RCw55kF4U3iiVTSXpphRk5_ebGWWOPn-GDR0CXGi63DAj80HNu7oZCL5ixEPm8wh_DDe52mFOowOojfCJeyZI74-S_dlfFwJyo9pFy0yvlSzjcTWpMv8FvshDG_IQR0e-qTeim019Bc-pn07zdQ3wZ3QglOOWpgkkXgYlkYaMckUXgOcs4IZIqfBxpmC0tt5lbnotUfLee9hPbvEl6XbxjfMEDeA",
+            "value": "AoJRZJUIQCpESNijiwXsPetEXKNGYw303s8Lsfq1E4Eh9hRBwFgJ3PeYid57mdwh_ZVxC3IiYT2pXumjlbGbf7uA3Tt0p9MC_LfjgSAHwIUQK14Mab615NRNbNN587ctMdK1H1Aqqo-77jN5qo7NylfyAw1mMgUYJylaEGcSBi5eiok-4hs-B3J-ddP9mG0LaSPVetPY-36PeLO4qmGJwNxKtfjZY12PIUCWip3i2plc9QMvDxj87QBX37exeKIURUjBVbn6QLamg7xrVcxhHt2KnfwXs9m7N6srYSuyBi7LmuGbEOUpIwfAOTm7UXOfZhjHfK8fnJ-MJvxs8qzHYFE5aWk0U3oqmh7Qk2GXLF6v-zezON1QKCHA9Q",
             "domain": "sp.olx.com.br",
             "path": "/",
-            "expires": 1773151246,
+            "expires": 1773422861,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
@@ -695,39 +655,59 @@
             "value": "znv0HA%3D%3D",
             "domain": "sp.olx.com.br",
             "path": "/",
-            "expires": 1773151246,
+            "expires": 1773422861,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
             "name": "idl_env_last",
-            "value": "Mon%2C%2023%20Feb%202026%2014%3A00%3A46%20GMT",
+            "value": "Thu%2C%2026%20Feb%202026%2017%3A27%3A41%20GMT",
             "domain": "sp.olx.com.br",
             "path": "/",
-            "expires": 1773151246,
+            "expires": 1773422861,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
         },
         {
             "name": "__rtbh.lid",
-            "value": "%7B%22eventType%22%3A%22lid%22%2C%22id%22%3A%22LBQaqdYJWin66bBM1E35%22%2C%22expiryDate%22%3A%222027-02-23T14%3A06%3A51.440Z%22%7D",
+            "value": "%7B%22eventType%22%3A%22lid%22%2C%22id%22%3A%22LBQaqdYJWin66bBM1E35%22%2C%22expiryDate%22%3A%222027-02-26T17%3A30%3A13.941Z%22%7D",
             "domain": "sp.olx.com.br",
             "path": "/",
-            "expires": 1803391611,
+            "expires": 1803663013,
             "httpOnly": false,
             "secure": true,
             "sameSite": "Lax"
         },
         {
             "name": "__rtbh.uid",
-            "value": "%7B%22eventType%22%3A%22uid%22%2C%22id%22%3A%2215e01c3d-7b63-4ab1-985f-5b8e97136952%22%2C%22hash%22%3A%22wBiML0Lv0cEh18cEd5DU%22%2C%22expiryDate%22%3A%222027-02-23T14%3A06%3A51.438Z%22%7D",
+            "value": "%7B%22eventType%22%3A%22uid%22%2C%22id%22%3A%2215e01c3d-7b63-4ab1-985f-5b8e97136952%22%2C%22hash%22%3A%22wBiML0Lv0cEh18cEd5DU%22%2C%22expiryDate%22%3A%222027-02-26T17%3A30%3A13.916Z%22%7D",
             "domain": "sp.olx.com.br",
             "path": "/",
-            "expires": 1803391611,
+            "expires": 1803663013,
             "httpOnly": false,
             "secure": true,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "_ga_50C013M2CC",
+            "value": "deleted",
+            "domain": "sp.olx.com.br",
+            "path": "/",
+            "expires": 1806687101,
+            "httpOnly": false,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "_dd_s",
+            "value": "rum=0&expire=1772129123053",
+            "domain": "sp.olx.com.br",
+            "path": "/",
+            "expires": 1772129377,
+            "httpOnly": false,
+            "secure": false,
             "sameSite": "Lax"
         },
         {
@@ -742,50 +722,30 @@
         },
         {
             "name": "__rtbh.lid",
-            "value": "%7B%22eventType%22%3A%22lid%22%2C%22id%22%3A%22Pd3CQoopLgsjAXvwiKQV%22%2C%22expiryDate%22%3A%222027-02-23T14%3A05%3A17.392Z%22%7D",
+            "value": "%7B%22eventType%22%3A%22lid%22%2C%22id%22%3A%22Pd3CQoopLgsjAXvwiKQV%22%2C%22expiryDate%22%3A%222027-02-24T19%3A48%3A24.061Z%22%7D",
             "domain": "chat.olx.com.br",
             "path": "/",
-            "expires": 1803391517,
+            "expires": 1803498504,
             "httpOnly": false,
             "secure": true,
             "sameSite": "Lax"
         },
         {
             "name": "__rtbh.uid",
-            "value": "%7B%22eventType%22%3A%22uid%22%2C%22id%22%3A%2215e01c3d-7b63-4ab1-985f-5b8e97136952%22%2C%22hash%22%3A%22wBiML0Lv0cEh18cEd5DU%22%2C%22expiryDate%22%3A%222027-02-23T14%3A05%3A17.385Z%22%7D",
+            "value": "%7B%22eventType%22%3A%22uid%22%2C%22id%22%3A%2215e01c3d-7b63-4ab1-985f-5b8e97136952%22%2C%22hash%22%3A%22wBiML0Lv0cEh18cEd5DU%22%2C%22expiryDate%22%3A%222027-02-24T19%3A48%3A24.059Z%22%7D",
             "domain": "chat.olx.com.br",
             "path": "/",
-            "expires": 1803391517,
+            "expires": 1803498504,
             "httpOnly": false,
             "secure": true,
             "sameSite": "Lax"
         },
         {
-            "name": "_lr_geo_location",
-            "value": "BR",
-            "domain": "chat.olx.com.br",
-            "path": "/",
-            "expires": 1772028319,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_lr_geo_location_state",
-            "value": "SP",
-            "domain": "chat.olx.com.br",
-            "path": "/",
-            "expires": 1772028319,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
             "name": "_dd_s",
-            "value": "isExpired=1",
+            "value": "rum=0&expire=1771963402224",
             "domain": "chat.olx.com.br",
             "path": "/",
-            "expires": 1803394797,
+            "expires": 1803498502,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
@@ -805,29 +765,9 @@
             "value": "15e01c3d-7b63-4ab1-985f-5b8e97136952",
             "domain": ".chat.olx.com.br",
             "path": "/",
-            "expires": 1777039520,
+            "expires": 1777146503,
             "httpOnly": false,
             "secure": true,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_lr_geo_location",
-            "value": "BR",
-            "domain": "conta.olx.com.br",
-            "path": "/",
-            "expires": 1771976208,
-            "httpOnly": false,
-            "secure": false,
-            "sameSite": "Lax"
-        },
-        {
-            "name": "_lr_geo_location_state",
-            "value": "SP",
-            "domain": "conta.olx.com.br",
-            "path": "/",
-            "expires": 1771976208,
-            "httpOnly": false,
-            "secure": false,
             "sameSite": "Lax"
         },
         {
@@ -851,11 +791,11 @@
             "sameSite": "Lax"
         },
         {
-            "name": "_ga_50C013M2CC",
-            "value": "deleted",
-            "domain": ".sp.olx.com.br",
+            "name": "cto_bundle",
+            "value": "MspcaV84YTJSaFdVYnlVekpLdjVncSUyRkJSeVFiR3hTMnN2alBYcWpmSFVIOWh6Q1VVak9LcGlOUHl4VnlnYiUyRnUzOGIybFliaGhOdWZPWmdDNHhEcXI1RG96eXkyZWZKTXBzZnFqR2wlMkZQbXVqMTg5cWFRTEZOMVp3Y3A3bVNBZ3dydDNHa0NtcSUyQlJibE9vdUxhQW0zellrYU1hQSUzRCUzRA",
+            "domain": ".www.olx.com.br",
             "path": "/",
-            "expires": 1806367075,
+            "expires": 1806196013,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"
@@ -865,17 +805,17 @@
             "value": "15e01c3d-7b63-4ab1-985f-5b8e97136952",
             "domain": ".sp.olx.com.br",
             "path": "/",
-            "expires": 1777039257,
+            "expires": 1777310981,
             "httpOnly": false,
             "secure": true,
             "sameSite": "Lax"
         },
         {
-            "name": "cto_bundle",
-            "value": "p7lqAF84YTJSaFdVYnlVekpLdjVncSUyRkJSeWFPcjZ1Yk5ZJTJGR3pvSWxKZ0ZCd2JCN0NhY3J3aGRRZWFocDFoaDR2VCUyQmxOYUV1S0I4N2R6TWtJMlNmM2dja2czZWpEM3puSWZOMnJOd3RSM083NVozbDNWN2QyMFRGU0dHTUxadDVjeDBMQ3lHZ2FDellnbllhRkV6SXlVcHNkYmclM0QlM0Q",
-            "domain": ".www.olx.com.br",
+            "name": "_ga_50C013M2CC",
+            "value": "deleted",
+            "domain": ".sp.olx.com.br",
             "path": "/",
-            "expires": 1805544756,
+            "expires": 1806687101,
             "httpOnly": false,
             "secure": false,
             "sameSite": "Lax"

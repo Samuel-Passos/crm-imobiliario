@@ -46,15 +46,23 @@ async def auto_login():
                  print("Clicando no botão Acessar...")
                  await btn_acessar.click()
                  await asyncio.sleep(3)
+            
+            # NOVIDADE: Clicar na opção "Senha" se aparecer a tela de escolha
+            btn_senha_option = page.locator("div:has-text('Senha')").last
+            if await btn_senha_option.count() > 0:
+                print("Selecionando método 'Senha'...")
+                await btn_senha_option.click()
+                await asyncio.sleep(2)
+                 
         except Exception as e:
-            print(f"Erro ao preencher email: {e}")
+            print(f"Erro ao avançar após e-mail: {e}")
             
         await page.screenshot(path="debug_login_step3.png")
 
         print("Procurando campo de senha...")
         try:
             senha_selector = "input[type='password']"
-            await page.wait_for_selector(senha_selector, timeout=5000)
+            await page.wait_for_selector(senha_selector, timeout=8000)
             await page.fill(senha_selector, "Eu@moimoveis2026")
             
             # Clicar em Entrar

@@ -3,13 +3,15 @@ import {
     DndContext,
     DragOverlay,
     closestCenter,
+    closestCorners,
+    pointerWithin,
     PointerSensor,
     useSensor,
     useSensors,
     useDroppable,
 } from '@dnd-kit/core'
 import type { DragStartEvent, DragEndEvent, DragOverEvent } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../../lib/supabase'
 import type { ImovelKanban, KanbanColuna, FiltrosKanban } from './types'
@@ -97,7 +99,7 @@ const DroppableColuna = memo(function DroppableColuna({ coluna, cards, allCards,
                     transition: 'background 150ms'
                 }}
             >
-                <SortableContext items={allCards.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
                     {cards.map(card => (
                         <SortableCard key={card.id} imovel={card} onUpdate={onUpdate} />
                     ))}
@@ -263,11 +265,12 @@ export function KanbanPage() {
                     const response = await fetch('http://localhost:8765/status-execution')
                     if (response.ok) {
                         const data = await response.json()
-                        // Se o backend diz que NÃO está executando, mas o front acha que está
                         if (!data.executing && executing) {
                             setExecuting(false)
                             setIsPaused(false)
                             clearInterval(interval)
+                            // Quando para de executar, recarrega para garantir que pegamos os telefones novos
+                            window.location.reload()
                         } else if (data.isPaused !== isPaused) {
                             setIsPaused(data.isPaused)
                         }
@@ -370,9 +373,23 @@ export function KanbanPage() {
     }, [])
 
     // ── DnD handlers ─────────────────────────────────────────
+
+    // Custom collision detection strategy
+    const collisionDetectionStrategy = useCallback((args: any) => {
+        // First try pointerWithin for exact collisions
+        const pointerCollisions = pointerWithin(args)
+        if (pointerCollisions.length > 0) return pointerCollisions
+
+        // Fallback to closestCorners which is better for long columns
+        return closestCorners(args)
+    }, [])
+
     const handleDragStart = (e: DragStartEvent) => {
-        const card = imoveis.find(im => im.id === e.active.id)
-        setActiveCard(card || null)
+        const { active } = e
+        const card = imoveis.find(im => im.id === active.id)
+        if (card) {
+            setActiveCard({ ...card })
+        }
     }
 
     // Atualiza coluna visualmente enquanto arrasta (drag over)
@@ -381,93 +398,130 @@ export function KanbanPage() {
         if (!over) return
 
         const activeId = active.id as number
-        const overType = over.data.current?.type
+        const overId = over.id
 
-        let targetColunaId: string | null = null
+        const activeImovel = imoveis.find(im => im.id === activeId)
+        if (!activeImovel) return
 
-        if (overType === 'coluna') {
-            targetColunaId = over.data.current?.colunaId as string
-        } else if (overType === 'card' || over.data.current?.coluna) {
-            targetColunaId = over.data.current?.coluna as string
-            // fallback: achar pelo imovel
-            if (!targetColunaId) {
-                targetColunaId = imoveis.find(im => im.id === over.id)?.kanban_coluna_id || null
-            }
+        const activeColId = activeImovel.kanban_coluna_id
+
+        let overColId: string | null = null
+        if (colunas.some(c => c.id === overId)) {
+            overColId = overId as string
         } else {
-            // over.id pode ser UUID da coluna
-            const isColuna = colunas.some(c => c.id === over.id)
-            if (isColuna) targetColunaId = over.id as string
-            else targetColunaId = imoveis.find(im => im.id === over.id)?.kanban_coluna_id || null
+            const overCard = imoveis.find(im => im.id === overId)
+            overColId = overCard?.kanban_coluna_id || null
         }
 
-        const imovel = imoveis.find(im => im.id === activeId)
-        if (!imovel || !targetColunaId || imovel.kanban_coluna_id === targetColunaId) return
+        if (!overColId || activeColId === overColId) return
 
-        // Guardamos de onde ele veio na variável estática em tela caso precise reverter
-        if (!activeCard) {
-            setActiveCard(imovel)
-        }
+        setImoveis(prev => prev.map(im => im.id === activeId ? { ...im, kanban_coluna_id: overColId } : im))
     }
 
-    // Ao soltar — persiste no Supabase
+    // Ao soltar — persiste no Supabase com suporte a reordenação
     const handleDragEnd = async (e: DragEndEvent) => {
-        const cardOriginal = activeCard
+        const { active, over } = e
+        const originalCard = activeCard
         setActiveCard(null)
-        if (!cardOriginal) return
 
-        const { over } = e
         if (!over) {
-            updateImovel(cardOriginal.id, { kanban_coluna_id: cardOriginal.kanban_coluna_id, kanban_ordem: cardOriginal.kanban_ordem })
-            return
-        }
-
-        const overType = over.data.current?.type
-        let targetColunaId: string | null = null
-
-        if (overType === 'coluna') {
-            targetColunaId = over.data.current?.colunaId as string
-        } else if (overType === 'card' || over.data.current?.coluna) {
-            targetColunaId = over.data.current?.coluna as string
-            if (!targetColunaId) {
-                targetColunaId = imoveis.find(im => im.id === over.id)?.kanban_coluna_id || null
+            // Reverter localmente se soltou "no vazio" total
+            if (originalCard) {
+                setImoveis(prev => prev.map(im =>
+                    im.id === originalCard.id
+                        ? { ...im, kanban_coluna_id: originalCard.kanban_coluna_id, kanban_ordem: originalCard.kanban_ordem }
+                        : im
+                ))
             }
-        } else {
-            const isColuna = colunas.some(c => c.id === over.id)
-            if (isColuna) targetColunaId = over.id as string
-            else targetColunaId = imoveis.find(im => im.id === over.id)?.kanban_coluna_id || null
-        }
-
-        if (!targetColunaId || targetColunaId === cardOriginal.kanban_coluna_id) {
-            // Reverte visual se soltou fora ou na mesma coluna
-            updateImovel(cardOriginal.id, { kanban_coluna_id: cardOriginal.kanban_coluna_id, kanban_ordem: cardOriginal.kanban_ordem })
             return
         }
 
-        const colunaDestino = colunas.find(c => c.id === targetColunaId)
-        if (!colunaDestino) {
-            updateImovel(cardOriginal.id, { kanban_coluna_id: cardOriginal.kanban_coluna_id, kanban_ordem: cardOriginal.kanban_ordem })
-            return
+        const activeId = active.id as number
+        const overId = over.id
+
+        // Identificar coluna de destino
+        let destColId: string | null = null
+        if (colunas.some(c => c.id === overId)) {
+            destColId = overId as string
+        } else {
+            const overCard = imoveis.find(im => im.id === overId)
+            destColId = overCard?.kanban_coluna_id || null
         }
 
-        const cardsNaColuna = imoveis.filter(im => im.kanban_coluna_id === targetColunaId && im.id !== cardOriginal.id)
-        const novaOrdem = cardsNaColuna.length + 1
-        const historico = [...(cardOriginal.historico_kanban || []), { coluna: colunaDestino.nome, data: new Date().toISOString() }]
+        if (!destColId) return
 
-        // Commit state
-        updateImovel(cardOriginal.id, { kanban_coluna_id: targetColunaId, kanban_ordem: novaOrdem, historico_kanban: historico })
+        // 1. Pegar todos os cards da coluna de destino e ordenar
+        const cardsInDest = imoveis
+            .filter(im => im.kanban_coluna_id === destColId)
+            .sort((a, b) => a.kanban_ordem - b.kanban_ordem)
 
-        const { error } = await supabase.from('imoveis').update({
-            kanban_coluna_id: targetColunaId,
-            kanban_ordem: novaOrdem,
-            historico_kanban: historico,
-        }).eq('id', cardOriginal.id)
+        const oldIndex = cardsInDest.findIndex(im => im.id === activeId)
+        let newIndex = cardsInDest.findIndex(im => im.id === overId)
 
-        if (error) {
-            toast.error('Erro ao mover card')
-            // Reverte para coluna original
-            updateImovel(cardOriginal.id, { kanban_coluna_id: cardOriginal.kanban_coluna_id, kanban_ordem: cardOriginal.kanban_ordem })
-        } else {
-            toast.success(`→ ${colunaDestino.nome}`, { duration: 1500 })
+        // Se soltou no header da coluna ou espaço vago
+        if (newIndex === -1) newIndex = cardsInDest.length
+
+        // Se nada mudou de verdade, encerra
+        if (originalCard?.kanban_coluna_id === destColId && oldIndex === newIndex) return
+
+        // 2. Mover o item no array local daquela coluna
+        const safeOldIndex = oldIndex === -1 ? cardsInDest.length - 1 : oldIndex
+        const reordered = arrayMove(cardsInDest, safeOldIndex, newIndex)
+
+        // 3. Gerar lista de atualizações de ordem
+        const updates = reordered.map((im, idx) => ({
+            id: im.id,
+            kanban_ordem: idx,
+            kanban_coluna_id: destColId as string
+        }))
+
+        // Se estiver com ordenação por preço/data, remove para mostrar a ordem manual definida
+        if (filtros.ordenacao !== '') {
+            setFiltros({ ...filtros, ordenacao: '' })
+        }
+
+        // 4. Update de estado local (UI instantânea)
+        setImoveis(prev => prev.map(im => {
+            const up = updates.find(u => u.id === im.id)
+            if (up) {
+                const colChanged = originalCard && originalCard.kanban_coluna_id !== destColId
+                const historico = (im.id === activeId && colChanged)
+                    ? [...(im.historico_kanban || []), { coluna: colunas.find(c => c.id === destColId)?.nome || '', data: new Date().toISOString() }]
+                    : im.historico_kanban
+                return { ...im, ...up, historico_kanban: historico }
+            }
+            return im
+        }))
+
+        // 5. Persistência assíncrona
+        const movedUp = updates.find(u => u.id === activeId)
+        if (movedUp && originalCard) {
+            const colChanged = originalCard.kanban_coluna_id !== destColId
+            const historico = colChanged
+                ? [...(originalCard.historico_kanban || []), { coluna: colunas.find(c => c.id === destColId)?.nome || '', data: new Date().toISOString() }]
+                : originalCard.historico_kanban
+
+            try {
+                // Primeiro atualiza o card movido (prioridade)
+                await supabase.from('imoveis').update({
+                    kanban_coluna_id: destColId,
+                    kanban_ordem: movedUp.kanban_ordem,
+                    historico_kanban: historico
+                }).eq('id', activeId)
+
+                // Atualiza os outros cards da coluna para manter a sequência
+                const otherUpdates = updates.filter(u => u.id !== activeId).map(up =>
+                    supabase.from('imoveis').update({ kanban_ordem: up.kanban_ordem }).eq('id', up.id)
+                )
+                await Promise.all(otherUpdates)
+
+                if (colChanged) {
+                    toast.success(`→ ${colunas.find(c => c.id === destColId)?.nome}`, { duration: 1500 })
+                }
+            } catch (err) {
+                toast.error('Erro ao sincronizar ordem no banco')
+                console.error(err)
+            }
         }
     }
 
@@ -543,6 +597,25 @@ export function KanbanPage() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                        onClick={() => window.location.reload()}
+                        style={{
+                            padding: '0.6rem 1.2rem',
+                            background: 'rgba(59, 130, 246, 0.1)',
+                            color: 'var(--brand-500)',
+                            border: '1px solid rgba(59, 130, 246, 0.2)',
+                            borderRadius: 'var(--radius-md)',
+                            fontSize: '0.87rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                        }}
+                    >
+                        🔄 Sincronizar
+                    </button>
+
                     {!executing ? (
                         <button
                             onClick={handleRunExtractor}
@@ -619,7 +692,7 @@ export function KanbanPage() {
             {/* Board */}
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                collisionDetection={collisionDetectionStrategy}
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}

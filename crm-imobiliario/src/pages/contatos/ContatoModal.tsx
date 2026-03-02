@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import type { Contato, TipoContato } from './types'
 import { TIPO_CONTATO_LABELS } from './types'
+import { LocationPicker } from '../../components/LocationPicker'
 import toast from 'react-hot-toast'
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
     onSaved: (c: Contato) => void
 }
 
-const TIPOS: TipoContato[] = ['proprietario', 'inquilino', 'comprador', 'parceiro', 'outro']
+const TIPOS: TipoContato[] = ['proprietario', 'inquilino', 'comprador', 'parceiro', 'porteiro', 'sindico', 'servicos_gerais', 'outro']
 
 
 
@@ -22,6 +23,8 @@ export function ContatoModal({ contato, onClose, onSaved }: Props) {
     const [whatsapp, setWhatsapp] = useState(contato?.whatsapp || '')
     const [email, setEmail] = useState(contato?.email || '')
     const [tipo, setTipo] = useState<TipoContato>(contato?.tipo_contato || 'outro')
+    const [outroTipo, setOutroTipo] = useState(TIPOS.includes(contato?.tipo_contato as any) ? '' : (contato?.tipo_contato || ''))
+    const [mostrarInputOutro, setMostrarInputOutro] = useState(!TIPOS.includes(contato?.tipo_contato as any) && !!contato?.tipo_contato)
 
     const [cep, setCep] = useState(contato?.cep || '')
     const [logradouro, setLogradouro] = useState(contato?.logradouro || '')
@@ -44,6 +47,10 @@ export function ContatoModal({ contato, onClose, onSaved }: Props) {
     const [origem, setOrigem] = useState(contato?.origem || '')
     const [saving, setSaving] = useState(false)
     const [buscandoCep, setBuscandoCep] = useState(false)
+    const [geocoding, setGeocoding] = useState(false)
+    const [mostrarMapa, setMostrarMapa] = useState(false)
+    const [latitude, setLatitude] = useState(contato?.latitude || null)
+    const [longitude, setLongitude] = useState(contato?.longitude || null)
 
     // Fechar com Escape
     useEffect(() => {
@@ -76,17 +83,51 @@ export function ContatoModal({ contato, onClose, onSaved }: Props) {
         }
     }
 
+    // Obter coordenadas
+    async function obterCoordenadas(log: string, num: string, cid: string, est: string): Promise<{ lat: number; lng: number } | null> {
+        if (!log || !cid) return null
+        setGeocoding(true)
+        try {
+            const query = encodeURIComponent(`${log}, ${num}, ${cid} - ${est}, Brasil`)
+            // Adicionando um User-Agent exigido pelo Nominatim
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
+                headers: { 'User-Agent': 'CRM-Imobiliario-App-Samuel' }
+            })
+            const data = await res.json()
+            if (data && data.length > 0) {
+                return {
+                    lat: parseFloat(data[0].lat),
+                    lng: parseFloat(data[0].lon)
+                }
+            }
+        } catch (e) {
+            console.error('Erro no geocoding:', e)
+        } finally {
+            setGeocoding(false)
+        }
+        return null
+    }
+
     async function handleSalvar(e: React.FormEvent) {
         e.preventDefault()
         if (!nome.trim()) { toast.error('Nome obrigatório'); return }
         setSaving(true)
+
+        // Se não for via mapa, tenta geocoding automático ao salvar se mudou algo
+        if (!mostrarMapa && logradouro && cidade && (logradouro !== contato?.logradouro || cidade !== contato?.cidade)) {
+            const coords = await obterCoordenadas(logradouro, numero, cidade, estado)
+            if (coords) {
+                setLatitude(coords.lat)
+                setLongitude(coords.lng)
+            }
+        }
 
         const payload = {
             nome_completo: nome.trim(),
             telefone: telefone || null,
             whatsapp: whatsapp || null,
             email: email || null,
-            tipo_contato: tipo,
+            tipo_contato: mostrarInputOutro ? outroTipo : tipo,
             cep: cep || null,
             logradouro: logradouro || null,
             numero: numero || null,
@@ -104,6 +145,8 @@ export function ContatoModal({ contato, onClose, onSaved }: Props) {
             data_nascimento: dataNasc || null,
             estado_civil: estadoCivil || null,
             origem: origem || null,
+            latitude: latitude,
+            longitude: longitude,
         }
 
         let result: Contato | null = null
@@ -148,10 +191,26 @@ export function ContatoModal({ contato, onClose, onSaved }: Props) {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Tipo de contato</label>
-                        <select className="form-select" value={tipo} onChange={e => setTipo(e.target.value as TipoContato)}>
-                            {TIPOS.map(t => <option key={t} value={t}>{TIPO_CONTATO_LABELS[t]}</option>)}
-                        </select>
+                        <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            Tipo de contato
+                            {!mostrarInputOutro && (
+                                <button type="button" onClick={() => setMostrarInputOutro(true)} style={{ background: 'none', border: 'none', color: 'var(--brand-500)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>
+                                    + Adicionar outro nome
+                                </button>
+                            )}
+                        </label>
+                        {!mostrarInputOutro ? (
+                            <select className="form-select" value={tipo} onChange={e => setTipo(e.target.value as TipoContato)}>
+                                {TIPOS.map(t => <option key={t} value={t}>{TIPO_CONTATO_LABELS[t] || t}</option>)}
+                            </select>
+                        ) : (
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input {...inp} value={outroTipo} onChange={e => setOutroTipo(e.target.value)} placeholder="Ex: Advogado, Zelador..." autoFocus />
+                                <button type="button" onClick={() => { setMostrarInputOutro(false); setOutroTipo('') }} className="btn btn-danger" style={{ width: 'auto', padding: '0 0.75rem' }}>
+                                    ✕
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="form-row">
@@ -205,11 +264,34 @@ export function ContatoModal({ contato, onClose, onSaved }: Props) {
                     </div>
 
                     {/* Endereço */}
-                    <div style={{ borderTop: '1px solid var(--border)', margin: '1.25rem 0', paddingTop: '1rem' }}>
-                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
+                    <div style={{ borderTop: '1px solid var(--border)', margin: '1.25rem 0', paddingTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                             Endereço {buscandoCep && <span style={{ color: 'var(--brand-500)', fontWeight: 400 }}>Buscando CEP...</span>}
+                            {geocoding && <span style={{ color: 'var(--gold-400)', fontWeight: 400, marginLeft: '0.5rem' }}>Calculando GPS...</span>}
                         </div>
+                        <button type="button" onClick={() => setMostrarMapa(!mostrarMapa)} style={{ background: 'none', border: 'none', color: 'var(--brand-500)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                            {mostrarMapa ? 'Hide Map' : '📍 Visualizar/Ajustar no Mapa'}
+                        </button>
                     </div>
+
+                    {mostrarMapa && (
+                        <LocationPicker
+                            initialLat={latitude}
+                            initialLng={longitude}
+                            onLocationSelected={({ lat, lng, address }) => {
+                                setLatitude(lat)
+                                setLongitude(lng)
+                                if (address) {
+                                    if (address.road) setLogradouro(address.road)
+                                    if (address.suburb || address.neighbourhood) setBairro(address.suburb || address.neighbourhood)
+                                    if (address.city || address.town || address.village) setCidade(address.city || address.town || address.village)
+                                    if (address.state) setEstado(address.state)
+                                    if (address.postcode) setCep(address.postcode)
+                                    if (address.house_number) setNumero(address.house_number)
+                                }
+                            }}
+                        />
+                    )}
 
                     <div className="form-row">
                         <div className="form-group">
@@ -288,7 +370,7 @@ export function ContatoModal({ contato, onClose, onSaved }: Props) {
                     {/* Botões */}
                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
                         <button type="submit" className="btn btn-primary" disabled={saving} style={{ width: 'auto' }}>
-                            {saving ? <><span className="spinner" /> Salvando...</> : isNew ? '➕ Criar contato' : '💾 Salvar'}
+                            {saving ? <><span className="spinner" /> {geocoding ? 'Obtendo GPS...' : 'Salvando...'}</> : isNew ? '➕ Criar contato' : '💾 Salvar'}
                         </button>
                         <button type="button" className="btn btn-danger" onClick={onClose} style={{ width: 'auto', padding: '0.8rem 1.25rem' }}>
                             Cancelar

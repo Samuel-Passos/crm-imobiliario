@@ -1,6 +1,6 @@
 // Tipos do módulo de Contatos
 
-export type TipoContato = 'proprietario' | 'inquilino' | 'comprador' | 'parceiro' | 'outro'
+export type TipoContato = 'proprietario' | 'inquilino' | 'comprador' | 'parceiro' | 'porteiro' | 'sindico' | 'servicos_gerais' | 'outro' | string
 
 export interface Contato {
     id: string
@@ -38,18 +38,24 @@ export interface Contato {
     atualizado_em: string
 }
 
-export const TIPO_CONTATO_LABELS: Record<TipoContato, string> = {
+export const TIPO_CONTATO_LABELS: Record<string, string> = {
     proprietario: '🏠 Proprietário',
     inquilino: '🔑 Inquilino',
     comprador: '💰 Comprador',
     parceiro: '🤝 Parceiro',
+    porteiro: '🏢 Porteiro',
+    sindico: '👔 Síndico',
+    servicos_gerais: '🧹 Serviços Gerais',
     outro: '👤 Outro',
 }
 
-export const TIPO_CONTATO_CORES: Record<TipoContato, string> = {
+export const TIPO_CONTATO_CORES: Record<string, string> = {
     proprietario: 'var(--gold-400)',
     inquilino: '#a78bfa',
     comprador: 'var(--success)',
     parceiro: 'var(--brand-500)',
+    porteiro: '#94a3b8',
+    sindico: '#60a5fa',
+    servicos_gerais: '#fbbf24',
     outro: 'var(--text-muted)',
 }

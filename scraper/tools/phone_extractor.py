@@ -2,212 +2,301 @@ import asyncio
 import re
 import json
 import os
-import tempfile
-import shutil
-from pathlib import Path
 from typing import Dict, Any
 from playwright.async_api import async_playwright
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente
 load_dotenv()
 
-CHROME_PROFILE_PATH = os.getenv('CHROME_PROFILE_PATH', '/home/samuel/.config/google-chrome')
+# ─── XPaths Confirmados (Samuel) ─────────────────────────────────────────────
+XPATH_BTN_PRINCIPAL      = '//*[@id="price-box-button-show-phone"]'
+XPATH_TELEFONE_PRINCIPAL = '//*[@id="price-box-container"]/div[2]/div[1]/span'
+XPATH_BTN_DESCRICAO      = '//*[@id="description-title"]/div/div[2]/div/button'
+XPATH_MASCARA_DESCRICAO  = '//*[@id="description-title"]/div/div[2]/div/span/span/span'
+XPATH_TEL_DESCRICAO      = '//*[@id="description-title"]/div/div[2]/div/span/span/span'
+# ─────────────────────────────────────────────────────────────────────────────
 
-def setup_temp_profile(user_data_dir: str, profile_dir: str = 'Default') -> str:
+PHONE_REGEX = re.compile(
+    r'(?:\+?55\s*)?(?:\(?0?[1-9]{2}\)?[\s.\-]*)?(?:9[\s.\-]*\d{4}[\s.\-]*\d{4}|\d{4}[\s.\-]*\d{4}|9\d{8}|\d{8})'
+)
+
+MASKED_KEYWORDS = ("... ver número", "ver número", "...")
+
+
+def _extrair_numeros(texto: str, ad_id: str | None = None) -> list[str]:
+    """Extrai e normaliza números de telefone de um texto."""
+    numeros = []
+    for m in PHONE_REGEX.finditer(texto):
+        raw = m.group()
+        num = re.sub(r'\D', '', raw)
+        if ad_id and ad_id in num:
+            continue
+        if len(num) in (8, 9):
+            num = '12' + num
+        if 10 <= len(num) <= 13:
+            numeros.append(num)
+    return list(dict.fromkeys(numeros))
+
+
+async def _aguardar_numero_revelar(page, xpath: str, timeout_ms: int = 8000) -> str:
+    """Aguarda o span mudar de máscara para número real e retorna o texto."""
+    try:
+        await page.wait_for_function(
+            """(xpath) => {
+                const el = document.evaluate(
+                    xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
+                ).singleNodeValue;
+                if (!el) return false;
+                const txt = el.textContent || '';
+                return !txt.includes('ver número') && txt.trim().length > 3;
+            }""",
+            arg=xpath,
+            timeout=timeout_ms
+        )
+        el = page.locator(f"xpath={xpath}").first
+        return (await el.text_content(timeout=3000) or "").strip()
+    except Exception:
+        try:
+            el = page.locator(f"xpath={xpath}").first
+            return (await el.text_content(timeout=2000) or "").strip()
+        except Exception:
+            return ""
+
+
+async def _fechar_modal_se_aberto(page) -> bool:
     """
-    Copia o diretório de dados do usuário (somente a pasta Default e Local State) 
-    para um diretório temporário, permitindo que o Playwright rode persistente 
-    mesmo que o usuário já esteja com o Chrome aberto.
+    Detecta e fecha o modal da OLX que aparece após clicar no botão de telefone.
+    Retorna True se havia um modal aberto.
     """
-    temp_dir = tempfile.mkdtemp(prefix='playwright-profile-tmp-')
-    path_original_user_data = Path(user_data_dir)
-    path_original_profile = path_original_user_data / profile_dir
-    path_temp_profile = Path(temp_dir) / profile_dir
+    modal = page.locator('[data-ds-component="DS-Modal"][data-show="true"]')
+    if await modal.count() == 0:
+        return False
 
-    if path_original_profile.exists():
-        shutil.copytree(path_original_profile, path_temp_profile)
-        local_state_src = path_original_user_data / 'Local State'
-        local_state_dst = Path(temp_dir) / 'Local State'
-        if local_state_src.exists():
-            shutil.copy(local_state_src, local_state_dst)
-    else:
-        Path(temp_dir).mkdir(parents=True, exist_ok=True)
-        path_temp_profile.mkdir(parents=True, exist_ok=True)
-        
-    return temp_dir
+    print("  ⚠️ Modal detectado! Fechando com ESC...")
+    await page.keyboard.press('Escape')
+    await asyncio.sleep(1)
 
-def extract_phone_numbers(text: str) -> list:
-    """Extrai potencias números de telefone de um texto bruto e retorna uma lista."""
-    if not text:
-        return []
-        
-    # Regex melhorada: captura formatos com DDD opcional, espaços, parênteses e hífens
-    # Agora também captura números de 8 ou 9 dígitos sozinhos
-    pattern = r'(?:\+?55\s?)?(?:\(?0?[1-9]{2}\)?\s?)?(?:9\d{4}[-\s]?\d{4}|\d{4}[-\s]?\d{4})'
-    matches = re.finditer(pattern, text)
-    telefones = []
-    
-    for match in matches:
-        raw_match = match.group()
-        num = re.sub(r'\D', '', raw_match)
-        
-        # Filtro inteligente: 
-        # 10 ou 11 dígitos = Completo com DDD
-        # 8 ou 9 dígitos = Sem DDD (provavelmente local)
-        if 8 <= len(num) <= 11:
-            # Se tiver 8 ou 9, vamos manter como extraído, o CRM pode tratar depois
-            # ou podemos assumir DDD 12 se for o padrão da região (comentado por segurança)
-            # if len(num) == 9: num = "12" + num 
-            
-            if num not in [t['telefone'] for t in telefones]:
-                telefones.append({"nome": None, "telefone": num})
-    return telefones
+    # Se não fechou com ESC, tenta clicar no botão de fechar
+    if await modal.count() > 0:
+        for sel in [
+            '.olx-modal-close-button',
+            '[data-ds-component="DS-Modal"] button[aria-label]',
+            '[data-ds-component="DS-Modal"] button',
+        ]:
+            try:
+                btn = page.locator(sel).first
+                if await btn.count() > 0 and await btn.is_visible():
+                    await btn.click()
+                    await asyncio.sleep(0.5)
+                    print(f"  ✅ Modal fechado via: {sel}")
+                    break
+            except Exception:
+                pass
+    return True
+
 
 async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
     """
-    Acessa a URL do anúncio OLX usando Playwright puro e interage com a página 
-    usando os XPaths exatos para extrair telefones.
+    Acessa a URL do anúncio OLX usando Playwright + cookies do Samuel.
+
+    Fluxo de 3 passos:
+      1. Clica #price-box-button-show-phone → raspa XPATH_TELEFONE_PRINCIPAL.
+      2. Clica botão "Ver descrição completa" → expande descrição.
+      3. Clica máscara "ver número" na descrição → aguarda API → raspa número.
     """
-    dados = {
+    dados: Dict[str, Any] = {
         "expirado": False,
         "telefones": [],
         "erro": None
     }
-    
+
+    ad_id = None
+    id_match = re.search(r'-(\d+)$', url.split('?')[0])
+    if id_match:
+        ad_id = id_match.group(1)
+
+    session_file = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), '..', 'olx_session.json')
+    )
+
     try:
         async with async_playwright() as p:
-            print("Abrindo Playwright com Cookies Injetados Oficiais...")
+            print(f"🔍 Iniciando extração (Playwright + Sessão Samuel): {url}")
+
             browser = await p.chromium.launch(
-                headless=False, # Alterado para o usuário ver o navegador abrindo
-                args=['--disable-blink-features=AutomationControlled']
+                headless=True,
+                args=[
+                    '--disable-blink-features=AutomationControlled',
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                ]
             )
-            
+
             try:
                 context = await browser.new_context(
-                    storage_state="olx_session.json",
-                    user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+                    storage_state=session_file,
+                    user_agent=(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/121.0.0.0 Safari/537.36"
+                    ),
+                    viewport={'width': 1280, 'height': 800}
                 )
+                print("  ✅ Sessão do Samuel carregada.")
             except Exception as e:
-                print(f"⚠️ Aviso: Arquivo de sessão não encontrado. {e}")
+                print(f"  ⚠️ Sessão não encontrada, rodando sem login: {e}")
                 context = await browser.new_context()
-                
+
+            await context.add_init_script(
+                "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });"
+            )
+
             page = await context.new_page()
-            
+
+            async def intercept_route(route):
+                if route.request.resource_type in ("image", "media", "font"):
+                    return await route.abort()
+                await route.continue_()
+
+            await page.route("**/*", intercept_route)
+
             try:
-                await context.route("tel:**", lambda route: route.abort())
-                await page.goto(url, timeout=30000, wait_until='domcontentloaded')
-            except Exception as e:
-                print(f"⚠️ Aviso no carregamento: {e}")
-            
-            await asyncio.sleep(4) 
-            
-            # 1. VERIFICAR SE O ANÚNCIO ESTÁ INDISPONÍVEL
-            title = await page.title()
-            if "ops!" in title.lower() or "não encontrado" in title.lower():
-                dados["expirado"] = True
-                await browser.close()
-                return dados
-                
-            # 2. CLICAR E LER TELEFONE PRINCIPAL (BOTÃO OFICIAL)
-            btn_phone_xpath = '//*[@id="price-box-button-show-phone"]'
-            btn_phone = page.locator(f"xpath={btn_phone_xpath}")
-            
-            if await btn_phone.count() > 0:
-                print("➡️ Botão 'Exibir Telefone' encontrado. Clicando...")
+                print("  -> Navegando para a URL...")
+                await page.goto(url, timeout=60000, wait_until='domcontentloaded')
+
+                # ── Verifica expirado ─────────────────────────────────────────
+                title   = await page.title()
+                content = await page.content()
+                if any(kw in title.lower() or kw in content.lower() for kw in [
+                    "anúncio finalizado", "ops!", "não encontrado",
+                    "anúncio desativado", "página não encontrada"
+                ]):
+                    print("  ⚠️ Anúncio expirado ou indisponível.")
+                    dados["expirado"] = True
+                    await browser.close()
+                    return dados
+
+                # ═══════════════════════════════════════════════════════════
+                # PASSO 1 ─ Botão principal de telefone (price box lateral)
+                # ═══════════════════════════════════════════════════════════
                 try:
-                    await btn_phone.click(timeout=3000, no_wait_after=True, force=True)
+                    print("  -> [PASSO 1] Aguardando botão principal de telefone...")
+                    await page.wait_for_selector(
+                        f"xpath={XPATH_BTN_PRINCIPAL}",
+                        state="visible",
+                        timeout=6000
+                    )
+                    btn = page.locator(f"xpath={XPATH_BTN_PRINCIPAL}").first
+                    await btn.scroll_into_view_if_needed()
+                    await asyncio.sleep(0.5)
+                    await btn.click()
+                    print("  -> [PASSO 1] Clicado! Aguardando resposta...")
                     await asyncio.sleep(2)
-                    
-                    phone_span_xpath = '//*[@id="price-box-container"]/div[2]/div[1]/span'
-                    phone_span = page.locator(f"xpath={phone_span_xpath}")
-                    
-                    if await phone_span.count() > 0:
-                        phone_text = await phone_span.inner_text()
-                        for t in extract_phone_numbers(phone_text):
-                            t["origem"] = "botao"
-                            dados["telefones"].append(t)
+
+                    # Fecha modal se apareceu (comportamento de alguns anúncios)
+                    await _fechar_modal_se_aberto(page)
+                    await asyncio.sleep(0.5)
+
+                    # Raspa o número do span revelado
+                    try:
+                        el_tel = page.locator(f"xpath={XPATH_TELEFONE_PRINCIPAL}").first
+                        tel_texto = (await el_tel.text_content(timeout=5000) or "").strip()
+                        print(f"  -> [PASSO 1] Texto do span: '{tel_texto}'")
+                        for num in _extrair_numeros(tel_texto, ad_id):
+                            if num not in [t["telefone"] for t in dados["telefones"]]:
+                                dados["telefones"].append({
+                                    "nome": None, "telefone": num, "origem": "botao"
+                                })
+                                print(f"  ✅ [PASSO 1] Telefone via botão: {num}")
+                    except Exception as e_read:
+                        print(f"  ⚠️ [PASSO 1] Não conseguiu ler span: {e_read}")
+
                 except Exception:
-                    pass
-            
-            # 3. EXPANDIR DESCRIÇÃO
-            btn_desc_xpath = '//*[@id="description-title"]/div/div[2]/div/button'
-            btn_desc = page.locator(f"xpath={btn_desc_xpath}")
-            if await btn_desc.count() > 0:
-                print("➡️ Expandindo descrição completa...")
+                    print("  ℹ️ [PASSO 1] Botão principal não encontrado (normal em alguns anúncios).")
+
+                # ═══════════════════════════════════════════════════════════
+                # PASSO 2 ─ Expande a descrição completa
+                # ═══════════════════════════════════════════════════════════
                 try:
-                    await btn_desc.click(timeout=3000)
-                    await asyncio.sleep(1)
-                except:
-                    pass
-            
-            # 4. VARRER TODA A PÁGINA (BOTÕES MASCARADOS) 
-            # OLX usa spans clicáveis na descrição para esconder parte do número
-            locators_to_try = [
-                "[data-element='button_show-phone']",
-                '//*[@id="description-title"]//span[@role="button"]',
-                "//*[contains(translate(text(), 'VER NÚMERO', 'ver número'), 'ver número')]",
-                "//*[contains(text(), 'ver número')]",
-                "//*[contains(text(), '...')]"
-            ]
-            
-            for loc in locators_to_try:
+                    print("  -> [PASSO 2] Verificando botão 'Ver descrição completa'...")
+                    btn_desc = page.locator(f"xpath={XPATH_BTN_DESCRICAO}").first
+                    if await btn_desc.count() > 0 and await btn_desc.is_visible():
+                        await btn_desc.scroll_into_view_if_needed()
+                        await asyncio.sleep(0.5)
+                        await btn_desc.click()
+                        print("  -> [PASSO 2] Descrição expandida. Aguardando DOM...")
+                        await asyncio.sleep(2)
+                    else:
+                        print("  ℹ️ [PASSO 2] Descrição já completamente visível.")
+                except Exception as e_desc:
+                    print(f"  ℹ️ [PASSO 2] Botão de descrição indisponível: {e_desc}")
+
+                # ═══════════════════════════════════════════════════════════
+                # PASSO 3 ─ Telefone oculto na descrição ("12 9... ver número")
+                # ═══════════════════════════════════════════════════════════
                 try:
-                    selector = loc if loc.startswith("[") else f"xpath={loc}"
-                    elements = page.locator(selector)
-                    count = await elements.count()
-                    for i in range(count):
-                        try:
-                            # Verifica se o elemento é visível e tem texto antes de clicar
-                            if await elements.nth(i).is_visible():
-                                await elements.nth(i).click(timeout=2000, no_wait_after=True, force=True)
-                                await asyncio.sleep(0.8)
-                        except:
-                            pass
-                except:
-                    pass
-            
-            # 5. LER TEXTO DA DESCRIÇÃO (Vários possíveis XPaths)
-            # Incluindo o XPath específico enviado pelo usuário
-            description_xpaths = [
-                "//*[@id='description-title']/div/div[2]/div/span/span/span", # XPath enviado pelo usuário
-                "[data-testid='ad-description']",
-                '//*[@id="description-title"]/div/div[2]/div'
-            ]
-            
-            all_texts = []
-            for xpath in description_xpaths:
-                loc = page.locator(xpath if xpath.startswith("[") else f"xpath={xpath}")
-                if await loc.count() > 0:
-                    txt = await loc.inner_text()
-                    if txt: all_texts.append(txt)
-            
-            # Combina e extrai
-            full_description_text = "\n".join(all_texts)
-            if full_description_text:
-                print("➡️ Analisando texto da descrição...")
-                extra_tels = extract_phone_numbers(full_description_text)
-                
-                existentes_numeros = [t["telefone"] for t in dados["telefones"]]
-                for ext in extra_tels:
-                    if ext["telefone"] not in existentes_numeros:
-                        ext["origem"] = "descricao"
-                        dados["telefones"].append(ext)
-                        existentes_numeros.append(ext["telefone"])
-            
+                    print("  -> [PASSO 3] Verificando telefone oculto na descrição...")
+                    mascara = page.locator(f"xpath={XPATH_MASCARA_DESCRICAO}").first
+
+                    if await mascara.count() > 0 and await mascara.is_visible():
+                        texto_mascara = (await mascara.text_content() or "").strip()
+                        print(f"  -> [PASSO 3] Elemento encontrado: '{texto_mascara}'")
+
+                        is_masked = any(kw in (texto_mascara or "") for kw in MASKED_KEYWORDS)
+                        if is_masked:
+                            await mascara.scroll_into_view_if_needed()
+                            await asyncio.sleep(0.5)
+                            await mascara.click()
+                            print("  -> [PASSO 3] Clique efetuado. Aguardando número revelar pela API...")
+
+                            tel_desc_texto = await _aguardar_numero_revelar(
+                                page, XPATH_TEL_DESCRICAO, timeout_ms=8000
+                            )
+                            print(f"  -> [PASSO 3] Texto após revelação: '{tel_desc_texto}'")
+
+                            for num in _extrair_numeros(tel_desc_texto, ad_id):
+                                if num not in [t["telefone"] for t in dados["telefones"]]:
+                                    dados["telefones"].append({
+                                        "nome": None, "telefone": num, "origem": "descricao"
+                                    })
+                                    print(f"  ✅ [PASSO 3] Telefone via descrição: {num}")
+                        else:
+                            # Número já estava visível diretamente
+                            print(f"  -> [PASSO 3] Número já visível: '{texto_mascara}'")
+                            for num in _extrair_numeros(texto_mascara, ad_id):
+                                if num not in [t["telefone"] for t in dados["telefones"]]:
+                                    dados["telefones"].append({
+                                        "nome": None, "telefone": num, "origem": "descricao"
+                                    })
+                                    print(f"  ✅ [PASSO 3] Telefone visível: {num}")
+                    else:
+                        print("  ℹ️ [PASSO 3] Nenhum telefone oculto na descrição.")
+
+                except Exception as e_mask:
+                    print(f"  ℹ️ [PASSO 3] Sem máscara na descrição: {e_mask}")
+
+                await page.screenshot(path="debug_final_result.png")
+
+            except Exception as e:
+                print(f"  🚨 Erro durante navegação/interação: {e}")
+                dados["erro"] = str(e)
+
             await browser.close()
-            print(f"✅ Extração finalizada: {len(dados['telefones'])} contatos.")
-    
+            print(f"✅ Extração finalizada: {len(dados['telefones'])} contato(s) encontrado(s).")
+
     except Exception as e:
-        print(f"🚨 Erro na extração: {e}")
+        print(f"🚨 Erro crítico Playwright: {e}")
         dados["erro"] = str(e)
-            
+
     return dados
-    
+
+
 if __name__ == "__main__":
-    url_teste = "https://sp.olx.com.br/vale-do-paraiba-e-litoral-norte/terrenos/oportunidade-de-terreno-com-linda-vista-da-represa-1476153411"
+    url_teste = "https://sp.olx.com.br/vale-do-paraiba-e-litoral-norte/imoveis/casa-a-venda-no-j-satelite-aceita-troca-por-casa-no-jardim-portugal-ou-bosque-1467276395"
+
     async def teste_local():
         resultado = await extract_phones_from_olx(url_teste)
-        print("\nResultado Final:")
+        print("\n📋 Resultado Final:")
         print(json.dumps(resultado, indent=2, ensure_ascii=False))
+
     asyncio.run(teste_local())

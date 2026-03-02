@@ -47,7 +47,7 @@ export function PesquisaPage() {
         aceita_permuta, notas_corretor, historico_kanban,
         kanban_coluna_id, kanban_ordem, corretor_id
       `)
-            .or(`ad_id.eq.${id},list_id.eq.${id}`)
+            .or(`id.eq.${id},ad_id.eq.${id},list_id.eq.${id}`)
             .eq('ativo', true)
             .limit(1)
             .single()

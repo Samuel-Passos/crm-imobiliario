@@ -62,9 +62,18 @@ export function KanbanFilters({ filtros, onChange, cidades, tipos }: KanbanFilte
                 <option value="preco_menor">💰 Menor valor ▲</option>
             </select>
 
-            {(filtros.tipo_negocio || filtros.tipo_imovel || filtros.cidade || filtros.aceita_permuta || filtros.telefone_status || filtros.ordenacao !== '') && (
+            <input
+                type="text"
+                className="form-input"
+                placeholder="🔍 Buscar ID..."
+                style={{ width: 140, padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
+                value={filtros.busca}
+                onChange={e => set('busca', e.target.value)}
+            />
+
+            {(filtros.tipo_negocio || filtros.tipo_imovel || filtros.cidade || filtros.aceita_permuta || filtros.telefone_status || filtros.ordenacao !== '' || filtros.busca) && (
                 <button className="btn btn-ghost btn-sm"
-                    onClick={() => onChange({ tipo_negocio: '', tipo_imovel: '', cidade: '', aceita_permuta: '', telefone_status: '', ordenacao: '' })}>
+                    onClick={() => onChange({ tipo_negocio: '', tipo_imovel: '', cidade: '', aceita_permuta: '', telefone_status: '', ordenacao: '', busca: '' })}>
                     ✕ Limpar
                 </button>
             )}

@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "leaflet/dist/leaflet.css";
+@import "leaflet.markercluster/dist/MarkerCluster.css";
+@import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 /* ─── Reset & Base ─────────────────────────────────────── */
 *,
@@ -583,6 +586,7 @@ body {
   font-size: 0.65rem;
   font-weight: 500;
 }
+
 /* ─── Kanban Board ──────────────────────────────────────── */
 .kanban-board {
   display: flex;
@@ -615,18 +619,22 @@ body {
   transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
   user-select: none;
 }
+
 .kanban-card:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
-  border-color: rgba(59,130,246,0.3);
+  border-color: rgba(59, 130, 246, 0.3);
 }
-.kanban-card:active { cursor: grabbing; }
+
+.kanban-card:active {
+  cursor: grabbing;
+}
 
 /* ─── Modal ─────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;
@@ -636,7 +644,16 @@ body {
   padding: 1rem;
   animation: fadeIn 0.2s ease;
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
 
 .modal {
   background: var(--bg-card);
@@ -647,12 +664,22 @@ body {
   max-width: 580px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
   animation: fadeSlideUp 0.25s ease;
 }
 
 @media (max-width: 768px) {
-  .modal { border-radius: var(--radius-lg) var(--radius-lg) 0 0; max-height: 90vh; margin-top: auto; }
-  .modal-overlay { align-items: flex-end; }
-  .kanban-board { height: calc(100vh - 180px); }
+  .modal {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 90vh;
+    margin-top: auto;
+  }
+
+  .modal-overlay {
+    align-items: flex-end;
+  }
+
+  .kanban-board {
+    height: calc(100vh - 180px);
+  }
 }

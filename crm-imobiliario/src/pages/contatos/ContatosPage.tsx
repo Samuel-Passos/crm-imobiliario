@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import type { Contato, TipoContato } from './types'
 import { TIPO_CONTATO_LABELS, TIPO_CONTATO_CORES } from './types'
 import { ContatoModal } from './ContatoModal'
+import { ContatosMapa } from './ContatosMapa'
 import toast from 'react-hot-toast'
 
 const TIPOS_FILTRO: Array<{ value: '' | TipoContato; label: string }> = [
@@ -11,6 +12,9 @@ const TIPOS_FILTRO: Array<{ value: '' | TipoContato; label: string }> = [
     { value: 'comprador', label: '💰 Comprador' },
     { value: 'inquilino', label: '🔑 Inquilino' },
     { value: 'parceiro', label: '🤝 Parceiro' },
+    { value: 'porteiro', label: '🏢 Porteiro' },
+    { value: 'sindico', label: '👔 Síndico' },
+    { value: 'servicos_gerais', label: '🧹 Serviços Gerais' },
     { value: 'outro', label: '👤 Outro' },
 ]
 
@@ -22,6 +26,7 @@ export function ContatosPage() {
     const [modalAberto, setModalAberto] = useState(false)
     const [contatoSelecionado, setContatoSelecionado] = useState<Contato | null>(null)
     const [deletando, setDeletando] = useState<string | null>(null)
+    const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
 
     useEffect(() => {
         carregarContatos()
@@ -103,9 +108,36 @@ export function ContatosPage() {
                         {filtrado.length} de {contatos.length} contato{contatos.length !== 1 ? 's' : ''}
                     </p>
                 </div>
-                <button className="btn btn-primary" onClick={handleNovo} style={{ width: 'auto', padding: '0.75rem 1.25rem' }}>
-                    + Novo Contato
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    {/* Toggle de visualização */}
+                    <div style={{ display: 'flex', background: 'var(--bg-surface)', padding: '0.25rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            style={{
+                                padding: '0.4rem 0.75rem', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+                                borderRadius: 'var(--radius-sm)',
+                                background: viewMode === 'list' ? 'var(--brand-500)' : 'transparent',
+                                color: viewMode === 'list' ? '#fff' : 'var(--text-muted)',
+                            }}
+                        >
+                            📋 Lista
+                        </button>
+                        <button
+                            onClick={() => setViewMode('map')}
+                            style={{
+                                padding: '0.4rem 0.75rem', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+                                borderRadius: 'var(--radius-sm)',
+                                background: viewMode === 'map' ? 'var(--brand-500)' : 'transparent',
+                                color: viewMode === 'map' ? '#fff' : 'var(--text-muted)',
+                            }}
+                        >
+                            🗺️ Mapa
+                        </button>
+                    </div>
+                    <button className="btn btn-primary" onClick={handleNovo} style={{ width: 'auto', padding: '0.75rem 1.25rem' }}>
+                        + Novo Contato
+                    </button>
+                </div>
             </div>
 
             {/* Filtros */}
@@ -144,6 +176,8 @@ export function ContatosPage() {
                         </button>
                     )}
                 </div>
+            ) : viewMode === 'map' ? (
+                <ContatosMapa contatos={filtrado} onEditar={handleEditar} />
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
                     {filtrado.map(c => (
@@ -163,11 +197,11 @@ export function ContatosPage() {
                                     </div>
                                     <span style={{
                                         fontSize: '0.7rem', fontWeight: 600,
-                                        color: TIPO_CONTATO_CORES[c.tipo_contato],
-                                        background: `${TIPO_CONTATO_CORES[c.tipo_contato]}18`,
+                                        color: TIPO_CONTATO_CORES[c.tipo_contato] || 'var(--text-muted)',
+                                        background: `${TIPO_CONTATO_CORES[c.tipo_contato] || 'var(--text-muted)'}18`,
                                         padding: '0.15rem 0.5rem', borderRadius: 99
                                     }}>
-                                        {TIPO_CONTATO_LABELS[c.tipo_contato]}
+                                        {TIPO_CONTATO_LABELS[c.tipo_contato] || `👤 ${c.tipo_contato}`}
                                     </span>
                                 </div>
                                 {/* Acções */}

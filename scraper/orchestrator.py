@@ -5,6 +5,7 @@ import asyncio
 from dotenv import load_dotenv
 from supabase import create_client, Client
 import json
+import time
 
 # Carrega ferramentas do scraper
 from tools.search_tools import (
@@ -70,23 +71,107 @@ async def extract_phone_single_lead(imovel_id: int):
         supabase.table("links_anuncios").update({"status": "expirado"}).eq("url", url).execute()
 
     print(f"✅ Banco atualizado para imóvel {imovel_id}!")
+    return resultado
 
 async def process_batch_phone_extraction():
     """Busca em lote todos os pendentes e extrai os telefones 1 a 1."""
     imoveis = buscar_imoveis_para_extrair_telefone()
-    print(f"\n[LOTE EXTRAÇÃO] {len(imoveis)} imóveis aguardando varredura.")
+    total_leads = len(imoveis)
+    print(f"\n[LOTE EXTRAÇÃO] {total_leads} imóveis aguardando varredura.")
     
-    # Roda sequencial p/ não sobrecarregar PC e contornar detecção de bot
-    for imovel in imoveis:
-        if STOP_SIGNAL:
-            print("\n🛑 [LOTE EXTRAÇÃO] Parada solicitada pelo usuário.")
-            break
-        
-        await check_pause()
-        
-        # AQUI - Importante capturar a data para tratar corretamente na query async
-        await extract_phone_single_lead(imovel["id"])
-        await asyncio.sleep(5)  # Pausa humana
+    if total_leads == 0:
+        return
+
+    # Cria registro de estatística inicial
+    res_stats = supabase.table("estatisticas_scraper").insert({
+        "leads_processados": 0
+    }).execute()
+    stats_id = res_stats.data[0]["id"] if res_stats.data else None
+
+    # Contadores locais
+    count_proc = 0
+    count_exp = 0
+    count_sem = 0
+    count_com = 0
+    via_botao = 0
+    via_desc = 0
+    erros = 0
+
+    try:
+        for imovel in imoveis:
+            if STOP_SIGNAL:
+                print("\n🛑 [LOTE EXTRAÇÃO] Parada solicitada pelo usuário.")
+                break
+            
+            await check_pause()
+            
+            try:
+                start_lead = time.time()
+                resultado = await extract_phone_single_lead(imovel["id"])
+                duration_lead = int(time.time() - start_lead)
+                
+                count_proc += 1
+                
+                has_error = bool(resultado.get("erro"))
+                is_exp = bool(resultado.get("expirado"))
+                tels = resultado.get("telefones", [])
+                has_tel = len(tels) > 0
+                
+                origem = None
+                if has_tel:
+                    origens_list = [t.get("origem") for t in tels]
+                    if "botão" in origens_list or "botao" in origens_list:
+                        via_botao += 1
+                        origem = "botao"
+                    if "descrição" in origens_list or "descricao" in origens_list:
+                        via_desc += 1
+                        origem = "descricao" if not origem else "ambos"
+
+                if has_error:
+                    erros += 1
+                elif is_exp:
+                    count_exp += 1
+                elif not has_tel:
+                    count_sem += 1
+                else:
+                    count_com += 1
+                
+                # Insere LOG DETALHADO
+                if stats_id:
+                    supabase.table("logs_detalhados_scraper").insert({
+                        "estatistica_id": stats_id,
+                        "imovel_id": imovel["id"],
+                        "url": imovel.get("url"),
+                        "com_telefone": has_tel,
+                        "origem_telefone": origem,
+                        "expirado": is_exp,
+                        "erro": resultado.get("erro") if has_error else None,
+                        "duracao_segundos": duration_lead
+                    }).execute()
+
+                    # Atualiza resumo
+                    supabase.table("estatisticas_scraper").update({
+                        "leads_processados": count_proc,
+                        "leads_expirados": count_exp,
+                        "leads_sem_telefone": count_sem,
+                        "leads_com_telefone": count_com,
+                        "encontrados_via_botao": via_botao,
+                        "encontrados_via_descricao": via_desc,
+                        "erros": erros
+                    }).eq("id", stats_id).execute()
+
+            except Exception as e:
+                print(f"❌ Erro crítico no loop de extração: {e}")
+                erros += 1
+            
+            await asyncio.sleep(5)  # Pausa humana
+
+    finally:
+        # Finaliza o registro
+        if stats_id:
+            supabase.table("estatisticas_scraper").update({
+                "data_fim": "now()"
+            }).eq("id", stats_id).execute()
 
 
 # ==========================================

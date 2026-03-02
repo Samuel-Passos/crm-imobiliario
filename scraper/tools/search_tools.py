@@ -46,6 +46,7 @@ def buscar_imoveis_para_extrair_telefone() -> List[Dict[str, Any]]:
             .eq("kanban_coluna_id", caixa_entrada_id) \
             .order("telefone_existe", desc=True, nullsfirst=False) \
             .order("id", desc=True) \
+            .limit(200) \
             .execute()
             
         return imoveis.data

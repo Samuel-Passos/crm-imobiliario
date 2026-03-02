@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import type { ImovelKanban } from './types'
 import { getChatUrl } from './types'
 import { ImovelModal } from './ImovelModal'
@@ -16,7 +16,7 @@ function formatPreco(preco: number | null, precoStr: string | null): string {
     return 'Sob consulta'
 }
 
-export function KanbanCard({ imovel, onUpdate, isDragging, onClick }: KanbanCardProps) {
+export const KanbanCard = memo(function KanbanCard({ imovel, onUpdate, isDragging, onClick }: KanbanCardProps) {
     const [modalOpen, setModalOpen] = useState(false)
 
     useEffect(() => {
@@ -70,7 +70,8 @@ export function KanbanCard({ imovel, onUpdate, isDragging, onClick }: KanbanCard
                     </span>
                     <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
                         {imovel.anuncio_expirado && <span title="Anúncio Expirado" style={{ fontSize: '0.6rem', color: 'var(--error)', background: 'rgba(239, 68, 68, 0.15)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>❌ EXPIRADO</span>}
-                        {imovel.telefone_pesquisado && !imovel.telefone && !imovel.telefone_mascara && !imovel.anuncio_expirado && <span title="Telefone não encontrado" style={{ fontSize: '0.6rem', color: 'var(--text-muted)', background: 'rgba(156, 163, 175, 0.15)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>🚫 S/ TEL</span>}
+                        {imovel.telefone_pesquisado && !imovel.telefone && !imovel.anuncio_expirado && <span title="Telefone não encontrado" style={{ fontSize: '0.6rem', color: 'var(--text-muted)', background: 'rgba(156, 163, 175, 0.15)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>🚫 S/ TEL</span>}
+                        {imovel.telefone_pesquisado && <span title="Processado pelo Robô" style={{ fontSize: '0.6rem', color: 'var(--brand-500)', background: 'rgba(59, 130, 246, 0.1)', padding: '2px 5px', borderRadius: 4, fontWeight: 800 }}>🤖</span>}
                         {imovel.autorizado && <span title="Autorizado" style={{ fontSize: '0.68rem', color: 'var(--success)' }}>✅</span>}
                         {imovel.aceita_permuta === 'aceita' && <span title="Aceita permuta" style={{ fontSize: '0.68rem', color: 'var(--success)' }}>🔄</span>}
                     </div>
@@ -195,4 +196,4 @@ export function KanbanCard({ imovel, onUpdate, isDragging, onClick }: KanbanCard
             )}
         </>
     )
-}
+})

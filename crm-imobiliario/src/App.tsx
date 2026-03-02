@@ -17,16 +17,8 @@ import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { KanbanPage } from './pages/kanban/KanbanPage'
 import { PesquisaPage } from './pages/pesquisa/PesquisaPage'
 import { ContatosPage } from './pages/contatos/ContatosPage'
+import { MapaImoveisPage } from './pages/mapa/MapaImoveisPage'
 import { AutomacoesPage } from './pages/automacoes/AutomacoesPage'
-
-// Placeholder pages (serão implementados nos próximos módulos)
-const ComingSoon = ({ title }: { title: string }) => (
-  <div style={{ padding: '2rem', textAlign: 'center' }}>
-    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚧</div>
-    <h2 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>{title}</h2>
-    <p style={{ color: 'var(--text-muted)' }}>Este módulo será implementado em breve</p>
-  </div>
-)
 
 function HomeRedirect() {
   return <Navigate to="/dashboard" replace />
@@ -72,13 +64,7 @@ export default function App() {
             </PrivateRoute>
           } />
 
-          <Route path="/kanban" element={
-            <PrivateRoute>
-              <AppLayout>
-                <KanbanPage />
-              </AppLayout>
-            </PrivateRoute>
-          } />
+          <Route path="/kanban" element={<AppLayout><KanbanPage /></AppLayout>} />
 
           <Route path="/pesquisa" element={
             <PrivateRoute>
@@ -88,18 +74,12 @@ export default function App() {
             </PrivateRoute>
           } />
 
-          <Route path="/contatos" element={
-            <PrivateRoute>
-              <AppLayout>
-                <ContatosPage />
-              </AppLayout>
-            </PrivateRoute>
-          } />
+          <Route path="/contatos" element={<AppLayout><ContatosPage /></AppLayout>} />
 
           <Route path="/mapa" element={
             <PrivateRoute>
               <AppLayout>
-                <ComingSoon title="Mapa de Imóveis" />
+                <MapaImoveisPage />
               </AppLayout>
             </PrivateRoute>
           } />

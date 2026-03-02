@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { ImovelKanban } from './types'
 import { getChatUrl } from './types'
+import { LocationPicker } from '../../components/LocationPicker'
 import toast from 'react-hot-toast'
 
 interface Props {
@@ -34,6 +35,12 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
     const [aba, setAba] = useState<Aba>('proprietario')
     const [editando, setEditando] = useState(true)
     const [saving, setSaving] = useState(false)
+    const [buscandoTelefone, setBuscandoTelefone] = useState(false)
+    const [buscandoCep, setBuscandoCep] = useState(false)
+    const [calculandoGps, setCalculandoGps] = useState(false)
+    const [mostrarMapa, setMostrarMapa] = useState(false)
+    const [latitude, setLatitude] = useState(imovel.latitude || null)
+    const [longitude, setLongitude] = useState(imovel.longitude || null)
 
     // ── Campos editáveis ──────────────────────────────────────
 
@@ -104,13 +111,61 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
 
     // Sincronizar dados vindos de websockets externamente (ex: telefone extraido em background)
     useEffect(() => {
-        if (imovel.telefone_pesquisado && imovel.telefones_extraidos && imovel.telefones_extraidos.length > 0) {
-            if (telefonesExtraidos.length === 0) {
+        if (imovel.telefone_pesquisado) {
+            if (imovel.telefones_extraidos && imovel.telefones_extraidos.length > 0) {
                 setTelefonesExtraidos(imovel.telefones_extraidos)
                 if (imovel.telefone && !telefone) setTelefone(imovel.telefone)
             }
         }
     }, [imovel.telefone_pesquisado, imovel.telefones_extraidos, imovel.telefone])
+
+    // Buscar CEP
+    async function handleBuscarCep(v: string) {
+        const apenas = v.replace(/\D/g, '')
+        setCep(v)
+        if (apenas.length !== 8) return
+        setBuscandoCep(true)
+        try {
+            const res = await fetch(`https://viacep.com.br/ws/${apenas}/json/`)
+            const data = await res.json()
+            if (!data.erro) {
+                setRua(data.logradouro || '')
+                setBairro(data.bairro || '')
+                setCidade(data.localidade || '')
+                setEstado(data.uf || '')
+            } else {
+                toast.error('CEP não encontrado')
+            }
+        } catch {
+            toast.error('Erro ao buscar CEP')
+        } finally {
+            setBuscandoCep(false)
+        }
+    }
+
+    // Geocoding
+    async function obterCoordenadas(log: string, num: string, cid: string, est: string): Promise<{ lat: number; lng: number } | null> {
+        if (!log || !cid) return null
+        setCalculandoGps(true)
+        try {
+            const query = encodeURIComponent(`${log}, ${num}, ${cid} - ${est}, Brasil`)
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`, {
+                headers: { 'User-Agent': 'CRM-Imobiliario-App-Samuel' }
+            })
+            const data = await res.json()
+            if (data && data.length > 0) {
+                return {
+                    lat: parseFloat(data[0].lat),
+                    lng: parseFloat(data[0].lon)
+                }
+            }
+        } catch (e) {
+            console.error('Erro no geocoding:', e)
+        } finally {
+            setCalculandoGps(false)
+        }
+        return null
+    }
 
 
     function handleCancelar() {
@@ -139,6 +194,18 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
 
     async function handleSalvar() {
         setSaving(true)
+
+        let lat = latitude
+        let lng = longitude
+
+        // Se não for via mapa, tenta geocoding automático ao salvar se mudou algo
+        if (!mostrarMapa && rua && cidade && (rua !== imovel.rua || cidade !== imovel.cidade || !lat)) {
+            const coords = await obterCoordenadas(rua, numero, cidade, estado)
+            if (coords) {
+                lat = coords.lat
+                lng = coords.lng
+            }
+        }
         const fields: Partial<ImovelKanban> = {
             titulo,
             vendedor_nome: vendedorNome || null,
@@ -170,6 +237,8 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
             outras_caracteristicas: outrasCarac || null,
             fotos,
             foto_capa: fotos[0] || imovel.foto_capa,
+            latitude: lat,
+            longitude: lng,
             // Atribui corretor logado se ainda não tem
             corretor_id: imovel.corretor_id || profile?.id || null,
         }
@@ -193,6 +262,7 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
     // Chamadas para o Robô Local (FastAPI)
     async function callBot(endpoint: 'extract-phone' | 'prospect') {
         const tId = toast.loading('Acordando robô...')
+        if (endpoint === 'extract-phone') setBuscandoTelefone(true)
         try {
             const res = await fetch(`http://localhost:8765/${endpoint}`, {
                 method: 'POST',
@@ -202,10 +272,57 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
             const data = await res.json()
             if (res.ok) {
                 toast.success(data.message || 'Comando enviado ao robô!', { id: tId })
+
+                // Polling do Supabase para detectar quando o telefone for salvo (até 90s)
+                if (endpoint === 'extract-phone') {
+                    const startTime = Date.now()
+                    const MAX_WAIT = 90_000
+                    const poll = async () => {
+                        if (Date.now() - startTime > MAX_WAIT) {
+                            setBuscandoTelefone(false)
+                            toast('Robô ainda em execução... Cheque o Dashboard.', { icon: '⏳' })
+                            return
+                        }
+                        const { data: updated } = await supabase
+                            .from('imoveis')
+                            .select('telefone, telefones_extraidos, telefone_pesquisado, anuncio_expirado')
+                            .eq('id', imovel.id)
+                            .single()
+
+                        if (updated?.telefone_pesquisado) {
+                            setBuscandoTelefone(false)
+                            if (updated.telefone) {
+                                setTelefone(updated.telefone)
+                                if (updated.telefones_extraidos?.length) {
+                                    setTelefonesExtraidos(updated.telefones_extraidos)
+                                }
+                                onUpdate({
+                                    telefone: updated.telefone,
+                                    telefones_extraidos: updated.telefones_extraidos,
+                                    telefone_pesquisado: true,
+                                    anuncio_expirado: updated.anuncio_expirado
+                                })
+                                toast.success('✅ Telefone encontrado: ' + updated.telefone)
+                            } else if (updated.anuncio_expirado) {
+                                onUpdate({ anuncio_expirado: true, telefone_pesquisado: true })
+                                toast.error('❌ Anúncio expirado na OLX')
+                            } else {
+                                onUpdate({ telefone_pesquisado: true })
+                                toast('Nenhum telefone encontrado neste anúncio.', { icon: '🚫' })
+                            }
+                            return
+                        }
+                        // Ainda processando, reagenda
+                        setTimeout(poll, 3000)
+                    }
+                    setTimeout(poll, 4000) // Primeira checagem após 4s
+                }
             } else {
+                setBuscandoTelefone(false)
                 toast.error(data.message || 'Erro no robô', { id: tId })
             }
         } catch (err) {
+            setBuscandoTelefone(false)
             toast.error('Erro de conexão com o Robô Local (porta 8765)', { id: tId })
         }
     }
@@ -393,18 +510,33 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
 
                         {/* Contato rápido quando leitura */}
                         {(imovel.ad_id || imovel.url) && (
-                            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                                 {getChatUrl(imovel) && <a href={getChatUrl(imovel)!} target="_blank" rel="noopener noreferrer"
                                     style={{ background: 'rgba(251,191,36,0.15)', color: 'var(--gold-400)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 600 }}>
                                     💬 Chat OLX
                                 </a>}
 
                                 {/* Botões do Robô FastAPI */}
-                                {imovel.url?.includes('olx') && (!telefone || telefone.includes('.')) && !imovel.telefone_pesquisado && !imovel.anuncio_expirado && (
-                                    <button onClick={() => callBot('extract-phone')} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                        🤖 Buscar Telefone
-                                    </button>
+                                {imovel.url?.includes('olx') && !imovel.anuncio_expirado && (
+                                    buscandoTelefone ? (
+                                        // Spinner durante polling
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem' }}>
+                                            <span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} />
+                                            <span style={{ color: '#a78bfa', fontWeight: 600 }}>Buscando telefone...</span>
+                                        </div>
+                                    ) : !imovel.telefone_pesquisado ? (
+                                        // Botão inicial — nunca pesquisado
+                                        <button onClick={() => callBot('extract-phone')} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            🤖 Buscar Telefone
+                                        </button>
+                                    ) : (
+                                        // Botão de re-extrair — já pesquisado (com ou sem telefone)
+                                        <button onClick={() => callBot('extract-phone')} style={{ background: 'rgba(100,116,139,0.12)', color: 'var(--text-muted)', border: '1px solid rgba(100,116,139,0.25)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            🔄 Re-extrair
+                                        </button>
+                                    )
                                 )}
+
                                 {imovel.url?.includes('olx') && !imovel.anuncio_expirado && (
                                     <button onClick={() => callBot('prospect')} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: 99, padding: '0.35rem 1rem', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                         🤖 Prospectar no Chat
@@ -475,9 +607,39 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                 {/* ── ABA: ENDEREÇO ── */}
                 {aba === 'endereco' && (
                     <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                                Localização {buscandoCep && '...'}
+                            </div>
+                            <button type="button" onClick={() => setMostrarMapa(!mostrarMapa)}
+                                style={{ background: 'none', border: 'none', color: 'var(--brand-500)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                                {mostrarMapa ? 'Ocultar Mapa' : '📍 Visualizar/Ajustar no Mapa'}
+                            </button>
+                        </div>
+
+                        {mostrarMapa && (
+                            <LocationPicker
+                                initialLat={latitude}
+                                initialLng={longitude}
+                                onLocationSelected={({ lat, lng, address }) => {
+                                    setLatitude(lat)
+                                    setLongitude(lng)
+                                    if (address) {
+                                        if (address.road) setRua(address.road)
+                                        if (address.suburb || address.neighbourhood) setBairro(address.suburb || address.neighbourhood)
+                                        if (address.city || address.town || address.village) setCidade(address.city || address.town || address.village)
+                                        if (address.state) setEstado(address.state)
+                                        if (address.postcode) setCep(address.postcode)
+                                        if (address.house_number) setNumero(address.house_number)
+                                    }
+                                }}
+                            />
+                        )}
+
                         <div className="form-row">
                             <Field label="CEP">
-                                {editando ? <input className="form-input" value={cep} onChange={e => setCep(e.target.value)} placeholder="00000-000" /> : <div {...inp}>{cep || '—'}</div>}
+                                {editando ? <input className="form-input" value={cep} onChange={e => handleBuscarCep(e.target.value)} placeholder="00000-000" /> : <div {...inp}>{cep || '—'}</div>}
+                                {buscandoCep && <span style={{ fontSize: '0.65rem', color: 'var(--brand-500)' }}>Buscando...</span>}
                             </Field>
                             <Field label="Estado (UF)">
                                 {editando ? <input className="form-input" value={estado} onChange={e => setEstado(e.target.value)} maxLength={2} placeholder="SP" /> : <div {...inp}>{estado || '—'}</div>}
@@ -664,7 +826,12 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
                         <>
                             <button className="btn btn-primary" onClick={handleSalvar} disabled={saving} style={{ width: 'auto' }}>
-                                {saving ? <><span className="spinner" /> Salvando...</> : '💾 Salvar'}
+                                {saving ? (
+                                    <>
+                                        <span className="spinner" />
+                                        {calculandoGps ? 'Obtendo GPS...' : 'Salvando...'}
+                                    </>
+                                ) : '💾 Salvar'}
                             </button>
                             <button className="btn btn-danger" onClick={handleCancelar} disabled={saving} style={{ width: 'auto', padding: '0.8rem 1.25rem' }}>
                                 Cancelar

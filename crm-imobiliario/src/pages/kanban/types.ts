@@ -93,4 +93,5 @@ export interface FiltrosKanban {
     aceita_permuta: '' | 'aceita' | 'nao_aceita' | 'nao_informado'
     telefone_status: '' | 'com_telefone' | 'sem_telefone'
     ordenacao: '' | 'recente_antigo' | 'antigo_recente' | 'preco_maior' | 'preco_menor'
+    busca: string
 }

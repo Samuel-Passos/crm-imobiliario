@@ -25,7 +25,7 @@ llm = CustomChatGroq(
 CHROME_PROFILE_PATH = os.getenv('CHROME_PROFILE_PATH', '/home/samuel/.config/google-chrome')
 
 browser = Browser(
-    headless=False,
+    headless=True,
     user_data_dir=CHROME_PROFILE_PATH
 )
 
