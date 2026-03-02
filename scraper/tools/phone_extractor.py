@@ -245,19 +245,24 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                     print("  -> [PASSO 1] Clicado! Aguardando resposta...")
                     await asyncio.sleep(2)
 
-                    # Fecha modal se apareceu (comportamento de alguns anúncios) E tenta pegar o número de lá
-                    telefone_modal = await _fechar_modal_se_aberto(page)
-                    await asyncio.sleep(0.5)
+                    # Checa o modal manual ANTES DE FECHAR (Pode ser armadilha)
+                    tem_numero_no_modal = False
+                    modal = page.locator('[data-ds-component="DS-Modal"][data-show="true"]')
+                    if await modal.count() > 0:
+                        texto_modal = await modal.first.text_content()
+                        # Só processa se não for mensagem explícita de erro
+                        if texto_modal and "Não foi possível exibir o telefone" not in texto_modal:
+                            for num in _extrair_numeros(texto_modal, ad_id):
+                                if num not in [t["telefone"] for t in dados["telefones"]]:
+                                    dados["telefones"].append({
+                                        "nome": None, "telefone": num, "origem": "botao"
+                                    })
+                                    print(f"  ✅ [PASSO 1] Telefone via modal do price-box: {num}")
+                                    tem_numero_no_modal = True
 
-                    if telefone_modal:
-                        for num in _extrair_numeros(telefone_modal, ad_id):
-                            if num not in [t["telefone"] for t in dados["telefones"]]:
-                                dados["telefones"].append({
-                                    "nome": None, "telefone": num, "origem": "botao"
-                                })
-                                print(f"  ✅ [PASSO 1] Telefone via modal do botão: {num}")
-                    else:
-                        # Se não pegou do modal, tenta raspar o número do span revelado
+                    # Tenta ler do span do price-box enquato houver tempo,
+                    # mesmo se o popup estiver aberto "enganando" o usuário.
+                    if not tem_numero_no_modal:
                         sucesso_span = False
                         for loc in XPATHS_TELEFONE_PRINCIPAL:
                             try:
@@ -275,7 +280,16 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                                 if sucesso_span:
                                     break
                             except Exception as e_read:
-                                print(f"  ⚠️ [PASSO 1] Falhou no seletor '{loc}': {e_read}")
+                                pass # Ignora lints e prints confusos se não achou
+
+                    # AGORA SIM fecha o modal depois de tudo, se ele estava aberto
+                    if await modal.count() > 0:
+                        try:
+                            await page.keyboard.press("Escape")
+                            await asyncio.sleep(0.5)
+                        except Exception:
+                            pass
+
 
                 except Exception:
                     print("  ℹ️ [PASSO 1] Botão principal não encontrado (normal em alguns anúncios).")
