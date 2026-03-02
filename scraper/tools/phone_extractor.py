@@ -330,6 +330,48 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                 except Exception as e_mask:
                     print(f"  ℹ️ [PASSO 3] Sem máscara na descrição: {e_mask}")
 
+                # ═══════════════════════════════════════════════════════════
+                # PASSO 4 ─ Retentativa do Botão Principal (Fallback)
+                # ═══════════════════════════════════════════════════════════
+                # Se o PASSO 1 falhou (ex: API OLX deu erro temporário) e o botão
+                # ainda está lá, tentamos clicar nele de novo agora que o PASSO 3
+                # (e possivelmente uma nova chamada de API) já ocorreu.
+                if len(dados["telefones"]) == 1 and not any(t["origem"] == "botao" for t in dados["telefones"]):
+                    try:
+                        print("  -> [PASSO 4] Retentativa do botão principal (API OLX pode ter se recuperado)...")
+                        btn = page.locator(f"xpath={XPATH_BTN_PRINCIPAL}").first
+                        if await btn.count() > 0 and await btn.is_visible():
+                            await btn.scroll_into_view_if_needed()
+                            await asyncio.sleep(0.5)
+                            await btn.click()
+                            await asyncio.sleep(2)
+                            
+                            # Tenta raspar do modal novamente
+                            telefone_modal = await _fechar_modal_se_aberto(page)
+                            if telefone_modal:
+                                for num in _extrair_numeros(telefone_modal, ad_id):
+                                    if num not in [t["telefone"] for t in dados["telefones"]]:
+                                        dados["telefones"].append({
+                                            "nome": None, "telefone": num, "origem": "botao"
+                                        })
+                                        print(f"  ✅ [PASSO 4] Telefone via modal do botão: {num}")
+                            else:
+                                # Tenta raspar o número inline
+                                try:
+                                    tel_texto = await _aguardar_numero_revelar(
+                                        page, XPATH_TELEFONE_PRINCIPAL, timeout_ms=5000
+                                    )
+                                    for num in _extrair_numeros(tel_texto, ad_id):
+                                        if num not in [t["telefone"] for t in dados["telefones"]]:
+                                            dados["telefones"].append({
+                                                "nome": None, "telefone": num, "origem": "botao"
+                                            })
+                                            print(f"  ✅ [PASSO 4] Telefone recuperado via botão: {num}")
+                                except Exception:
+                                    pass
+                    except Exception as e_passo4:
+                        print(f"  ℹ️ [PASSO 4] Tentativa falhou: {e_passo4}")
+
                 await page.screenshot(path="debug_final_result.png")
 
             except Exception as e:
