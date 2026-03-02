@@ -48,7 +48,9 @@ async def _aguardar_numero_revelar(page, xpath: str, timeout_ms: int = 8000) -> 
                 ).singleNodeValue;
                 if (!el) return false;
                 const txt = el.textContent || '';
-                return !txt.includes('ver número') && txt.trim().length > 3;
+                const isNotMasked = !txt.includes('ver número') && !txt.includes('..');
+                const hasDigits = (txt.replace(/\\D/g, '').length >= 8);
+                return isNotMasked && hasDigits;
             }""",
             arg=xpath,
             timeout=timeout_ms
@@ -63,20 +65,56 @@ async def _aguardar_numero_revelar(page, xpath: str, timeout_ms: int = 8000) -> 
             return ""
 
 
-async def _fechar_modal_se_aberto(page) -> bool:
+async def _fechar_modal_se_aberto(page) -> str:
     """
-    Detecta e fecha o modal da OLX que aparece após clicar no botão de telefone.
-    Retorna True se havia um modal aberto.
+    Detecta o modal da OLX que aparece após clicar no botão de telefone.
+    PRIMEIRO raspa o número contido no modal (se houver), DEPOIS fecha.
+    Retorna o texto do telefone encontrado no modal, ou string vazia.
     """
     modal = page.locator('[data-ds-component="DS-Modal"][data-show="true"]')
     if await modal.count() == 0:
-        return False
+        return ""
 
+    # ── Tenta raspar o número ANTES de fechar ────────────────────────────────
+    telefone_no_modal = ""
+    seletores_tel = [
+        '[data-ds-component="DS-Modal"] a[href^="tel:"]',  # link tel: direto
+        '[data-ds-component="DS-Modal"] [class*="phone"]',
+        '[data-ds-component="DS-Modal"] span',
+    ]
+    for sel in seletores_tel:
+        try:
+            els = page.locator(sel)
+            count = await els.count()
+            for i in range(count):
+                txt = (await els.nth(i).text_content(timeout=2000) or "").strip()
+                # verifica se parece um número de telefone
+                digits = "".join(c for c in txt if c.isdigit())
+                if 8 <= len(digits) <= 13:
+                    telefone_no_modal = txt
+                    print(f"  📱 [MODAL] Telefone encontrado no modal: '{txt}'")
+                    break
+            if telefone_no_modal:
+                break
+        except Exception:
+            pass
+
+    # Tenta também href tel: (formato mais confiável)
+    try:
+        links_tel = page.locator('[data-ds-component="DS-Modal"] a[href^="tel:"]')
+        if await links_tel.count() > 0:
+            href = await links_tel.first.get_attribute('href', timeout=2000)
+            if href:
+                telefone_no_modal = href.replace('tel:', '').strip()
+                print(f"  📱 [MODAL] Telefone via href tel: '{telefone_no_modal}'")
+    except Exception:
+        pass
+
+    # ── Fecha o modal ─────────────────────────────────────────────────────────
     print("  ⚠️ Modal detectado! Fechando com ESC...")
     await page.keyboard.press('Escape')
     await asyncio.sleep(1)
 
-    # Se não fechou com ESC, tenta clicar no botão de fechar
     if await modal.count() > 0:
         for sel in [
             '.olx-modal-close-button',
@@ -92,7 +130,9 @@ async def _fechar_modal_se_aberto(page) -> bool:
                     break
             except Exception:
                 pass
-    return True
+
+    return telefone_no_modal
+
 
 
 async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
@@ -199,23 +239,32 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                     print("  -> [PASSO 1] Clicado! Aguardando resposta...")
                     await asyncio.sleep(2)
 
-                    # Fecha modal se apareceu (comportamento de alguns anúncios)
-                    await _fechar_modal_se_aberto(page)
+                    # Fecha modal se apareceu (comportamento de alguns anúncios) E tenta pegar o número de lá
+                    telefone_modal = await _fechar_modal_se_aberto(page)
                     await asyncio.sleep(0.5)
 
-                    # Raspa o número do span revelado
-                    try:
-                        el_tel = page.locator(f"xpath={XPATH_TELEFONE_PRINCIPAL}").first
-                        tel_texto = (await el_tel.text_content(timeout=5000) or "").strip()
-                        print(f"  -> [PASSO 1] Texto do span: '{tel_texto}'")
-                        for num in _extrair_numeros(tel_texto, ad_id):
+                    if telefone_modal:
+                        for num in _extrair_numeros(telefone_modal, ad_id):
                             if num not in [t["telefone"] for t in dados["telefones"]]:
                                 dados["telefones"].append({
                                     "nome": None, "telefone": num, "origem": "botao"
                                 })
-                                print(f"  ✅ [PASSO 1] Telefone via botão: {num}")
-                    except Exception as e_read:
-                        print(f"  ⚠️ [PASSO 1] Não conseguiu ler span: {e_read}")
+                                print(f"  ✅ [PASSO 1] Telefone via modal do botão: {num}")
+                    else:
+                        # Se não pegou do modal, tenta raspar o número do span revelado
+                        try:
+                            tel_texto = await _aguardar_numero_revelar(
+                                page, XPATH_TELEFONE_PRINCIPAL, timeout_ms=8000
+                            )
+                            print(f"  -> [PASSO 1] Texto do span: '{tel_texto}'")
+                            for num in _extrair_numeros(tel_texto, ad_id):
+                                if num not in [t["telefone"] for t in dados["telefones"]]:
+                                    dados["telefones"].append({
+                                        "nome": None, "telefone": num, "origem": "botao"
+                                    })
+                                    print(f"  ✅ [PASSO 1] Telefone via botão: {num}")
+                        except Exception as e_read:
+                            print(f"  ⚠️ [PASSO 1] Não conseguiu ler span: {e_read}")
 
                 except Exception:
                     print("  ℹ️ [PASSO 1] Botão principal não encontrado (normal em alguns anúncios).")
