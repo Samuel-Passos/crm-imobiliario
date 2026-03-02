@@ -29,7 +29,7 @@ def _extrair_numeros(texto: str, ad_id: str | None = None) -> list[str]:
     for m in PHONE_REGEX.finditer(texto):
         raw = m.group()
         num = re.sub(r'\D', '', raw)
-        if ad_id and ad_id in num:
+        if ad_id and str(ad_id) in num:
             continue
         if len(num) in (8, 9):
             num = '12' + num
@@ -164,6 +164,12 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                 print("  -> Navegando para a URL...")
                 await page.goto(url, timeout=60000, wait_until='domcontentloaded')
 
+                # Aguarda o React renderizar os componentes (título do anúncio é um bom indicador)
+                try:
+                    await page.wait_for_selector('h1', timeout=10000)
+                except Exception:
+                    pass  # Continua mesmo que o h1 demore
+
                 # ── Verifica expirado ─────────────────────────────────────────
                 title   = await page.title()
                 content = await page.content()
@@ -184,7 +190,7 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                     await page.wait_for_selector(
                         f"xpath={XPATH_BTN_PRINCIPAL}",
                         state="visible",
-                        timeout=6000
+                        timeout=15000  # 15s — React pode demorar para renderizar
                     )
                     btn = page.locator(f"xpath={XPATH_BTN_PRINCIPAL}").first
                     await btn.scroll_into_view_if_needed()
