@@ -10,7 +10,11 @@ load_dotenv()
 
 # ─── XPaths Confirmados (Samuel) ─────────────────────────────────────────────
 XPATH_BTN_PRINCIPAL      = '//*[@id="price-box-button-show-phone"]'
-XPATH_TELEFONE_PRINCIPAL = '//*[@id="price-box-container"]/div[2]/div[1]/span'
+XPATHS_TELEFONE_PRINCIPAL = [
+    '//*[@id="price-box-container"]/div[2]/div[1]/span',
+    '#price-box-container > div.flex.flex-col > div[class*="ad__sc-"] > span', # Seletor flexível baseado no do Samuel
+    '#price-box-container span' # Fallback final mais amplo
+]
 XPATH_BTN_DESCRICAO      = '//*[@id="description-title"]/div/div[2]/div/button'
 XPATH_MASCARA_DESCRICAO  = '//*[@id="description-title"]/div/div[2]/div/span/span/span'
 XPATH_TEL_DESCRICAO      = '//*[@id="description-title"]/div/div[2]/div/span/span/span'
@@ -38,28 +42,30 @@ def _extrair_numeros(texto: str, ad_id: str | None = None) -> list[str]:
     return list(dict.fromkeys(numeros))
 
 
-async def _aguardar_numero_revelar(page, xpath: str, timeout_ms: int = 8000) -> str:
+async def _aguardar_numero_revelar(page, selector: str, timeout_ms: int = 8000) -> str:
     """Aguarda o span mudar de máscara para número real e retorna o texto."""
+    # Prefixar xpath= se for xpath, senão é css selector
+    loc_str = f"xpath={selector}" if selector.startswith('/') else selector
+    
+    # A query js precisa usar querySelector ou evaluate dependendo do tipo
+    js_query = f"""() => {{
+        const el = "{selector}".startsWith('/') 
+            ? document.evaluate("{selector}", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+            : document.querySelector("{selector}");
+        if (!el) return false;
+        const txt = el.textContent || '';
+        const isNotMasked = !txt.includes('ver número') && !txt.includes('..');
+        const hasDigits = (txt.replace(/\\D/g, '').length >= 8);
+        return isNotMasked && hasDigits;
+    }}"""
+
     try:
-        await page.wait_for_function(
-            """(xpath) => {
-                const el = document.evaluate(
-                    xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
-                ).singleNodeValue;
-                if (!el) return false;
-                const txt = el.textContent || '';
-                const isNotMasked = !txt.includes('ver número') && !txt.includes('..');
-                const hasDigits = (txt.replace(/\\D/g, '').length >= 8);
-                return isNotMasked && hasDigits;
-            }""",
-            arg=xpath,
-            timeout=timeout_ms
-        )
-        el = page.locator(f"xpath={xpath}").first
+        await page.wait_for_function(js_query, timeout=timeout_ms)
+        el = page.locator(loc_str).first
         return (await el.text_content(timeout=3000) or "").strip()
     except Exception:
         try:
-            el = page.locator(f"xpath={xpath}").first
+            el = page.locator(loc_str).first
             return (await el.text_content(timeout=2000) or "").strip()
         except Exception:
             return ""
@@ -252,19 +258,24 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                                 print(f"  ✅ [PASSO 1] Telefone via modal do botão: {num}")
                     else:
                         # Se não pegou do modal, tenta raspar o número do span revelado
-                        try:
-                            tel_texto = await _aguardar_numero_revelar(
-                                page, XPATH_TELEFONE_PRINCIPAL, timeout_ms=8000
-                            )
-                            print(f"  -> [PASSO 1] Texto do span: '{tel_texto}'")
-                            for num in _extrair_numeros(tel_texto, ad_id):
-                                if num not in [t["telefone"] for t in dados["telefones"]]:
-                                    dados["telefones"].append({
-                                        "nome": None, "telefone": num, "origem": "botao"
-                                    })
-                                    print(f"  ✅ [PASSO 1] Telefone via botão: {num}")
-                        except Exception as e_read:
-                            print(f"  ⚠️ [PASSO 1] Não conseguiu ler span: {e_read}")
+                        sucesso_span = False
+                        for loc in XPATHS_TELEFONE_PRINCIPAL:
+                            try:
+                                tel_texto = await _aguardar_numero_revelar(
+                                    page, loc, timeout_ms=5000
+                                )
+                                print(f"  -> [PASSO 1] Texto do span ({loc}): '{tel_texto}'")
+                                for num in _extrair_numeros(tel_texto, ad_id):
+                                    existentes = [t.get("telefone") for t in dados["telefones"]]
+                                    if num not in existentes:
+                                        novo_contato = {"nome": None, "telefone": num, "origem": "botao"}
+                                        dados["telefones"].append(novo_contato)
+                                        print(f"  ✅ [PASSO 1] Telefone via botão: {num}")
+                                        sucesso_span = True
+                                if sucesso_span:
+                                    break
+                            except Exception as e_read:
+                                print(f"  ⚠️ [PASSO 1] Falhou no seletor '{loc}': {e_read}")
 
                 except Exception:
                     print("  ℹ️ [PASSO 1] Botão principal não encontrado (normal em alguns anúncios).")
@@ -357,18 +368,23 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                                         print(f"  ✅ [PASSO 4] Telefone via modal do botão: {num}")
                             else:
                                 # Tenta raspar o número inline
-                                try:
-                                    tel_texto = await _aguardar_numero_revelar(
-                                        page, XPATH_TELEFONE_PRINCIPAL, timeout_ms=5000
-                                    )
-                                    for num in _extrair_numeros(tel_texto, ad_id):
-                                        if num not in [t["telefone"] for t in dados["telefones"]]:
-                                            dados["telefones"].append({
-                                                "nome": None, "telefone": num, "origem": "botao"
-                                            })
-                                            print(f"  ✅ [PASSO 4] Telefone recuperado via botão: {num}")
-                                except Exception:
-                                    pass
+                                sucesso_span4 = False
+                                for loc in XPATHS_TELEFONE_PRINCIPAL:
+                                    try:
+                                        tel_texto = await _aguardar_numero_revelar(
+                                            page, loc, timeout_ms=5000
+                                        )
+                                        for num in _extrair_numeros(tel_texto, ad_id):
+                                            if num not in [t["telefone"] for t in dados["telefones"]]:
+                                                dados["telefones"].append({
+                                                    "nome": None, "telefone": num, "origem": "botao"
+                                                })
+                                                print(f"  ✅ [PASSO 4] Telefone recuperado via botão ({loc}): {num}")
+                                                sucesso_span4 = True
+                                        if sucesso_span4:
+                                            break
+                                    except Exception:
+                                        pass
                     except Exception as e_passo4:
                         print(f"  ℹ️ [PASSO 4] Tentativa falhou: {e_passo4}")
 
