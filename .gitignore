@@ -42,3 +42,21 @@ Referencia/
 scraper/.env
 scraper/.venv/
 scraper/__pycache__/
+scraper/tools/__pycache__/
+
+# Scraper — Debug/Teste (não fazem parte do sistema)
+scraper/debug_*.png
+scraper/diag*.png
+scraper/diag_*.py
+scraper/test_*.py
+scraper/check_*.py
+scraper/count_*.py
+scraper/get_*.py
+scraper/find_*.py
+scraper/fix_*.py
+scraper/inspect_*.py
+scraper/execute_*.py
+scraper/run_ciclo_*.py
+scraper/analyze_*.py
+scraper/verificar_*.py
+scraper/olx_session.json

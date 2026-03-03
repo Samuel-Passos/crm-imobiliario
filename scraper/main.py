@@ -6,6 +6,7 @@ import asyncio
 # Aqui vamos importar o orquestrador que roda os ciclos de IA
 import orchestrator
 from orchestrator import run_daily_scraper_cycle, prospect_single_lead, extract_phone_single_lead
+from pegar_cookies_nativos import extrair_cookies_do_chrome_ubuntu
 
 app = FastAPI(title="OLX Scraper Pro", description="Orquestrador Python com Browser Use")
 
@@ -17,6 +18,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+def refresh_cookies_on_startup():
+    """Auto-renova cookies da OLX ao iniciar o servidor."""
+    try:
+        print("🍪 [STARTUP] Atualizando cookies da OLX do Chrome...")
+        extrair_cookies_do_chrome_ubuntu()
+        print("🍪 [STARTUP] Cookies atualizados com sucesso!")
+    except Exception as e:
+        print(f"⚠️ [STARTUP] Falha ao atualizar cookies (não-fatal): {e}")
 
 class ImovelRequest(BaseModel):
     imovel_id: int

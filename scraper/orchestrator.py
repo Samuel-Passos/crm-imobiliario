@@ -34,19 +34,28 @@ async def check_pause():
 # 1. FLUXO DE EXTRAÇÃO DE TELEFONES
 # ==========================================
 async def extract_phone_single_lead(imovel_id: int):
-    """Extrai telefone de 1 único imóvel e atualiza o BD."""
+    """Extrai telefone de 1 único imóvel e atualiza o BD.
+    Se a API foi bloqueada pelo Cloudflare, NÃO marca como processado
+    para que o link fique na fila e seja tentado novamente.
+    """
     print(f"\n[ORQUESTRADOR] Iniciando extração do imóvel {imovel_id}")
     
     # Busca a URL do banco
     res = supabase.table("imoveis").select("url").eq("id", imovel_id).execute()
     if not res.data:
         print(f"❌ Imóvel {imovel_id} não encontrado.")
-        return
+        return {"bloqueado": False, "telefones": [], "erro": "Imovel nao encontrado"}
         
     url = res.data[0]["url"]
     
     # Roda a ferramenta de IA/Browser
     resultado = await extract_phones_from_olx(url)
+    
+    # Se foi bloqueado pelo Cloudflare, NÃO atualiza o banco
+    # O link permanece com telefone_pesquisado=false e volta à fila
+    if resultado.get("bloqueado", False):
+        print(f"🚫 [ORQUESTRADOR] Imóvel {imovel_id} BLOQUEADO — não será marcado como processado.")
+        return resultado
     
     # Atualiza o Banco
     telefones_array = resultado.get("telefones", [])
@@ -57,6 +66,13 @@ async def extract_phone_single_lead(imovel_id: int):
         "anuncio_expirado": resultado.get("expirado", False),
         "telefones_extraidos": telefones_array
     }
+    
+    # Integração Kanban: Move para "Expirados" se a URL retornar erro ou offline (404/Inativa).
+    if resultado.get("expirado", False):
+        update_data["kanban_coluna_id"] = "5f01efe9-6531-4259-9927-76c130e2851d"
+    else:
+        # Move para a coluna "Extração de Telefone" já que foi concluída a tentativa (passou pelo scraper e não é inativo)
+        update_data["kanban_coluna_id"] = "9cfb9d98-89cb-4169-88e1-db399f3ce877"
     
     # Se achamos pelo menos 1 contato, salvamos o principal no campo 'telefone' para o Kanban renderizar fácil
     if telefones_array and len(telefones_array) > 0:
@@ -96,6 +112,7 @@ async def process_batch_phone_extraction():
     via_botao = 0
     via_desc = 0
     erros = 0
+    bloqueios_consecutivos = 0  # Anti-bot: para após 3 bloqueios seguidos
 
     try:
         for imovel in imoveis:
@@ -110,6 +127,45 @@ async def process_batch_phone_extraction():
                 resultado = await extract_phone_single_lead(imovel["id"])
                 duration_lead = int(time.time() - start_lead)
                 
+                # ── Anti-bot: detecta bloqueio Cloudflare ────────────
+                if resultado and resultado.get("bloqueado", False):
+                    bloqueios_consecutivos += 1
+                    print(f"  🚫 Bloqueio {bloqueios_consecutivos}/3 (imóvel {imovel['id']} ficará na fila)")
+                    
+                    if bloqueios_consecutivos >= 3:
+                        print("\n🛑 [LOTE EXTRAÇÃO] SCRAPER PARADO: Cloudflare bloqueou 3 links consecutivos.")
+                        print("   Links bloqueados permanecem na fila para próxima execução.")
+                        
+                        # Registra o bloqueio no log
+                        if stats_id:
+                            supabase.table("logs_detalhados_scraper").insert({
+                                "estatistica_id": stats_id,
+                                "imovel_id": imovel["id"],
+                                "url": imovel.get("url"),
+                                "com_telefone": False,
+                                "origem_telefone": None,
+                                "expirado": False,
+                                "erro": "Cloudflare bloqueou 3x consecutivas — scraper parado",
+                                "duracao_segundos": duration_lead
+                            }).execute()
+                        break  # PARA o ciclo
+                    
+                    # Registra log do bloqueio individual e continua
+                    if stats_id:
+                        supabase.table("logs_detalhados_scraper").insert({
+                            "estatistica_id": stats_id,
+                            "imovel_id": imovel["id"],
+                            "url": imovel.get("url"),
+                            "com_telefone": False,
+                            "origem_telefone": None,
+                            "expirado": False,
+                            "erro": f"Cloudflare bloqueou (tentativa {bloqueios_consecutivos}/3)",
+                            "duracao_segundos": duration_lead
+                        }).execute()
+                    continue  # Pula para próximo link
+                
+                # Sucesso (sem bloqueio) — zera o contador
+                bloqueios_consecutivos = 0
                 count_proc += 1
                 
                 has_error = bool(resultado.get("erro"))
