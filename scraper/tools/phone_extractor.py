@@ -3,8 +3,9 @@ import re
 import json
 import os
 import random
+import time
 from typing import Dict, Any
-from playwright.async_api import async_playwright
+from playwright.async_api import BrowserContext
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -142,7 +143,7 @@ async def _fechar_modal_se_aberto(page) -> str:
 
 
 
-async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
+async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
     """
     Acessa a URL do anúncio OLX usando Playwright + cookies do Samuel.
 
@@ -163,47 +164,9 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
     if id_match:
         ad_id = id_match.group(1)
 
-    session_file = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), '..', 'olx_session.json')
-    )
-
     try:
-        async with async_playwright() as p:
-            print(f"🔍 Iniciando extração (Playwright + Sessão Samuel): {url}")
-
-            # headless=False é OBRIGATÓRIO: o Cloudflare da OLX detecta
-            # "HeadlessChrome" no header sec-ch-ua e bloqueia a API showphone
-            # com 403. Em modo headed, a API retorna 200 normalmente.
-            browser = await p.chromium.launch(
-                headless=False,
-                args=[
-                    '--disable-blink-features=AutomationControlled',
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                ]
-            )
-
-            try:
-                context = await browser.new_context(
-                    storage_state=session_file,
-                    user_agent=(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 (KHTML, like Gecko) "
-                        "Chrome/121.0.0.0 Safari/537.36"
-                    ),
-                    viewport={'width': 1280, 'height': 800}
-                )
-                print("  ✅ Sessão do Samuel carregada.")
-            except Exception as e:
-                print(f"  ⚠️ Sessão não encontrada, rodando sem login: {e}")
-                context = await browser.new_context()
-
-            await context.add_init_script(
-                "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });"
-            )
-
-            page = await context.new_page()
-
+        print(f"🔍 Iniciando extração na Aba Fixa do WS2: {url}")
+        if True:
             # ── Rastreamento de bloqueios de API ──────────────────────────
             api_bloqueada = False
 
@@ -239,7 +202,7 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                 ]):
                     print("  ⚠️ Anúncio expirado ou indisponível.")
                     dados["expirado"] = True
-                    await browser.close()
+                    await page.close()
                     return dados
 
                 # ═══════════════════════════════════════════════════════════
@@ -436,7 +399,7 @@ async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
                 print(f"  🚨 Erro durante navegação/interação: {e}")
                 dados["erro"] = str(e)
 
-            await browser.close()
+            # NÃO USAMOS "await page.close()", a página vive para a próxima extração.
             print(f"✅ Extração finalizada: {len(dados['telefones'])} contato(s) encontrado(s).")
 
     except Exception as e:
@@ -450,7 +413,7 @@ if __name__ == "__main__":
     url_teste = "https://sp.olx.com.br/vale-do-paraiba-e-litoral-norte/imoveis/casa-a-venda-no-j-satelite-aceita-troca-por-casa-no-jardim-portugal-ou-bosque-1467276395"
 
     async def teste_local():
-        resultado = await extract_phones_from_olx(url_teste)
+        resultado = await extract_phones_from_olx(url_teste, None)  # Requer page no uso real
         print("\n📋 Resultado Final:")
         print(json.dumps(resultado, indent=2, ensure_ascii=False))
 

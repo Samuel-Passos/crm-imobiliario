@@ -13,40 +13,67 @@ export PATH="$HOME/.local/bin:$PATH"
 
 echo "🚀 Iniciando CRM Imobiliário..."
 
-# 2. Iniciar o Backend do Scraper (FastAPI)
+# 2. Matar processos antigos que possam estar presos na porta 8765
+echo "🔄 Verificando processos anteriores na porta 8765..."
+OLD_PIDS=$(lsof -ti :8765 2>/dev/null)
+if [ -n "$OLD_PIDS" ]; then
+    echo "   ⚠️  Processo antigo encontrado (PID: $OLD_PIDS). Encerrando..."
+    kill -9 $OLD_PIDS 2>/dev/null
+    sleep 1
+    echo "   ✅ Processo antigo encerrado."
+else
+    echo "   ✅ Porta 8765 livre."
+fi
+
+# 3. Iniciar o Backend do Scraper (FastAPI)
 echo "📦 Iniciando Scraper Backend na porta 8765..."
 cd "$PROJECT_ROOT/scraper"
-# Tenta usar o python do ambiente virtual ou uv
-if [ -f ".venv/bin/python" ]; then
-    .venv/bin/python main.py &
+if [ -f ".venv/bin/uvicorn" ]; then
+    .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8765 --no-access-log &
 elif command -v uv &> /dev/null; then
-    uv run python main.py &
+    uv run uvicorn main:app --host 0.0.0.0 --port 8765 --no-access-log &
 else
-    python3 main.py &
+    python3 -m uvicorn main:app --host 0.0.0.0 --port 8765 --no-access-log &
 fi
 BACKEND_PID=$!
+echo "   ✅ Backend iniciado (PID: $BACKEND_PID)"
 
-# 3. Iniciar o Frontend do CRM (Vite)
+# 4. Iniciar o Frontend do CRM (Vite)
 echo "💻 Iniciando CRM Frontend na porta 5173..."
 cd "$PROJECT_ROOT/crm-imobiliario"
 npm run dev &
 FRONTEND_PID=$!
+echo "   ✅ Frontend iniciado (PID: $FRONTEND_PID)"
 
-# 3. Aguardar um pouco para os serviços subirem
+# 5. Aguardar os serviços subirem
+echo "⏳ Aguardando serviços iniciarem (5s)..."
 sleep 5
 
-# 4. Abrir o navegador
+# 6. Verificar se o backend de fato subiu
+if curl -s http://localhost:8765/status > /dev/null 2>&1; then
+    echo "   ✅ FastAPI respondendo na porta 8765!"
+else
+    echo "   ⚠️  FastAPI ainda não respondeu — verifique o log acima."
+fi
+
+# 7. Abrir o navegador
 echo "🌐 Abrindo o CRM no navegador..."
 xdg-open "http://localhost:5173/kanban"
 
 # Função para encerrar tudo ao fechar o terminal
 cleanup() {
-    echo "Stopping services..."
-    kill $BACKEND_PID $FRONTEND_PID
-    exit
+    echo ""
+    echo "🛑 Encerrando serviços..."
+    kill $BACKEND_PID $FRONTEND_PID 2>/dev/null
+    echo "   Serviços encerrados. Até logo!"
+    exit 0
 }
 
 trap cleanup SIGINT SIGTERM
 
-# Mantém o script rodando para não matar os processos em background imediatamente
+# Mantém o script rodando (Ctrl+C encerra tudo)
+echo ""
+echo "============================================"
+echo "  CRM em execução. Pressione Ctrl+C para encerrar tudo."
+echo "============================================"
 wait

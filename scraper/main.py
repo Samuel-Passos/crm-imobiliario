@@ -8,7 +8,31 @@ import orchestrator
 from orchestrator import run_daily_scraper_cycle, prospect_single_lead, extract_phone_single_lead
 from pegar_cookies_nativos import extrair_cookies_do_chrome_ubuntu
 
-app = FastAPI(title="OLX Scraper Pro", description="Orquestrador Python com Browser Use")
+from contextlib import asynccontextmanager
+import tools.browser_manager as browser_manager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    try:
+        print("🍪 [STARTUP] Atualizando cookies da OLX do Chrome...")
+        extrair_cookies_do_chrome_ubuntu()
+        print("🍪 [STARTUP] Cookies atualizados com sucesso!")
+    except Exception as e:
+        print(f"⚠️ [STARTUP] Falha ao atualizar cookies (não-fatal): {e}")
+        
+    # Inicializa o browser global persistente
+    try:
+        await browser_manager.start_browser()
+    except Exception as e:
+        print(f"⚠️ [STARTUP] Erro ao iniciar browser persistente: {e}")
+        
+    yield
+    
+    # Shutdown
+    await browser_manager.close_browser()
+
+app = FastAPI(title="OLX Scraper Pro", description="Orquestrador Python com Browser Persistente", lifespan=lifespan)
 
 # Libera CORS para o CRM React no localhost:5173 e 5174
 app.add_middleware(
@@ -19,15 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.on_event("startup")
-def refresh_cookies_on_startup():
-    """Auto-renova cookies da OLX ao iniciar o servidor."""
-    try:
-        print("🍪 [STARTUP] Atualizando cookies da OLX do Chrome...")
-        extrair_cookies_do_chrome_ubuntu()
-        print("🍪 [STARTUP] Cookies atualizados com sucesso!")
-    except Exception as e:
-        print(f"⚠️ [STARTUP] Falha ao atualizar cookies (não-fatal): {e}")
+
 
 class ImovelRequest(BaseModel):
     imovel_id: int

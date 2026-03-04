@@ -16,6 +16,7 @@ from tools.search_tools import (
 from tools.phone_extractor import extract_phones_from_olx
 from tools.chat_sender import send_chat_message_olx
 from tools.chat_reader import read_latest_chat_reply
+import tools.browser_manager as browser_manager
 
 load_dotenv()
 supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
@@ -48,8 +49,16 @@ async def extract_phone_single_lead(imovel_id: int):
         
     url = res.data[0]["url"]
     
+    # Pega o contexto global do browser
+    page = browser_manager.get_page()
+    lock = browser_manager.get_lock()
+    if not page:
+        print("❌ [ORQUESTRADOR] Página global do browser não encontrada!")
+        return {"bloqueado": False, "telefones": [], "erro": "Browser não iniciado"}
+        
     # Roda a ferramenta de IA/Browser
-    resultado = await extract_phones_from_olx(url)
+    async with lock:
+        resultado = await extract_phones_from_olx(url, page)
     
     # Se foi bloqueado pelo Cloudflare, NÃO atualiza o banco
     # O link permanece com telefone_pesquisado=false e volta à fila
