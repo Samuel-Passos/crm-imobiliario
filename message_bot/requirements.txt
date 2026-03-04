@@ -1,0 +1,6 @@
+browser-use
+langchain
+supabase
+python-dotenv
+pydantic-ai
+google-genai

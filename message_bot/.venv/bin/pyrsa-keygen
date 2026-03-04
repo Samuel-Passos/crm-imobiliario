@@ -1,0 +1,6 @@
+#!/home/samuel/Desktop/Scraper_antigravity/message_bot/.venv/bin/python
+import sys
+from rsa.cli import keygen
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(keygen())
