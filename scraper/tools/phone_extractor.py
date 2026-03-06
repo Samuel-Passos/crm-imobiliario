@@ -196,13 +196,20 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
                 # ── Verifica expirado ─────────────────────────────────────────
                 title   = await page.title()
                 content = await page.content()
+                
+                # Checa bloqueio na pagina principal
+                if "attention required" in title.lower() or "cloudflare" in title.lower() or "access denied" in title.lower():
+                    print("  🚫 BLOQUEIO DETECTADO: Página principal bloqueada pelo Cloudflare (403).")
+                    dados["bloqueado"] = True
+                    return dados
+
                 if any(kw in title.lower() or kw in content.lower() for kw in [
                     "anúncio finalizado", "ops!", "não encontrado",
                     "anúncio desativado", "página não encontrada"
                 ]):
                     print("  ⚠️ Anúncio expirado ou indisponível.")
                     dados["expirado"] = True
-                    await page.close()
+                    # Não fechamos a página (await page.close()) pois ela é a aba fixa global do Workspace 2
                     return dados
 
                 # ═══════════════════════════════════════════════════════════

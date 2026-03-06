@@ -5,7 +5,7 @@ import asyncio
 
 # Aqui vamos importar o orquestrador que roda os ciclos de IA
 import orchestrator
-from orchestrator import run_daily_scraper_cycle, prospect_single_lead, extract_phone_single_lead
+from orchestrator import run_daily_scraper_cycle, extract_phone_single_lead
 from pegar_cookies_nativos import extrair_cookies_do_chrome_ubuntu
 
 from contextlib import asynccontextmanager
@@ -99,13 +99,6 @@ async def extract_one_phone(payload: ImovelRequest, background_tasks: Background
     background_tasks.add_task(extract_phone_single_lead, payload.imovel_id)
     return {"status": "started", "message": f"Extração de telefones do imóvel {payload.imovel_id} iniciada!"}
 
-@app.post("/prospect")
-async def prospect_one_lead(payload: ImovelRequest, background_tasks: BackgroundTasks):
-    """
-    O usuário clicou em "Iniciar Prospecção Agora" para um imóvel específico no CRM.
-    """
-    background_tasks.add_task(prospect_single_lead, payload.imovel_id)
-    return {"status": "started", "message": f"Prospecção do imóvel {payload.imovel_id} enviada para a fila!"}
 
 if __name__ == "__main__":
     import uvicorn

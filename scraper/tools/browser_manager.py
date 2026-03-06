@@ -11,12 +11,30 @@ _context: BrowserContext | None = None
 _page: None = None  # Agora publicamos a aba padrão para reuso seguro!
 _extraction_lock = asyncio.Lock()  # Lock para garantir sequencialidade e evitar colisão de cliques
 
+import random
+from playwright_stealth import Stealth
 
+def _get_random_fingerprint():
+    user_agents = [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Safari/605.1.15"
+    ]
+    viewports = [
+        {'width': 1920, 'height': 1080},
+        {'width': 1366, 'height': 768},
+        {'width': 1536, 'height': 864},
+        {'width': 1440, 'height': 900},
+        {'width': 1280, 'height': 800}
+    ]
+    return random.choice(user_agents), random.choice(viewports)
 
 async def start_browser() -> BrowserContext:
     """
     Inicia o Playwright, o Chromium (via watcher no WS2), carrega os cookies,
-    abre a aba padrão e retorna o contexto global.
+    abre a aba padrão e retorna o contexto global, com evasao Anti-Bot.
     """
     global _playwright, _browser, _context
 
@@ -42,21 +60,21 @@ async def start_browser() -> BrowserContext:
         os.path.join(os.path.dirname(__file__), '..', 'olx_session.json')
     )
 
+    chosen_ua, chosen_vp = _get_random_fingerprint()
+    print(f"  🎭 [ANTI-BOT] Camuflagem sorteada: Viewport {chosen_vp['width']}x{chosen_vp['height']} | UA: ...{chosen_ua[-40:]}")
+
     try:
         _context = await _browser.new_context(
             storage_state=session_file,
-            user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/121.0.0.0 Safari/537.36"
-            ),
-            viewport={'width': 1280, 'height': 800}
+            user_agent=chosen_ua,
+            viewport=chosen_vp
         )
         print("  ✅ [BROWSER MANAGER] Sessão do Samuel carregada com sucesso.")
     except Exception as e:
         print(f"  ⚠️ [BROWSER MANAGER] Sessão não encontrada, rodando sem login: {e}")
         _context = await _browser.new_context(
-            viewport={'width': 1280, 'height': 800}
+            user_agent=chosen_ua,
+            viewport=chosen_vp
         )
 
     await _context.add_init_script(
@@ -66,6 +84,9 @@ async def start_browser() -> BrowserContext:
     # Abre a página em branco primeiro para pegar a janela
     print("  -> Preparando a aba padrão e ancorando no Workspace 2...")
     default_page = await _context.new_page()
+    
+    # Injeta proteções stealth na página para ocultar a assinatura de robô
+    await Stealth().apply_stealth_async(default_page)
     
     # ── MÁGICA ──
     # Para mover a janela correta, damos um título impossível de conflitar.
