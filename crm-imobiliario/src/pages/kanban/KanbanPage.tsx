@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useMemo, memo } from 'react'
 import {
     DndContext,
     DragOverlay,
-    closestCenter,
     closestCorners,
     pointerWithin,
     PointerSensor,
@@ -56,10 +55,9 @@ const SortableCard = memo(function SortableCard({ imovel, onUpdate }: {
 })
 
 // ── Droppable column ──────────────────────────────────────
-const DroppableColuna = memo(function DroppableColuna({ coluna, cards, allCards, totalCount, onUpdate, onLoadMore }: {
+const DroppableColuna = memo(function DroppableColuna({ coluna, cards, totalCount, onUpdate, onLoadMore }: {
     coluna: KanbanColuna
     cards: ImovelKanban[]
-    allCards: ImovelKanban[]
     totalCount: number
     onUpdate: (id: number, u: Partial<ImovelKanban>) => void
     onLoadMore: () => void
@@ -708,7 +706,6 @@ export function KanbanPage() {
                                 key={col.id}
                                 coluna={col}
                                 cards={visibleCards}
-                                allCards={allCards}
                                 totalCount={allCards.length}
                                 onUpdate={updateImovel}
                                 onLoadMore={() => handleLoadMore(col.id)}

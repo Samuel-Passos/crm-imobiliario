@@ -331,9 +331,9 @@ export function DashboardPage() {
             }
         }
 
-        // Se estiver executando, polling a cada 2 segundos para sensação de "tempo real"
+        // Se estiver executando, polling a cada 1 segundo para sensação de "tempo real"
         // Se não estiver, polling a cada 10 segundos apenas para detectar início externo
-        const delay = executing ? 2000 : 10000;
+        const delay = executing ? 1000 : 10000;
 
         interval = setInterval(runPolling, delay)
 
@@ -687,6 +687,7 @@ export function DashboardPage() {
                                                                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
                                                                         <thead>
                                                                             <tr style={{ textAlign: 'left', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>
+                                                                                <th style={{ padding: '0.5rem' }}>Hora</th>
                                                                                 <th style={{ padding: '0.5rem' }}>ID Imóvel</th>
                                                                                 <th style={{ padding: '0.5rem' }}>Link</th>
                                                                                 <th style={{ padding: '0.5rem' }}>Resultado</th>
@@ -697,6 +698,9 @@ export function DashboardPage() {
                                                                         <tbody>
                                                                             {logsDoCiclo.map(log => (
                                                                                 <tr key={log.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                                                                                    <td style={{ padding: '0.5rem', color: 'var(--text-muted)' }}>
+                                                                                        {new Date(log.data_hora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                                                    </td>
                                                                                     <td style={{ padding: '0.5rem' }}>#{log.imovel_id}</td>
                                                                                     <td style={{ padding: '0.5rem' }}>
                                                                                         <a href={log.url} target="_blank" rel="noreferrer" style={{ color: 'var(--brand-500)', textDecoration: 'none' }}>Ver Anúncio 🔗</a>
@@ -707,7 +711,9 @@ export function DashboardPage() {
                                                                                                 log.erro ? <span style={{ color: 'var(--error)' }}>❌ Erro</span> :
                                                                                                     <span style={{ color: 'var(--text-muted)' }}>Não encontrado</span>}
                                                                                     </td>
-                                                                                    <td style={{ padding: '0.5rem', textTransform: 'capitalize' }}>{log.origem_telefone || '-'}</td>
+                                                                                    <td style={{ padding: '0.5rem', textTransform: 'capitalize' }}>
+                                                                                        {log.origem_telefone === 'ambos' ? 'Botão e Descrição' : (log.origem_telefone || '-')}
+                                                                                    </td>
                                                                                     <td style={{ padding: '0.5rem' }}>{log.duracao_segundos}s</td>
                                                                                 </tr>
                                                                             ))}
