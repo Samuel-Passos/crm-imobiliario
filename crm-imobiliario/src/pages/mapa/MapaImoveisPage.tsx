@@ -1,10 +1,124 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import L from 'leaflet'
 import { MapView } from '../../components/MapView'
 import type { ImovelKanban } from '../kanban/types'
 import { ImovelModal } from '../kanban/ImovelModal'
 import toast from 'react-hot-toast'
+import './MapaImoveisPage.css'
+
+function MultiSelectDropdown({ 
+    label, 
+    options, 
+    selected, 
+    onChange, 
+    placeholder = "Selecionar..." 
+}: { 
+    label: string, 
+    options: string[], 
+    selected: string[], 
+    onChange: (values: string[]) => void,
+    placeholder?: string
+}) {
+    const [isOpen, setIsOpen] = useState(false)
+    const [searchTerm, setSearchTerm] = useState('')
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    const filteredOptions = useMemo(() => {
+        return options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase()))
+    }, [options, searchTerm])
+
+    const toggleOption = (opt: string) => {
+        if (selected.includes(opt)) {
+            onChange(selected.filter(i => i !== opt))
+        } else {
+            onChange([...selected, opt])
+        }
+    }
+
+    return (
+        <div ref={containerRef} className="m3-dropdown-container">
+            <label className="m3-label" style={{ marginBottom: '0.5rem', display: 'block' }}>{label}</label>
+            <div 
+                onClick={() => setIsOpen(!isOpen)}
+                className={`m3-dropdown-trigger ${isOpen ? 'open' : ''}`}
+            >
+                <span style={{ 
+                    fontSize: '0.9rem', 
+                    whiteSpace: 'nowrap', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    color: selected.length > 0 ? 'var(--m3-on-surface)' : 'var(--m3-on-surface-variant)'
+                }}>
+                    {selected.length === 0 ? placeholder : `${selected.length} selecionado(s)`}
+                </span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </div>
+
+            {isOpen && (
+                <div className="m3-dropdown-menu">
+                    <input 
+                        autoFocus
+                        type="text"
+                        className="m3-input"
+                        placeholder="Pesquisar..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        onClick={e => e.stopPropagation()}
+                        style={{ height: '36px', fontSize: '0.85rem' }}
+                    />
+                    
+                    <div className="m3-dropdown-options">
+                        {filteredOptions.length === 0 && (
+                            <div style={{ padding: '8px', fontSize: '0.85rem', color: 'var(--m3-on-surface-variant)', textAlign: 'center' }}>Nenhum resultado</div>
+                        )}
+                        {filteredOptions.map(opt => (
+                            <div 
+                                key={opt}
+                                className={`m3-dropdown-opt ${selected.includes(opt) ? 'selected' : ''}`}
+                                onClick={(e) => { e.stopPropagation(); toggleOption(opt) }}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    checked={selected.includes(opt)} 
+                                    readOnly 
+                                    className="m3-checkbox"
+                                    style={{ margin: 0 }} 
+                                />
+                                <span style={{ flex: 1 }}>{opt}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {selected.length > 0 && (
+                        <div style={{ borderTop: '1px solid var(--m3-outline-variant)', paddingTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); onChange([]) }}
+                                className="m3-btn-text"
+                                style={{ color: 'var(--m3-primary)' }}
+                            >
+                                Limpar
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    )
+}
+
 
 export function MapaImoveisPage() {
     const [imoveis, setImoveis] = useState<ImovelKanban[]>([])
@@ -16,14 +130,15 @@ export function MapaImoveisPage() {
     // Novos filtros
     const [precoMin, setPrecoMin] = useState('')
     const [precoMax, setPrecoMax] = useState('')
-    const [buscaBairro, setBuscaBairro] = useState('')
-    const [buscaCondominio, setBuscaCondominio] = useState('')
     const [quartos, setQuartos] = useState('')
+    const [tipoImovel, setTipoImovel] = useState('')
+    const [subtipo, setSubtipo] = useState('')
+    const [condominiosSelecionados, setCondominiosSelecionados] = useState<string[]>([])
+    const [bairrosSelecionados, setBairrosSelecionados] = useState<string[]>([])
+    const [cidadesSelecionadas, setCidadesSelecionadas] = useState<string[]>([])
+    
     const [mostrarFiltrosAvancados, setMostrarFiltrosAvancados] = useState(false)
-    const [loadingGeocode, setLoadingGeocode] = useState(false)
-    const [loadingReprocess, setLoadingReprocess] = useState(false)
     const [loadingGoogle, setLoadingGoogle] = useState(false)
-    const [loadingGoogleReprocess, setLoadingGoogleReprocess] = useState(false)
     const [isGeocodingRunning, setIsGeocodingRunning] = useState(false)
     
     // Novo Estado: Área visível do mapa
@@ -35,7 +150,7 @@ export function MapaImoveisPage() {
         // Polling para verificar se geocodificador está rodando
         const interval = setInterval(async () => {
             try {
-                const res = await fetch('http://localhost:8765/geocode/status')
+                const res = await fetch('http://127.0.0.1:8765/geocode/status')
                 const data = await res.json()
                 setIsGeocodingRunning(data.running)
             } catch (err) {
@@ -46,6 +161,32 @@ export function MapaImoveisPage() {
         return () => clearInterval(interval)
     }, [])
 
+    async function handleRevisarGoogleSingle(imovelId: number) {
+        setLoadingGoogle(true)
+        const loadingToast = toast.loading('Consultando Google Maps...')
+        try {
+            const res = await fetch('http://127.0.0.1:8765/geocode/google/single', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imovel_id: imovelId })
+            })
+            if (!res.ok) throw new Error('Servidor offline')
+            const data = await res.json()
+            if (data.sucesso) {
+                toast.success('Localização corrigida via Google!', { id: loadingToast })
+                setImoveis(prev => prev.map(im => 
+                    im.id === imovelId ? { ...im, latitude: data.coords.lat, longitude: data.coords.lng } : im
+                ))
+            } else {
+                toast.error(data.erro || 'Não foi possível localizar', { id: loadingToast })
+            }
+        } catch (err) {
+            toast.error('Erro de conexão com o robô.', { id: loadingToast })
+        } finally {
+            setLoadingGoogle(false)
+        }
+    }
+
     async function carregarImoveis() {
         setLoading(true)
         const { data, error } = await supabase
@@ -53,54 +194,21 @@ export function MapaImoveisPage() {
             .select('*')
             .not('latitude', 'is', null)
             .not('longitude', 'is', null)
-            .limit(50000)
+            .or('anuncio_expirado.is.null,anuncio_expirado.eq.false')
+            .limit(50000) // Voltando ao limite original estável
 
         if (error) {
             toast.error('Erro ao carregar mapa')
-        } else {
+        } else if (data) {
             setImoveis(data as ImovelKanban[])
         }
         setLoading(false)
     }
 
-    const handleRunGeocoder = async () => {
-        setLoadingGeocode(true)
-        try {
-            const response = await fetch('http://localhost:8765/geocode', { method: 'POST' })
-            const data = await response.json()
-            if (response.ok) {
-                toast.success('Buscando coordenadas em background!', { duration: 5000 })
-                setIsGeocodingRunning(true)
-            } else {
-                toast.error(`Falha ao iniciar geocoder: ${data.message}`)
-            }
-        } catch (error) {
-            toast.error('Falha de conexão. O servidor do scraper (FastAPI) está rodando?')
-        }
-        setTimeout(() => setLoadingGeocode(false), 2000)
-    }
-
-    const handleRunReprocess = async () => {
-        setLoadingReprocess(true)
-        try {
-            const response = await fetch('http://localhost:8765/geocode/reprocess', { method: 'POST' })
-            const data = await response.json()
-            if (response.ok) {
-                toast.success('Reprocessando coordenadas imprecisas em background!', { duration: 5000 })
-                setIsGeocodingRunning(true)
-            } else {
-                toast.error(`Falha ao reprocessar: ${data.message}`)
-            }
-        } catch (error) {
-            toast.error('Falha de conexão. O servidor do scraper está rodando?')
-        }
-        setTimeout(() => setLoadingReprocess(false), 2000)
-    }
-
     const handleRunGoogleGeocoder = async () => {
         setLoadingGoogle(true)
         try {
-            const response = await fetch('http://localhost:8765/geocode/google', { method: 'POST' })
+            const response = await fetch('http://127.0.0.1:8765/geocode/google', { method: 'POST' })
             const data = await response.json()
             if (response.ok) {
                 toast.success('🗺️ Google Maps: buscando coordenadas em background!', { duration: 5000 })
@@ -114,33 +222,39 @@ export function MapaImoveisPage() {
         setTimeout(() => setLoadingGoogle(false), 2000)
     }
 
-    const handleRunGoogleReprocess = async () => {
-        setLoadingGoogleReprocess(true)
+
+    const handleStopGeocoder = async () => {
         try {
-            const response = await fetch('http://localhost:8765/geocode/google/reprocess', { method: 'POST' })
-            const data = await response.json()
-            if (response.ok) {
-                toast.success('🗺️ Google Maps: reprocessando imóveis imprecisos em background!', { duration: 5000 })
-                setIsGeocodingRunning(true)
-            } else {
-                toast.error(`Falha: ${data.message}`)
-            }
-        } catch (error) {
-            toast.error('Falha de conexão. O servidor do scraper está rodando?')
+            await fetch('http://127.0.0.1:8765/geocode/stop', { method: 'POST' })
+            toast.success('Sinal de parada enviado!')
+        } catch (err) {
+            toast.error('Erro ao parar geocodificador.')
         }
-        setTimeout(() => setLoadingGoogleReprocess(false), 2000)
     }
 
-    const handleStopGeocode = async () => {
-        try {
-            const response = await fetch('http://localhost:8765/geocode/stop', { method: 'POST' })
-            if (response.ok) {
-                toast.success('Sinal de parada enviado. O robô parará após o item atual.')
-            }
-        } catch (error) {
-            toast.error('Erro ao tentar parar geocodificador.')
+    const options = useMemo(() => {
+        const bairros = new Set<string>()
+        const condominios = new Set<string>()
+        const tipos = new Set<string>()
+        const subtipos = new Set<string>()
+        const cidades = new Set<string>()
+
+        imoveis.forEach(im => {
+            if (im.bairro) bairros.add(im.bairro)
+            if (im.nome_condominio) condominios.add(im.nome_condominio)
+            if (im.tipo_imovel) tipos.add(im.tipo_imovel)
+            if (im.subtipo) subtipos.add(im.subtipo)
+            if (im.cidade) cidades.add(im.cidade)
+        })
+
+        return {
+            bairros: Array.from(bairros).sort(),
+            condominios: Array.from(condominios).sort(),
+            tipos: Array.from(tipos).sort(),
+            subtipos: Array.from(subtipos).sort(),
+            cidades: Array.from(cidades).sort()
         }
-    }
+    }, [imoveis])
 
     const filtrados = imoveis.filter(im => {
         if (tipoNegocio && im.tipo_negocio !== tipoNegocio) return false
@@ -153,14 +267,21 @@ export function MapaImoveisPage() {
             const max = parseFloat(precoMax.replace(/\D/g, ''))
             if (!isNaN(max) && (im.preco || 0) > max) return false
         }
-        if (buscaBairro) {
-            const q = buscaBairro.toLowerCase()
-            if (!(im.bairro || '').toLowerCase().includes(q)) return false
+        if (bairrosSelecionados.length > 0) {
+            if (!im.bairro || !bairrosSelecionados.includes(im.bairro)) return false
         }
-        if (buscaCondominio) {
-            const q = buscaCondominio.toLowerCase()
-            if (!(im.nome_condominio || '').toLowerCase().includes(q)) return false
+        
+        if (cidadesSelecionadas.length > 0) {
+            if (!im.cidade || !cidadesSelecionadas.includes(im.cidade)) return false
         }
+        
+        if (condominiosSelecionados.length > 0) {
+            if (!im.nome_condominio || !condominiosSelecionados.includes(im.nome_condominio)) return false
+        }
+
+        if (tipoImovel && im.tipo_imovel !== tipoImovel) return false
+        if (subtipo && im.subtipo !== subtipo) return false
+
         if (quartos) {
             const qts = parseInt(quartos, 10)
             if (!isNaN(qts) && (im.quartos || 0) < qts) return false
@@ -179,7 +300,7 @@ export function MapaImoveisPage() {
 
     // Imóveis que vão para a lista lateral (limitados aos que estão dentro da tela atual)
     const imoveisVisiveis = useMemo(() => {
-        if (!mapBounds) return filtrados.slice(0, 50) // Fallback inicial caso não tenha bound ainda
+        if (!mapBounds) return filtrados.slice(0, 50)
 
         const visiveis = filtrados.filter(im => {
             if (im.latitude == null || im.longitude == null) return false
@@ -187,89 +308,76 @@ export function MapaImoveisPage() {
             return mapBounds.contains(pt)
         })
 
-        return visiveis.slice(0, 50) // Limita a 50 na lista por performance
+        return visiveis.slice(0, 50)
     }, [filtrados, mapBounds])
 
-    const mapPoints = filtrados.map(im => ({
+    const mapPoints = useMemo(() => filtrados.map(im => ({
         id: im.id,
-        lat: im.latitude!,
-        lng: im.longitude!,
+        lat: Number(im.latitude),
+        lng: Number(im.longitude),
         onMarkerClick: () => setImovelSelecionado(im),
         tooltipContent: (
-            <div style={{ minWidth: 200, maxWidth: 240 }}>
+            <div style={{ minWidth: 200, maxWidth: 240, overflow: 'hidden' }}>
                 {im.foto_capa && (
                     <img
                         src={im.foto_capa}
                         alt=""
-                        style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: '6px 6px 0 0', display: 'block', margin: '-8px -10px 8px -10px', width: 'calc(100% + 20px)' }}
+                        style={{ height: 110, width: '100%', objectFit: 'cover', display: 'block' }}
                     />
                 )}
-                <div style={{ fontWeight: 700, fontSize: '0.82rem', lineHeight: 1.3, marginBottom: 3, color: '#1a1a2e' }}>
-                    {im.titulo}
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#666', marginBottom: 4 }}>
-                    📍 {im.bairro || im.cidade || '—'}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-                    <div style={{ fontWeight: 800, color: '#6366f1', fontSize: '0.85rem' }}>
-                        {im.preco ? `R$ ${im.preco.toLocaleString('pt-BR')}` : 'Preço sob consulta'}
+                <div style={{ padding: '10px' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.3, marginBottom: 4, color: '#1A1C1E' }}>
+                        {im.titulo}
                     </div>
-                    {im.quartos && (
-                        <div style={{ fontSize: '0.68rem', background: '#f0f0f5', padding: '2px 7px', borderRadius: 4, color: '#555' }}>
-                            🛏 {im.quartos} qto{im.quartos > 1 ? 's' : ''}
+                    <div style={{ fontSize: '0.75rem', color: 'var(--m3-on-surface-variant)', marginBottom: 6 }}>
+                        📍 {im.bairro || im.cidade || '—'}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                        <div style={{ fontWeight: 800, color: 'var(--m3-primary)', fontSize: '0.95rem' }}>
+                            {im.preco ? `R$ ${im.preco.toLocaleString('pt-BR')}` : 'S/P'}
                         </div>
-                    )}
-                </div>
-                <div style={{ marginTop: 8, fontSize: '0.68rem', color: '#888', textAlign: 'center' }}>
-                    Clique para ver detalhes →
+                        {im.quartos && (
+                            <div style={{ fontSize: '0.7rem', background: 'var(--m3-surface)', padding: '2px 8px', borderRadius: 4, color: 'var(--m3-on-surface-variant)', border: '1px solid var(--m3-outline-variant)' }}>
+                                🛏 {im.quartos}q
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         )
-    }))
+    })), [filtrados])
 
     return (
-        <div style={{ padding: '1.5rem', maxWidth: 1400, margin: '0 auto', width: '100%', height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
-            {/* Header / Filtros */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: mostrarFiltrosAvancados ? '0.5rem' : '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="map-page-container">
+            {/* Header */}
+            <header className="map-header">
                 <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Mapa de Imóveis</h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                        Visualizando {filtrados.length} imóveis com localização
-                    </p>
+                    <h1>🗺️ Mapa de Imóveis</h1>
+                    <p>Visualizando {filtrados.length} imóveis com coordenadas.</p>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem', flex: 1, justifyContent: 'flex-end', alignItems: 'center', minWidth: 300, flexWrap: 'wrap' }}>
+                <div className="filter-bar-main">
                     <input
-                        className="form-input"
+                        className="m3-input"
                         placeholder="🔍 Título, bairro ou cidade..."
                         value={busca}
                         onChange={e => setBusca(e.target.value)}
-                        style={{ maxWidth: 300 }}
+                        style={{ maxWidth: 280 }}
                     />
                     <select
-                        className="form-select"
+                        className="m3-select"
                         value={tipoNegocio}
                         onChange={e => setTipoNegocio(e.target.value as any)}
                         style={{ width: 'auto' }}
                     >
-                        <option value="">Todos os negócios</option>
+                        <option value="">Tipo Negócio</option>
                         <option value="venda">Venda</option>
                         <option value="aluguel">Aluguel</option>
                     </select>
                     
                     <button 
-                        className="btn"
+                        className={`m3-btn ${mostrarFiltrosAvancados ? 'm3-btn-active' : 'm3-btn-secondary'}`}
                         onClick={() => setMostrarFiltrosAvancados(!mostrarFiltrosAvancados)}
-                        style={{ 
-                            background: mostrarFiltrosAvancados ? 'var(--brand-500)' : 'var(--bg-surface)', 
-                            color: mostrarFiltrosAvancados ? '#fff' : 'var(--text-primary)',
-                            border: '1px solid',
-                            borderColor: mostrarFiltrosAvancados ? 'var(--brand-500)' : 'var(--border)',
-                            padding: '0.5rem 1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                        }}
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
@@ -278,209 +386,141 @@ export function MapaImoveisPage() {
                     </button>
 
                     <button
-                        className="btn"
-                        onClick={handleRunGeocoder}
-                        disabled={loadingGeocode}
-                        style={{
-                            background: 'var(--bg-surface)',
-                            color: 'var(--brand-500)',
-                            border: '1px solid var(--brand-500)',
-                            padding: '0.5rem 1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.background = 'var(--brand-500)'; e.currentTarget.style.color = '#fff' }}
-                        onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = 'var(--brand-500)' }}
-                    >
-                        {loadingGeocode ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : <span>📍</span>}
-                        Buscar Coordenadas
-                    </button>
-
-                    <button
-                        className="btn"
-                        onClick={handleRunReprocess}
-                        disabled={loadingReprocess}
-                        title="Melhora pinos que estão no centro do bairro para nível de rua"
-                        style={{
-                            background: 'var(--bg-surface)',
-                            color: 'var(--warning, #f59e0b)',
-                            border: '1px solid var(--warning, #f59e0b)',
-                            padding: '0.5rem 1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.background = 'var(--warning, #f59e0b)'; e.currentTarget.style.color = '#fff' }}
-                        onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = 'var(--warning, #f59e0b)' }}
-                    >
-                        {loadingReprocess ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : <span>♻️</span>}
-                        Reprocessar Coords
-                    </button>
-
-                    <button
-                        className="btn"
+                        className="m3-btn m3-btn-success"
                         onClick={handleRunGoogleGeocoder}
                         disabled={loadingGoogle}
                         title="Google Maps: geocodificar imóveis sem coordenadas"
-                        style={{
-                            background: 'var(--bg-surface)',
-                            color: '#10b981',
-                            border: '1px solid #10b981',
-                            padding: '0.5rem 1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.background = '#10b981'; e.currentTarget.style.color = '#fff' }}
-                        onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = '#10b981' }}
                     >
                         {loadingGoogle ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : <span>🗺️</span>}
                         Google (novos)
                     </button>
 
-                    <button
-                        className="btn"
-                        onClick={handleRunGoogleReprocess}
-                        disabled={loadingGoogleReprocess}
-                        title="Google Maps: reprocessar imóveis com geocode_needs_review=true"
-                        style={{
-                            background: 'var(--bg-surface)',
-                            color: '#06b6d4',
-                            border: '1px solid #06b6d4',
-                            padding: '0.5rem 1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            transition: 'all 0.2s',
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.background = '#06b6d4'; e.currentTarget.style.color = '#fff' }}
-                        onMouseOut={(e) => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = '#06b6d4' }}
-                    >
-                        {loadingGoogleReprocess ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : <span>🔄</span>}
-                        Google (revisão)
-                    </button>
-
                     {isGeocodingRunning && (
                         <button
-                            className="btn"
-                            onClick={handleStopGeocode}
-                            style={{
-                                background: '#fee2e2',
-                                color: '#b91c1c',
-                                border: '1px solid #f87171',
-                                padding: '0.5rem 1rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                fontWeight: 600
-                            }}
+                            className="m3-btn"
+                            onClick={handleStopGeocoder}
+                            style={{ background: '#FCE8E6', color: 'var(--m3-error)', border: '1px solid var(--m3-error)' }}
                         >
-                            <span style={{ fontSize: '1.1rem' }}>🛑</span>
-                            Cancelar
+                            🛑 Cancelar
                         </button>
                     )}
                 </div>
-            </div>
+            </header>
 
-            {/* Filtros Avançados (Expansível) */}
+            {/* Filtros Avançados */}
             {mostrarFiltrosAvancados && (
-                <div style={{ 
-                    display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', 
-                    background: 'var(--bg-surface)', padding: '1rem', borderRadius: 'var(--radius-md)', 
-                    border: '1px solid var(--border)',
-                    animation: 'fadeIn 0.2s ease-out'
-                }}>
-                    <div style={{ flex: 1, minWidth: 150 }}>
-                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Preço Mín (R$)</label>
+                <div className="advanced-filters-panel">
+                    <div className="m3-field-group">
+                        <label className="m3-label">Preço Mín</label>
                         <input
-                            className="form-input"
+                            className="m3-input"
                             type="number"
-                            placeholder="Ex: 100000"
+                            placeholder="R$"
                             value={precoMin}
                             onChange={e => setPrecoMin(e.target.value)}
-                            style={{ width: '100%' }}
                         />
                     </div>
-                    <div style={{ flex: 1, minWidth: 150 }}>
-                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Preço Máx (R$)</label>
+                    <div className="m3-field-group">
+                        <label className="m3-label">Preço Máx</label>
                         <input
-                            className="form-input"
+                            className="m3-input"
                             type="number"
-                            placeholder="Ex: 500000"
+                            placeholder="R$"
                             value={precoMax}
                             onChange={e => setPrecoMax(e.target.value)}
-                            style={{ width: '100%' }}
                         />
                     </div>
-                    <div style={{ flex: 2, minWidth: 200 }}>
-                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Bairro</label>
-                        <input
-                            className="form-input"
-                            placeholder="Ex: Centro"
-                            value={buscaBairro}
-                            onChange={e => setBuscaBairro(e.target.value)}
-                            style={{ width: '100%' }}
-                        />
-                    </div>
-                    <div style={{ flex: 2, minWidth: 200 }}>
-                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Condomínio</label>
-                        <input
-                            className="form-input"
-                            placeholder="Nome do condomínio"
-                            value={buscaCondominio}
-                            onChange={e => setBuscaCondominio(e.target.value)}
-                            style={{ width: '100%' }}
-                        />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 120 }}>
-                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Dormitórios</label>
+                    
+                    <MultiSelectDropdown 
+                        label="Cidades" 
+                        options={options.cidades} 
+                        selected={cidadesSelecionadas} 
+                        onChange={setCidadesSelecionadas}
+                        placeholder="Todas"
+                    />
+                    
+                    <MultiSelectDropdown 
+                        label="Bairros" 
+                        options={options.bairros} 
+                        selected={bairrosSelecionados} 
+                        onChange={setBairrosSelecionados}
+                        placeholder="Todos"
+                    />
+                    
+                    <MultiSelectDropdown 
+                        label="Condomínios" 
+                        options={options.condominios} 
+                        selected={condominiosSelecionados} 
+                        onChange={setCondominiosSelecionados}
+                        placeholder="Todos"
+                    />
+
+                    <div className="m3-field-group">
+                        <label className="m3-label">Tipo</label>
                         <select
-                            className="form-select"
-                            value={quartos}
-                            onChange={e => setQuartos(e.target.value)}
-                            style={{ width: '100%' }}
+                            className="m3-select"
+                            value={tipoImovel}
+                            onChange={e => setTipoImovel(e.target.value)}
                         >
-                            <option value="">Qualquer</option>
-                            <option value="1">1+ quarto</option>
-                            <option value="2">2+ quartos</option>
-                            <option value="3">3+ quartos</option>
-                            <option value="4">4+ quartos</option>
-                            <option value="5">5+ quartos</option>
+                            <option value="">Todos</option>
+                            {options.tipos.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
-                    {(precoMin || precoMax || buscaBairro || buscaCondominio || quartos) && (
-                        <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '2px' }}>
-                            <button 
-                                onClick={() => {
-                                    setPrecoMin('')
-                                    setPrecoMax('')
-                                    setBuscaBairro('')
-                                    setBuscaCondominio('')
-                                    setQuartos('')
-                                }}
-                                style={{ 
-                                    background: 'transparent', color: 'var(--text-muted)', 
-                                    border: 'none', cursor: 'pointer', fontSize: '0.85rem',
-                                    textDecoration: 'underline'
-                                }}
-                            >
-                                Limpar
-                            </button>
-                        </div>
-                    )}
+
+                    <div className="m3-field-group">
+                        <label className="m3-label">Subtipo</label>
+                        <select
+                            className="m3-select"
+                            value={subtipo}
+                            onChange={e => setSubtipo(e.target.value)}
+                        >
+                            <option value="">Todos</option>
+                            {options.subtipos.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="m3-field-group">
+                        <label className="m3-label">Quartos</label>
+                        <select
+                            className="m3-select"
+                            value={quartos}
+                            onChange={e => setQuartos(e.target.value)}
+                        >
+                            <option value="">Qualquer</option>
+                            <option value="1">1+</option>
+                            <option value="2">2+</option>
+                            <option value="3">3+</option>
+                            <option value="4">4+</option>
+                        </select>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', paddingBottom: '1.5rem' }}>
+                         <button 
+                            className="m3-btn-text"
+                            onClick={() => {
+                                setPrecoMin('')
+                                setPrecoMax('')
+                                setBairrosSelecionados([])
+                                setCidadesSelecionadas([])
+                                setCondominiosSelecionados([])
+                                setQuartos('')
+                                setTipoImovel('')
+                                setSubtipo('')
+                            }}
+                            style={{ color: 'var(--m3-primary)' }}
+                        >
+                            Limpar Filtros
+                        </button>
+                    </div>
                 </div>
             )}
 
-            {/* Main Area: Mapa + Lista Lateral */}
-            <div style={{ flex: 1, display: 'flex', gap: '1rem', overflow: 'hidden', minHeight: 0 }}>
+            {/* Área Principal */}
+            <div className="map-main-area">
                 {/* Mapa */}
-                <div style={{ flex: 3, position: 'relative', minWidth: 0 }}>
+                <div style={{ position: 'absolute', inset: 0 }}>
                     {loading ? (
-                        <div className="loading-screen" style={{ position: 'absolute', inset: 0, zIndex: 10, background: 'rgba(10,14,26,0.5)' }}>
+                        <div className="loading-screen" style={{ background: 'var(--m3-surface)' }}>
                             <div className="spinner" />
                         </div>
                     ) : (
@@ -488,155 +528,58 @@ export function MapaImoveisPage() {
                     )}
                 </div>
 
-                {/* Lista Lateral (Sidebar) */}
-                <div style={{
-                    width: '340px',
-                    minWidth: '300px',
-                    maxWidth: '380px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    background: 'var(--bg-surface)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border)',
-                    overflow: 'hidden',
-                    height: '100%',
-                }}>
-                    {/* Header fixo */}
-                    <div style={{
-                        padding: '0.85rem 1rem',
-                        borderBottom: '1px solid var(--border)',
-                        background: 'var(--bg-card)',
-                        flexShrink: 0,
-                    }}>
-                        <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>
-                            Imóveis na Tela ({imoveisVisiveis.length})
-                        </h2>
-                        <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0, marginTop: '2px' }}>
-                            {imoveisVisiveis.length > 50 ? 'Mostrando os 50 principais deste recorte' : 'Role para ver todos os imóveis'}
-                        </p>
-                    </div>
+                {/* Sidebar M3 */}
+                <aside className="m3-map-sidebar">
+                    <header className="sidebar-header">
+                        <h2>📌 Imóveis na visão</h2>
+                        <span className="sidebar-count">{imoveisVisiveis.length}</span>
+                    </header>
 
-                    {/* Lista com scroll */}
-                    <div style={{
-                        flex: 1,
-                        overflowY: 'auto',
-                        overflowX: 'hidden',
-                        padding: '0.6rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.5rem',
-                    }}>
+                    <div className="sidebar-scroll">
                         {imoveisVisiveis.length === 0 && (
-                            <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', padding: '3rem 1rem' }}>
-                                Nenhum imóvel encontrado nesta área ou filtro.
+                            <div style={{ textAlign: 'center', color: 'var(--m3-on-surface-variant)', fontSize: '0.85rem', padding: '3rem 1rem' }}>
+                                Nenhum imóvel visível nesta área.
                             </div>
                         )}
                         {imoveisVisiveis.map(im => (
                             <div
                                 key={im.id}
+                                className="m3-property-card"
                                 onClick={() => setImovelSelecionado(im)}
-                                style={{
-                                    border: '1px solid var(--border)',
-                                    borderRadius: 'var(--radius-md)',
-                                    cursor: 'pointer',
-                                    background: 'var(--bg-card)',
-                                    transition: 'border-color 0.18s, box-shadow 0.18s',
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    height: '88px',         // altura fixa — evita compressão
-                                    minHeight: '88px',
-                                    flexShrink: 0,          // nunca encolher
-                                }}
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--brand-500)'
-                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(99,102,241,0.12)'
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--border)'
-                                    e.currentTarget.style.boxShadow = 'none'
-                                }}
                             >
-                                {/* Foto */}
-                                <div style={{
-                                    width: '88px',
-                                    minWidth: '88px',
-                                    height: '88px',
-                                    background: 'var(--bg-surface)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    overflow: 'hidden',
-                                    flexShrink: 0,
-                                }}>
+                                <div className="card-img-box">
                                     {im.foto_capa ? (
-                                        <img
-                                            src={im.foto_capa}
-                                            alt=""
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                                        />
+                                        <img src={im.foto_capa} alt="" />
                                     ) : (
-                                        <span style={{ fontSize: '1.6rem', opacity: 0.4 }}>🏠</span>
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.3 }}>🏠</div>
                                     )}
                                 </div>
 
-                                {/* Info */}
-                                <div style={{
-                                    padding: '0.5rem 0.6rem',
-                                    flex: 1,
-                                    minWidth: 0,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'space-between',
-                                }}>
-                                    {/* Título */}
-                                    <div style={{
-                                        fontWeight: 600,
-                                        fontSize: '0.8rem',
-                                        lineHeight: 1.3,
-                                        overflow: 'hidden',
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical',
-                                        color: 'var(--text-primary)',
-                                    }}>
-                                        {im.titulo}
+                                <div className="card-info-box">
+                                    <div className="card-title">{im.titulo}</div>
+                                    <div className="card-price">
+                                        {im.preco ? `R$ ${im.preco.toLocaleString('pt-BR')}` : 'S/P'}
                                     </div>
-
-                                    {/* Bairro */}
-                                    <div style={{
-                                        fontSize: '0.7rem',
-                                        color: 'var(--text-muted)',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                    }}>
-                                        📍 {im.bairro || im.cidade || '—'}
+                                    <div className="card-meta">
+                                        <span title={im.bairro}>📍 {im.bairro || '—'}</span>
+                                        {im.quartos && <span>• 🛏 {im.quartos}q</span>}
                                     </div>
-
-                                    {/* Preço + quartos */}
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ fontWeight: 700, color: 'var(--brand-500)', fontSize: '0.82rem' }}>
-                                            {im.preco ? `R$ ${im.preco.toLocaleString('pt-BR')}` : 'S/ Preço'}
-                                        </div>
-                                        {im.quartos && (
-                                            <div style={{
-                                                fontSize: '0.65rem',
-                                                background: 'var(--bg-surface)',
-                                                padding: '1px 6px',
-                                                borderRadius: '4px',
-                                                border: '1px solid var(--border)',
-                                                color: 'var(--text-muted)',
-                                                whiteSpace: 'nowrap',
-                                            }}>
-                                                🛏 {im.quartos} qto{im.quartos > 1 ? 's' : ''}
-                                            </div>
-                                        )}
+                                    <div 
+                                        title="Clique para copiar ID"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            navigator.clipboard.writeText(String(im.id))
+                                            toast.success('ID copiado!')
+                                        }}
+                                        style={{ fontSize: '0.7rem', opacity: 0.5, cursor: 'pointer', marginTop: '4px' }}
+                                    >
+                                        ID: {im.id}
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </div>
+                </aside>
             </div>
 
             {/* Modal */}

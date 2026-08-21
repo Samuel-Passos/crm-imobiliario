@@ -4,8 +4,7 @@ const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/kanban', label: 'Kanban', icon: '🗂️' },
     { path: '/pesquisa', label: 'Pesquisa', icon: '🔍' },
-    { path: '/contatos', label: 'Contatos', icon: '👥' },
-    { path: '/mapa', label: 'Mapa', icon: '🗺️' },
+    { path: '/disponibilidade', label: 'Robô', icon: '🤖' },
     { path: '/profile', label: 'Perfil', icon: '👤' },
 ]
 

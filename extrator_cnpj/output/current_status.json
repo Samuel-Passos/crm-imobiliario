@@ -1,0 +1,15 @@
+{
+  "last_step": 6,
+  "progress": 100,
+  "message": "Base de dados atualizada retroativamente com intelig\u00eancia de MEI.",
+  "details": {},
+  "stats": {
+    "total": 26903,
+    "whatsapp": 24635,
+    "website": 6577,
+    "email": 21027,
+    "opencnpj_ok": 25004,
+    "maps_ok": 25895
+  },
+  "updated_at": "2026-04-18T09:49:49.662009"
+}

@@ -162,6 +162,7 @@ export function KanbanPage() {
     const [loading, setLoading] = useState(true)
     const [executing, setExecuting] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
+    const [chatLoadingAction, setChatLoadingAction] = useState(false)
     const [activeCard, setActiveCard] = useState<ImovelKanban | null>(null)
     const initParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
     const [filtros, setFiltrosState] = useState<FiltrosKanban>({
@@ -251,6 +252,24 @@ export function KanbanPage() {
             }
         } catch (error) {
             toast.error('Erro ao conectar ao servidor para pausar/retomar.')
+        }
+    }
+
+    const handleEnviarScripts = async () => {
+        if (!confirm('Deseja disparar os scripts para os contatos no Kanban?')) return
+        setChatLoadingAction(true)
+        try {
+            const res = await fetch('http://localhost:8765/send-chat/batch', { method: 'POST' })
+            const data = await res.json()
+            if (res.ok) {
+                toast.success('Envio de scripts iniciado em background!')
+            } else {
+                toast.error(`Erro: ${data.message || 'Desconhecido'}`)
+                setChatLoadingAction(false)
+            }
+        } catch (e) {
+            toast.error('Erro de conexão com a API de Chat')
+            setChatLoadingAction(false)
         }
     }
 
@@ -635,7 +654,7 @@ export function KanbanPage() {
                             }}
                         >
                             <span>🚀</span>
-                            Executar Extrator em Lote
+                            Extrator Telefone
                         </button>
                     ) : (
                         <>
@@ -682,6 +701,30 @@ export function KanbanPage() {
                             </button>
                         </>
                     )}
+
+                    <button
+                        onClick={handleEnviarScripts}
+                        disabled={chatLoadingAction}
+                        style={{
+                            padding: '0.6rem 1.2rem',
+                            background: 'var(--brand-600)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: 'var(--radius-md)',
+                            fontSize: '0.87rem',
+                            fontWeight: 700,
+                            cursor: chatLoadingAction ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            boxShadow: '0 4px 6px -1px rgba(59,130,246,0.2)',
+                            transition: 'all 0.2s',
+                            zIndex: 100,
+                            opacity: chatLoadingAction ? 0.7 : 1
+                        }}
+                    >
+                        {chatLoadingAction ? '⏳ Iniciando...' : '▶ Enviar Scripts'}
+                    </button>
                 </div>
             </div>
 

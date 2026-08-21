@@ -1,0 +1,275 @@
+/* ConfiguracoesPage.css - Settings Dashboard Theme */
+
+:root {
+  --m3-primary: #0056D2;
+  --m3-on-primary: #FFFFFF;
+  --m3-primary-container: #D3E3FD;
+  --m3-on-primary-container: #001C38;
+  
+  --m3-secondary: #535F70;
+  --m3-on-secondary: #FFFFFF;
+  --m3-secondary-container: #D7E3F7;
+  
+  --m3-surface: #F8FAFD;
+  --m3-on-surface: #1F1F1F;
+  --m3-surface-variant: #E1E2EC;
+  --m3-on-surface-variant: #44474E;
+  
+  --m3-outline: #C4C7C5;
+  --m3-outline-variant: #E1E2EC;
+  
+  --m3-error: #BA1A1A;
+  --m3-success: #006D3A;
+  
+  --m3-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+  --m3-radius-sm: 8px;
+  --m3-radius-md: 12px;
+  --m3-radius-lg: 16px;
+  --m3-radius-xl: 28px;
+}
+
+.settings-container {
+  background-color: var(--m3-surface);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--m3-on-surface);
+}
+
+.settings-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Header */
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 3rem;
+}
+
+.settings-header h1 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #1A1C1E;
+  margin: 0;
+}
+
+.settings-header p {
+  color: #535F70;
+  font-size: 1.1rem;
+  margin-top: 4px;
+}
+
+/* Tabs */
+.m3-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--m3-outline-variant);
+  margin-bottom: 2.5rem;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.m3-tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #535F70;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.m3-tab-btn:hover {
+  color: var(--m3-primary);
+  background: rgba(0, 86, 210, 0.04);
+  border-radius: 8px 8px 0 0;
+}
+
+.m3-tab-btn.active {
+  color: var(--m3-primary);
+}
+
+.m3-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--m3-primary);
+  border-radius: 3px 3px 0 0;
+}
+
+/* Config Cards */
+.config-section {
+  background: white;
+  padding: 2.5rem;
+  border-radius: var(--m3-radius-xl);
+  border: 1px solid var(--m3-outline-variant);
+  box-shadow: var(--m3-shadow);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.config-group {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.config-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.config-group-title {
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: var(--m3-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
+}
+
+/* ADB Panel */
+.adb-panel {
+  background: #F8FAFD;
+  border: 1px solid var(--m3-outline-variant);
+  border-radius: var(--m3-radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.adb-button-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.adb-status-msg {
+  margin-top: 1rem;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* QR Code Section */
+.qr-container {
+  background: white;
+  border: 1px solid var(--m3-outline-variant);
+  border-radius: var(--m3-radius-lg);
+  padding: 2rem;
+  text-align: center;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Fields */
+.m3-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.m3-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #535F70;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.m3-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.m3-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--m3-radius-sm);
+  border: 1px solid var(--m3-outline);
+  background: #F8FAFD;
+  font-size: 1rem;
+  color: #1A1C1E;
+  transition: all 0.2s;
+}
+
+.m3-input:focus {
+  border-color: var(--m3-primary);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.08);
+  outline: none;
+}
+
+.m3-textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Buttons */
+.m3-btn {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.m3-btn-primary {
+  background: var(--m3-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 86, 210, 0.25);
+}
+
+.m3-btn-primary:hover {
+  background: #0049B1;
+}
+
+.m3-btn-tonal {
+  background: #D3E3FD;
+  color: #001C38;
+}
+
+.m3-btn-tonal:hover {
+  background: #C4D7F5;
+}
+
+.m3-btn-outline {
+  background: transparent;
+  border: 1px solid var(--m3-outline);
+  color: #535F70;
+}
+
+.m3-btn-outline:hover {
+  background: #F8FAFD;
+  border-color: var(--m3-primary);
+  color: var(--m3-primary);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

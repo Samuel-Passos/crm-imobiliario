@@ -14,7 +14,7 @@ import time
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-from tools.geocoder_google import geocodificar_imovel_google, DELAY, STRATEGY_NAME
+from tools.geocoder_maps_scraper import geocodificar_imovel_maps_scraper, STRATEGY_NAME
 import tools.geocode_signals as geocode_signals
 
 load_dotenv()
@@ -24,7 +24,7 @@ LOTE = 1000
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 
-def main():
+async def main():
     """
     Busca imóveis com geocode_needs_review=True e tenta resolver com Google Maps.
     Quando bem-sucedido: atualiza coordenadas e marca geocode_needs_review=False.
@@ -81,7 +81,7 @@ def main():
 
             print(f"[{id_}] (era: {estrategia_anterior}) | rua: {rua[:55]} {numero}")
 
-            coords, nova_estrategia, precisao = geocodificar_imovel_google(
+            coords, nova_estrategia, precisao = await geocodificar_imovel_maps_scraper(
                 rua, bairro, cidade, estado, numero, cep, nome_condominio
             )
 
@@ -92,19 +92,19 @@ def main():
 
             lat, lng = coords
 
-            # Verifica se o Google resolveu com precisão aceitável para sair da revisão
-            # ROOFTOP, RANGE_INTERPOLATED e GEOMETRIC_CENTER (para números/condos) são bons.
-            # APPROXIMATE geralmente é bairro/cidade.
-            eh_melhora = precisao in ['ROOFTOP', 'RANGE_INTERPOLATED', 'GEOMETRIC_CENTER']
+            # Qualquer resposta do Google é considerada sucesso.
+            # O objetivo é que cada endereço seja pesquisado apenas UMA vez por este robô.
+            # ROOFTOP / RANGE_INTERPOLATED / GEOMETRIC_CENTER / APPROXIMATE — todos encerram a revisão.
+            eh_melhora = coords is not None  # sempre True aqui, mas deixa explícito
 
-            print(f"  ✅ ({lat:.5f}, {lng:.5f}) via '{nova_estrategia}' ({precisao}) {'⬆️ MELHORA!' if eh_melhora else ''}\n")
+            print(f"  ✅ ({lat:.5f}, {lng:.5f}) via '{nova_estrategia}' ({precisao})\n")
             por_estrategia[nova_estrategia] = por_estrategia.get(nova_estrategia, 0) + 1
 
             dados = {
                 'latitude': lat,
                 'longitude': lng,
                 'geocode_strategy': nova_estrategia,
-                'geocode_needs_review': not eh_melhora,  # False se melhorou, True se ainda impreciso
+                'geocode_needs_review': False,  # Sempre False — Google já pesquisou, não tenta mais
             }
 
             try:
@@ -113,18 +113,15 @@ def main():
                 print(f"  ⚠️ Erro ao salvar ID {id_}: {e}")
                 continue
 
-            if eh_melhora:
-                resolvidos += 1
-            else:
-                persistem += 1
+            resolvidos += 1
 
         print("─" * 50)
         print("📊 RESULTADO REPROCESSAMENTO GOOGLE MAPS")
         print(f"   Analisados        : {len(imoveis)}")
-        print(f"   Resolvidos p/ rua : {resolvidos}")
-        print(f"   Ainda imprecisos  : {persistem}")
+        print(f"   Resolvidos (needs_review=False) : {resolvidos}")
+        print(f"   Sem resposta (Google falhou)    : {persistem}")
         if por_estrategia:
-            print("   Por estratégia:")
+            print("   Por precisão:")
             for est, n in sorted(por_estrategia.items(), key=lambda x: -x[1]):
                 print(f"     · {est}: {n}")
 
@@ -135,5 +132,6 @@ def main():
     print("\nRode novamente para continuar o reprocessamento.")
 
 
+import asyncio
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

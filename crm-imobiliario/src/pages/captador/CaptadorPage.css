@@ -1,0 +1,71 @@
+.captador-container {
+    padding: 2rem 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeSlideUp 0.3s ease;
+  }
+  
+  .captador-header {
+    margin-bottom: 2.5rem;
+  }
+  
+  .captador-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .captador-header .header-icon {
+    color: var(--brand-500);
+  }
+  
+  .captador-header p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+  
+  .captador-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  
+  .captador-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .captador-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .input-icon {
+    position: absolute;
+    left: 0.8rem;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  
+  .spinner-icon {
+    animation: spin 1s linear infinite;
+  }
+  
+  @media (max-width: 1024px) {
+    .captador-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  

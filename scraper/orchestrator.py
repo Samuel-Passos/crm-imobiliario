@@ -10,17 +10,24 @@ import time
 # Carrega ferramentas do scraper
 from tools.search_tools import (
     buscar_imoveis_para_extrair_telefone,
+    buscar_imoveis_para_prospeccao_inicial,
 )
 from tools.phone_extractor import extract_phones_from_olx
+from tools.chat_sender import send_chat_olx
 import tools.browser_manager as browser_manager
+from tools.geocoder_maps_scraper import geocodificar_imovel_maps_scraper, _configurar_contexto, STRATEGY_NAME
 
 load_dotenv()
 supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
-# Sinais de controle global
+# Sinais de controle global — extração de telefones
 STOP_SIGNAL = False
 PAUSE_SIGNAL = False
 IS_RUNNING = False
+
+# Sinais de controle global — envio de chat
+CHAT_STOP_SIGNAL = False
+CHAT_IS_RUNNING = False
 
 async def check_pause():
     """Aguarda enquanto o sinal de pausa estiver ativo."""
@@ -94,9 +101,147 @@ async def extract_phone_single_lead(imovel_id: int):
     print(f"✅ Banco atualizado para imóvel {imovel_id}!")
     return resultado
 
-async def process_batch_phone_extraction():
+async def geocode_single_google(imovel_id: int, page=None):
+    """
+    Geocodifica via Google Maps Scraper um único imóvel e atualiza o BD.
+    Chamado via API quando o usuário pede revisão de um ponto no mapa.
+    """
+    print(f"\n[ORQUESTRADOR] Geocodificando via Google Maps Scraper o imóvel {imovel_id}")
+    
+    # 1. Busca dados atuais do banco
+    res = supabase.table("imoveis").select("id, rua, bairro, cidade, estado, numero, cep, nome_condominio").eq("id", imovel_id).execute()
+    if not res.data:
+        print(f"❌ Imóvel {imovel_id} não encontrado.")
+        return {"sucesso": False, "erro": "Imóvel não encontrado"}
+    
+    im = res.data[0]
+    rua = (im.get('rua') or '').strip()
+    bairro = (im.get('bairro') or '').strip()
+    cidade = (im.get('cidade') or '').strip()
+    estado = (im.get('estado') or 'SP').strip()
+    numero = (im.get('numero') or '').strip()
+    cep = (im.get('cep') or '').strip()
+    nome_condominio = (im.get('nome_condominio') or '').strip()
+
+    if not cidade:
+        return {"sucesso": False, "erro": "Cidade não informada no cadastro"}
+
+    # 2. Chama a ferramenta Google Maps Scraper
+    if page:
+        res_google = await geocodificar_imovel_maps_scraper(
+            page, rua, bairro, cidade, estado, numero, cep, nome_condominio
+        )
+    else:
+        from playwright.async_api import async_playwright
+        from playwright_stealth import Stealth
+        async with async_playwright() as p:
+            context = await _configurar_contexto(p)
+            temp_page = await context.new_page()
+            await Stealth().apply_stealth_async(temp_page)
+            res_google = await geocodificar_imovel_maps_scraper(
+                temp_page, rua, bairro, cidade, estado, numero, cep, nome_condominio
+            )
+            await context.close()
+    
+    # Desempacota (coords é tuple[lat, lng] ou None)
+    coords, estrategia, precisao = res_google[0], res_google[1], res_google[2] if len(res_google) > 2 else 'APPROXIMATE'
+
+    if not coords:
+        print(f"❌ Google Maps Scraper não encontrou endereço para ID {imovel_id}")
+        return {"sucesso": False, "erro": "Google Maps não encontrou este endereço"}
+
+    lat, lng = coords
+    # ROOFTOP, RANGE_INTERPOLATED e GEOMETRIC_CENTER são precisões boas
+    eh_melhora = precisao in ['ROOFTOP', 'RANGE_INTERPOLATED', 'GEOMETRIC_CENTER']
+
+    # 3. Atualiza o Banco
+    update_data = {
+        'latitude': lat,
+        'longitude': lng,
+        'geocode_strategy': f"{estrategia} ({precisao})",
+        'geocode_needs_review': not eh_melhora
+    }
+    
+    supabase.table('imoveis').update(update_data).eq('id', imovel_id).execute()
+    
+    print(f"✅ Localização atualizada via Google para imóvel {imovel_id}: ({lat}, {lng})")
+    
+    return {
+        "sucesso": True, 
+        "coords": {"lat": lat, "lng": lng}, 
+        "estrategia": estrategia, 
+        "precisao": precisao,
+        "eh_melhora": eh_melhora
+    }
+
+async def geocode_full_google():
+    """
+    Varre o banco de dados e reprocessa via Google Maps todos os anúncios:
+    1. Ativos (ativo=True)
+    2. Não expirados (anuncio_expirado=False)
+    3. Que não tenham estratégia ROOFTOP (já precisos)
+    """
+    global IS_RUNNING, STOP_SIGNAL
+    if IS_RUNNING:
+        return {"message": "Já existe um processo em execução."}
+    
+    IS_RUNNING = True
+    STOP_SIGNAL = False
+    
+    try:
+        # Busca lote inicial
+        # 1. Ativos e Não expirados
+        # 2. geocode_needs_review é True
+        # OU não foram geocodificados pelo Google ainda
+        res = supabase.table('imoveis')\
+            .select("id, rua, bairro, cidade, estado, geocode_strategy, numero, cep, nome_condominio")\
+            .eq("ativo", True)\
+            .eq("anuncio_expirado", False)\
+            .or_(f"geocode_needs_review.eq.true,geocode_strategy.is.null,geocode_strategy.not.ilike.*{STRATEGY_NAME}*")\
+            .limit(10000)\
+            .execute()
+        
+        imoveis = res.data or []
+        if not imoveis:
+            print("✅ Tudo resolvido ou nenhum imóvel encontrado para reprocessar.")
+            return {"sucesso": True, "processados": 0}
+
+        print(f"🚀 Iniciando REVISÃO GERAL com Google Maps para {len(imoveis)} imóveis")
+        
+        sucessos = 0
+        from playwright.async_api import async_playwright
+        from playwright_stealth import Stealth
+        
+        async with async_playwright() as p:
+            context = await _configurar_contexto(p)
+            page = await context.new_page()
+            await Stealth().apply_stealth_async(page)
+            
+            for im in imoveis:
+                if STOP_SIGNAL:
+                    print("🛑 Parada solicitada pelo sinal global!")
+                    break
+                
+                # Passa a page persistente para reaproveitar o navegador
+                resultado = await geocode_single_google(im['id'], page=page)
+                if resultado.get("sucesso"):
+                    sucessos += 1
+                
+                # Pequeno delay entre requisições
+                await asyncio.sleep(0.5)
+
+            await context.close()
+
+        print(f"📊 Fim da Revisão Geral. Sucessos: {sucessos}")
+        return {"sucesso": True, "processados": sucessos}
+
+    finally:
+        IS_RUNNING = False
+        STOP_SIGNAL = False
+
+async def process_batch_phone_extraction(lote: int = 200):
     """Busca em lote todos os pendentes e extrai os telefones 1 a 1."""
-    imoveis = buscar_imoveis_para_extrair_telefone()
+    imoveis = buscar_imoveis_para_extrair_telefone(limite=lote)
     total_leads = len(imoveis)
     print(f"\n[LOTE EXTRAÇÃO] {total_leads} imóveis aguardando varredura.")
     
@@ -235,7 +380,28 @@ async def process_batch_phone_extraction():
             }).eq("id", stats_id).execute()
 
 
-# Chat prospecting functionality removed – now handled by separate message_bot service
+# ==========================================
+# 2. CHAT OLX — ENVIO DE PROSPECCIÓN
+# ==========================================
+
+async def send_chat_single_lead(imovel_id: int) -> dict:
+    """
+    [DESATIVADO] Envio movido para robo_chat_prospeccao/sender.py
+    """
+    print(f"\n💬 [CHAT - DESATIVADO] Função legada chamada para imovel_id={imovel_id}")
+    return {"enviado": False, "erro": "funcao_legada_desativada"}
+
+
+
+async def process_batch_chat_sending():
+    """
+    [DESATIVADO] Envio em lote movido para robo_chat_prospeccao/sender.py
+    """
+    print("\n📤 [CHAT EM LOTE - DESATIVADO] Função legada chamada. Motor movido para robo_chat_prospeccao")
+    return
+
+
+
 # ==========================================
 # 3. ROTINA MESTRA (CRON)
 # ==========================================

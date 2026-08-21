@@ -41,6 +41,7 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
     const [mostrarMapa, setMostrarMapa] = useState(false)
     const [latitude, setLatitude] = useState(imovel.latitude || null)
     const [longitude, setLongitude] = useState(imovel.longitude || null)
+    const [buscandoGeocodaGoogle, setBuscandoGeocodaGoogle] = useState(false)
 
     // ── Campos editáveis ──────────────────────────────────────
 
@@ -140,6 +141,32 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
             toast.error('Erro ao buscar CEP')
         } finally {
             setBuscandoCep(false)
+        }
+    }
+
+    async function handleRevisarGoogle() {
+        if (buscandoGeocodaGoogle) return
+        setBuscandoGeocodaGoogle(true)
+        const loadingToast = toast.loading('Consultando Google Maps...')
+        try {
+            const res = await fetch('http://127.0.0.1:8765/geocode/google/single', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imovel_id: imovel.id })
+            })
+            if (!res.ok) throw new Error('Servidor de geocodificação offline')
+            const data = await res.json()
+            if (data.sucesso) {
+                setLatitude(data.coords.lat)
+                setLongitude(data.coords.lng)
+                toast.success('Localização atualizada via Google!', { id: loadingToast })
+            } else {
+                toast.error(data.erro || 'Falha ao geocodificar', { id: loadingToast })
+            }
+        } catch (err) {
+            toast.error('Erro de conexão com o motor Google.', { id: loadingToast })
+        } finally {
+            setBuscandoGeocodaGoogle(false)
         }
     }
 
@@ -347,14 +374,26 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                 {/* ── Header ── */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        {editando ? (
-                            <input className="form-input" value={titulo} onChange={e => setTitulo(e.target.value)}
-                                style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.3rem' }} placeholder="Título do imóvel" />
-                        ) : (
-                            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.2rem', lineHeight: 1.3 }}>
-                                {imovel.titulo}
-                            </h2>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem' }}>
+                            <span 
+                                title="Clique para copiar ID"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(String(imovel.id))
+                                    toast.success('ID copiado!')
+                                }}
+                                style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 700, cursor: 'pointer' }}
+                            >
+                                #{imovel.id}
+                            </span>
+                            {editando ? (
+                                <input className="form-input" value={titulo} onChange={e => setTitulo(e.target.value)}
+                                    style={{ fontSize: '1rem', fontWeight: 700, flex: 1 }} placeholder="Título do imóvel" />
+                            ) : (
+                                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, margin: 0 }}>
+                                    {imovel.titulo}
+                                </h2>
+                            )}
+                        </div>
                         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '0.7rem', color: imovel.tipo_negocio === 'venda' ? 'var(--gold-400)' : '#a78bfa', fontWeight: 600, textTransform: 'uppercase' }}>
                                 {imovel.tipo_imovel} · {imovel.tipo_negocio}
@@ -603,7 +642,6 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                         )}
                     </div>
                 )}
-
                 {/* ── ABA: ENDEREÇO ── */}
                 {aba === 'endereco' && (
                     <div>
@@ -611,10 +649,26 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
                                 Localização {buscandoCep && '...'}
                             </div>
-                            <button type="button" onClick={() => setMostrarMapa(!mostrarMapa)}
-                                style={{ background: 'none', border: 'none', color: 'var(--brand-500)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                                {mostrarMapa ? 'Ocultar Mapa' : '📍 Visualizar/Ajustar no Mapa'}
-                            </button>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button
+                                    type="button"
+                                    onClick={handleRevisarGoogle}
+                                    disabled={buscandoGeocodaGoogle}
+                                    title="Tenta encontrar a localização exata usando o motor do Google Maps"
+                                    style={{
+                                        background: 'none', border: 'none',
+                                        color: buscandoGeocodaGoogle ? 'var(--text-muted)' : '#6366f1',
+                                        fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', gap: '4px'
+                                    }}
+                                >
+                                    {buscandoGeocodaGoogle ? '⏳ Consultando...' : '♻️ Corrigir com Google'}
+                                </button>
+                                <button type="button" onClick={() => setMostrarMapa(!mostrarMapa)}
+                                    style={{ background: 'none', border: 'none', color: 'var(--brand-500)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                                    {mostrarMapa ? 'Ocultar Mapa' : '📍 Visualizar/Ajustar no Mapa'}
+                                </button>
+                            </div>
                         </div>
 
                         {mostrarMapa && (

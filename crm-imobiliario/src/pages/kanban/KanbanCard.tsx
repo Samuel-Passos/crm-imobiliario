@@ -77,13 +77,22 @@ export const KanbanCard = memo(function KanbanCard({ imovel, onUpdate, isDraggin
                     </div>
                 </div>
 
-                {/* Título */}
                 <div style={{
                     fontSize: '0.83rem', fontWeight: 600, color: 'var(--text-primary)',
                     marginBottom: '0.25rem', overflow: 'hidden',
                     display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'
                 }}>
-                    {imovel.titulo}
+                    <span 
+                        title="Clique para copiar ID"
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            navigator.clipboard.writeText(String(imovel.id))
+                            import('react-hot-toast').then(t => t.default.success('ID copiado!'))
+                        }}
+                        style={{ color: 'var(--text-muted)', marginRight: '4px', cursor: 'pointer' }}
+                    >
+                        #{imovel.id}
+                    </span> {imovel.titulo}
                 </div>
 
                 {/* Proprietário */}

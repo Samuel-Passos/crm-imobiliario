@@ -1,0 +1,413 @@
+/* MapaImoveisPage.css - Material 3 Dashboard Theme */
+
+:root {
+  --m3-primary: #0056D2;
+  --m3-on-primary: #FFFFFF;
+  --m3-primary-container: #D3E3FD;
+  --m3-on-primary-container: #001C38;
+  
+  --m3-secondary: #535F70;
+  --m3-on-secondary: #FFFFFF;
+  --m3-secondary-container: #D7E3F7;
+  
+  --m3-surface: #F8FAFD;
+  --m3-on-surface: #1F1F1F;
+  --m3-surface-variant: #E1E2EC;
+  --m3-on-surface-variant: #44474E;
+  
+  --m3-outline: #C4C7C5;
+  --m3-outline-variant: #E1E2EC;
+  
+  --m3-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+  --m3-radius-sm: 8px;
+  --m3-radius-md: 12px;
+  --m3-radius-lg: 16px;
+  --m3-radius-xl: 28px;
+}
+
+.map-page-container {
+  background-color: var(--m3-surface);
+  height: calc(100vh - 64px);
+  padding: 1.5rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--m3-on-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.map-header h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1A1C1E;
+  margin: 0 0 0.25rem 0;
+  letter-spacing: -0.02em;
+}
+
+.map-header p {
+  color: var(--m3-on-surface-variant);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Filtros */
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filter-bar-main {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 300px;
+}
+
+.advanced-filters-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--m3-radius-xl);
+  border: 1px solid var(--m3-outline-variant);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  animation: slideDown 0.3s ease-out;
+}
+
+/* MultiSelect Estilo M3 */
+.m3-dropdown-container {
+  position: relative;
+  min-width: 200px;
+}
+
+.m3-dropdown-trigger {
+  height: 44px;
+  background: white;
+  border: 1px solid var(--m3-outline);
+  border-radius: var(--m3-radius-md);
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.m3-dropdown-trigger:hover {
+  border-color: var(--m3-primary);
+  background: var(--m3-surface);
+}
+
+.m3-dropdown-trigger.open {
+  border-color: var(--m3-primary);
+  border-width: 2px;
+}
+
+.m3-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: var(--m3-radius-lg);
+  border: 1px solid var(--m3-outline-variant);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  z-index: 2000;
+  padding: 0.75rem;
+  max-height: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.m3-dropdown-options {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.m3-dropdown-opt {
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.m3-dropdown-opt:hover {
+  background: var(--m3-surface);
+}
+
+.m3-dropdown-opt.selected {
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+  font-weight: 600;
+}
+
+/* Área do Mapa e Lista */
+.map-main-area {
+  flex: 1;
+  position: relative;
+  border-radius: var(--m3-radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--m3-outline-variant);
+  box-shadow: var(--m3-shadow);
+}
+
+/* Sidebar de Imóveis M3 */
+.m3-map-sidebar {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  width: 350px;
+  background: white;
+  border-radius: var(--m3-radius-xl);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border: 1px solid var(--m3-outline-variant);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 1.25rem;
+  background: white;
+  border-bottom: 1px solid var(--m3-outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header h2 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0;
+  color: #1A1C1E;
+}
+
+.sidebar-count {
+  background: var(--m3-primary);
+  color: white;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Cards de Imóveis M3 */
+.m3-property-card {
+  display: flex;
+  height: 100px;
+  min-height: 100px;
+  flex-shrink: 0;
+  background: white;
+  border-radius: var(--m3-radius-lg);
+  border: 1px solid var(--m3-outline-variant);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.m3-property-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-color: var(--m3-primary);
+}
+
+.card-img-box {
+  width: 100px;
+  min-width: 100px;
+  height: 100%;
+  background: var(--m3-surface-variant);
+}
+
+.card-img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-info-box {
+  flex: 1;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1A1C1E;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-price {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--m3-primary);
+}
+
+.card-meta {
+  font-size: 0.75rem;
+  color: var(--m3-on-surface-variant);
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Botões M3 */
+.m3-btn {
+  height: 44px;
+  padding: 0 1.5rem;
+  border-radius: var(--m3-radius-md);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.m3-btn-primary {
+  background: var(--m3-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 86, 210, 0.2);
+}
+
+.m3-btn-secondary {
+  background: white;
+  border: 1px solid var(--m3-outline);
+  color: var(--m3-on-surface-variant);
+}
+
+.m3-btn-active {
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+  border: 2px solid var(--m3-primary);
+}
+
+.m3-btn-success {
+  background: white;
+  border: 1px solid var(--m3-success);
+  color: var(--m3-success);
+}
+
+.m3-btn-success:hover {
+  background: #E6F4EA;
+}
+
+.m3-btn-text {
+  background: none;
+  border: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.m3-btn-text:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.m3-input, .m3-select, .m3-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--m3-radius-md);
+  border: 1px solid var(--m3-outline);
+  background: white;
+  color: var(--m3-on-surface);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.m3-input:focus, .m3-select:focus {
+  outline: none;
+  border-color: var(--m3-primary);
+  border-width: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.1);
+}
+
+.m3-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--m3-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.m3-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.loading-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+/* Animations */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Leaflet Overrides p/ combinar com M3 */
+.map-pin-tooltip {
+  background: white !important;
+  border: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+}
+
+.map-pin-tooltip::before {
+  display: none !important;
+}

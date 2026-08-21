@@ -37,7 +37,7 @@ export function ContatosPage() {
         const { data, error } = await supabase
             .from('contatos')
             .select('*')
-            .order('nome_completo', { ascending: true })
+            .order('created_at', { ascending: false })
 
         if (error) {
             toast.error('Erro ao carregar contatos')
@@ -61,7 +61,7 @@ export function ContatosPage() {
         setContatos(prev => {
             const existe = prev.find(x => x.id === c.id)
             if (existe) return prev.map(x => x.id === c.id ? c : x)
-            return [c, ...prev].sort((a, b) => a.nome_completo.localeCompare(b.nome_completo))
+            return [c, ...prev]
         })
     }
 
@@ -78,7 +78,6 @@ export function ContatosPage() {
         setDeletando(null)
     }
 
-    // Filtros locais (rápido, sem nova query)
     const filtrado = contatos.filter(c => {
         if (tipoFiltro && c.tipo_contato !== tipoFiltro) return false
         if (busca) {
@@ -86,8 +85,7 @@ export function ContatosPage() {
             return (
                 c.nome_completo.toLowerCase().includes(q) ||
                 (c.cidade || '').toLowerCase().includes(q) ||
-                (c.telefone || '').includes(q) ||
-                (c.email || '').toLowerCase().includes(q)
+                (c.telefone || '').includes(q)
             )
         }
         return true
@@ -95,159 +93,161 @@ export function ContatosPage() {
 
     function waLink(c: Contato) {
         const numero = (c.whatsapp || c.telefone || '').replace(/\D/g, '')
-        return numero ? `https://wa.me/55${numero}` : null
+        if (!numero) return null
+        const telFormatado = numero.startsWith('55') ? numero : `55${numero}`
+        return `https://wa.me/${telFormatado}`
     }
 
     return (
-        <div style={{ padding: '1.5rem', maxWidth: 1100, margin: '0 auto', width: '100%' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ padding: '2rem', maxWidth: 1200, margin: '0 auto' }}>
+            {/* Header com Estilo Premium */}
+            <header style={{ 
+                marginBottom: '2rem', display: 'flex', alignItems: 'flex-end', 
+                justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' 
+            }}>
                 <div>
-                    <h1 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.1rem' }}>Contatos</h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                        {filtrado.length} de {contatos.length} contato{contatos.length !== 1 ? 's' : ''}
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                        Lista Fria
+                    </h1>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500 }}>
+                        Gerencie e prospecte novos leads na sua base de dados
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    {/* Toggle de visualização */}
-                    <div style={{ display: 'flex', background: 'var(--bg-surface)', padding: '0.25rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-                        <button
-                            onClick={() => setViewMode('list')}
-                            style={{
-                                padding: '0.4rem 0.75rem', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
-                                borderRadius: 'var(--radius-sm)',
-                                background: viewMode === 'list' ? 'var(--brand-500)' : 'transparent',
-                                color: viewMode === 'list' ? '#fff' : 'var(--text-muted)',
-                            }}
-                        >
-                            📋 Lista
-                        </button>
-                        <button
-                            onClick={() => setViewMode('map')}
-                            style={{
-                                padding: '0.4rem 0.75rem', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
-                                borderRadius: 'var(--radius-sm)',
-                                background: viewMode === 'map' ? 'var(--brand-500)' : 'transparent',
-                                color: viewMode === 'map' ? '#fff' : 'var(--text-muted)',
-                            }}
-                        >
-                            🗺️ Mapa
-                        </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ display: 'flex', background: 'var(--bg-card)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                        <button onClick={() => setViewMode('list')} style={{ 
+                            padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                            background: viewMode === 'list' ? 'var(--brand-500)' : 'transparent',
+                            color: viewMode === 'list' ? 'white' : 'var(--text-muted)',
+                            fontWeight: 700, transition: 'all 0.2s'
+                        }}>Lista</button>
+                        <button onClick={() => setViewMode('map')} style={{ 
+                            padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                            background: viewMode === 'map' ? 'var(--brand-500)' : 'transparent',
+                            color: viewMode === 'map' ? 'white' : 'var(--text-muted)',
+                            fontWeight: 700, transition: 'all 0.2s'
+                        }}>Mapa</button>
                     </div>
-                    <button className="btn btn-primary" onClick={handleNovo} style={{ width: 'auto', padding: '0.75rem 1.25rem' }}>
-                        + Novo Contato
+                    <button onClick={handleNovo} className="btn btn-primary" style={{ padding: '0 1.5rem', height: 44, borderRadius: 12 }}>
+                        + Novo Lead
                     </button>
                 </div>
-            </div>
+            </header>
 
-            {/* Filtros */}
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                <input
-                    className="form-input"
-                    value={busca}
-                    onChange={e => setBusca(e.target.value)}
-                    placeholder="🔍 Buscar por nome, cidade, telefone ou e-mail..."
-                    style={{ flex: 1, minWidth: 220 }}
-                />
-                <select className="form-select" value={tipoFiltro} onChange={e => setTipoFiltro(e.target.value as typeof tipoFiltro)}
-                    style={{ width: 'auto', minWidth: 180 }}>
+            {/* Filtros Modernos */}
+            <div style={{ 
+                display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) auto auto', 
+                gap: '1rem', marginBottom: '2.5rem', alignItems: 'center' 
+            }}>
+                <div style={{ position: 'relative' }}>
+                    <input 
+                        className="form-input" 
+                        value={busca} 
+                        onChange={e => setBusca(e.target.value)}
+                        placeholder="Pesquisar por nome, cidade ou telefone..."
+                        style={{ paddingLeft: '2.5rem', height: 48, borderRadius: 14 }}
+                    />
+                    <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
+                </div>
+                <select 
+                    className="form-select" 
+                    value={tipoFiltro} 
+                    onChange={e => setTipoFiltro(e.target.value as any)}
+                    style={{ height: 48, borderRadius: 14, minWidth: 200 }}
+                >
                     {TIPOS_FILTRO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
-                {(busca || tipoFiltro) && (
-                    <button onClick={() => { setBusca(''); setTipoFiltro('') }}
-                        style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)', cursor: 'pointer', padding: '0 0.75rem', fontSize: '0.85rem' }}>
-                        Limpar
-                    </button>
-                )}
+                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    {filtrado.length} contatos encontrados
+                </div>
             </div>
 
-            {/* Lista */}
             {loading ? (
-                <div className="loading-screen"><div className="spinner" /></div>
-            ) : filtrado.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '4rem 1rem', background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)' }}>
-                    <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👥</div>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-                        {contatos.length === 0 ? 'Nenhum contato cadastrado' : 'Nenhum resultado encontrado'}
-                    </h3>
-                    {contatos.length === 0 && (
-                        <button className="btn btn-primary" onClick={handleNovo} style={{ width: 'auto', marginTop: '1rem' }}>
-                            + Adicionar primeiro contato
-                        </button>
-                    )}
-                </div>
+                <div style={{ padding: '5rem', textAlign: 'center' }}><div className="spinner" /></div>
             ) : viewMode === 'map' ? (
                 <ContatosMapa contatos={filtrado} onEditar={handleEditar} />
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
-                    {filtrado.map(c => (
-                        <div key={c.id} style={{
-                            background: 'var(--bg-card)', border: '1px solid var(--border)',
-                            borderRadius: 'var(--radius-md)', padding: '1.25rem',
-                            transition: 'border-color 200ms, transform 150ms',
-                        }}
-                            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(59,130,246,0.4)')}
-                            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-                        >
-                            {/* Topo do card */}
-                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                    {filtrado.map((c, idx) => (
+                        <div key={c.id} style={{ 
+                            background: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border)',
+                            padding: '1.5rem', position: 'relative', overflow: 'hidden',
+                            animation: `fadeSlideUp 0.4s ease forwards ${idx * 0.05}s`, opacity: 0,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+                        }}>
+                            {/* Accent line */}
+                            <div style={{ 
+                                position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', 
+                                background: TIPO_CONTATO_CORES[c.tipo_contato] || 'var(--brand-500)'
+                            }} />
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                                 <div>
-                                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
                                         {c.nome_completo}
-                                    </div>
-                                    <span style={{
-                                        fontSize: '0.7rem', fontWeight: 600,
-                                        color: TIPO_CONTATO_CORES[c.tipo_contato] || 'var(--text-muted)',
-                                        background: `${TIPO_CONTATO_CORES[c.tipo_contato] || 'var(--text-muted)'}18`,
-                                        padding: '0.15rem 0.5rem', borderRadius: 99
+                                    </h3>
+                                    <span style={{ 
+                                        fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
+                                        color: TIPO_CONTATO_CORES[c.tipo_contato], background: `${TIPO_CONTATO_CORES[c.tipo_contato]}15`,
+                                        padding: '4px 10px', borderRadius: '8px'
                                     }}>
-                                        {TIPO_CONTATO_LABELS[c.tipo_contato] || `👤 ${c.tipo_contato}`}
+                                        {TIPO_CONTATO_LABELS[c.tipo_contato]}
                                     </span>
                                 </div>
-                                {/* Acções */}
-                                <div style={{ display: 'flex', gap: '0.3rem' }}>
-                                    <button onClick={() => handleEditar(c)}
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem', padding: '0.2rem 0.4rem' }}
-                                        title="Editar">✏️</button>
-                                    <button onClick={() => handleDeletar(c)} disabled={deletando === c.id}
-                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', fontSize: '0.9rem', padding: '0.2rem 0.4rem' }}
-                                        title="Remover">🗑️</button>
+                                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                    <button onClick={() => handleEditar(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px' }}>✏️</button>
+                                    <button onClick={() => handleDeletar(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px' }}>🗑️</button>
                                 </div>
                             </div>
 
-                            {/* Localização */}
-                            {(c.cidade || c.logradouro) && (
-                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                                    📍 {[c.logradouro, c.numero, c.bairro, c.cidade, c.estado].filter(Boolean).join(', ')}
+                            <div style={{ spaceY: '0.75rem', marginBottom: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                                    <span style={{ opacity: 0.6 }}>📞</span> {c.telefone || 'Sem telefone'}
                                 </div>
-                            )}
-
-                            {/* Contatos */}
-                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-                                {c.telefone && (
-                                    <a href={`tel:${c.telefone.replace(/\D/g, '')}`}
-                                        style={{ fontSize: '0.78rem', color: 'var(--brand-500)', textDecoration: 'none', background: 'rgba(59,130,246,0.1)', padding: '0.25rem 0.6rem', borderRadius: 99 }}>
-                                        📞 {c.telefone}
-                                    </a>
-                                )}
-                                {waLink(c) && (
-                                    <a href={waLink(c)!} target="_blank" rel="noopener noreferrer"
-                                        style={{ fontSize: '0.78rem', color: '#4ade80', textDecoration: 'none', background: 'rgba(74,222,128,0.1)', padding: '0.25rem 0.6rem', borderRadius: 99 }}>
-                                        💬 WhatsApp
-                                    </a>
-                                )}
                                 {c.email && (
-                                    <a href={`mailto:${c.email}`}
-                                        style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textDecoration: 'none', background: 'rgba(255,255,255,0.05)', padding: '0.25rem 0.6rem', borderRadius: 99 }}>
-                                        ✉️ {c.email}
-                                    </a>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '0.5rem' }}>
+                                        <span style={{ opacity: 0.6 }}>📧</span> {c.email}
+                                    </div>
+                                )}
+                                {c.cidade && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                                        <span style={{ opacity: 0.6 }}>📍</span> {c.cidade}
+                                    </div>
                                 )}
                             </div>
 
-                            {/* Notas preview */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                <a 
+                                    href={waLink(c) || '#'} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    style={{ 
+                                        padding: '10px', borderRadius: '12px', background: '#25D366', 
+                                        color: 'white', textDecoration: 'none', textAlign: 'center',
+                                        fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                                    }}
+                                >
+                                    💬 WhatsApp
+                                </a>
+                                <a 
+                                    href={`tel:${c.telefone?.replace(/\D/g, '')}`}
+                                    style={{ 
+                                        padding: '10px', borderRadius: '12px', background: 'var(--brand-500)', 
+                                        color: 'white', textDecoration: 'none', textAlign: 'center',
+                                        fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                                    }}
+                                >
+                                    📞 Ligar
+                                </a>
+                            </div>
+
                             {c.notas && (
-                                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                                    📝 {c.notas}
+                                <div style={{ 
+                                    marginTop: '1.25rem', padding: '10px', borderRadius: '12px', 
+                                    background: 'var(--bg-app)', fontSize: '0.8rem', color: 'var(--text-muted)',
+                                    fontStyle: 'italic', border: '1px solid var(--border)'
+                                }}>
+                                    "{c.notas}"
                                 </div>
                             )}
                         </div>
@@ -255,14 +255,21 @@ export function ContatosPage() {
                 </div>
             )}
 
-            {/* Modal */}
             {modalAberto && (
-                <ContatoModal
-                    contato={contatoSelecionado}
-                    onClose={() => setModalAberto(false)}
-                    onSaved={handleSaved}
+                <ContatoModal 
+                    contato={contatoSelecionado} 
+                    onClose={() => setModalAberto(false)} 
+                    onSaved={handleSaved} 
                 />
             )}
+
+            {/* Estilos Globais para Estar Página */}
+            <style>{`
+                @keyframes fadeSlideUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </div>
     )
 }

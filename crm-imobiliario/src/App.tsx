@@ -19,6 +19,15 @@ import { PesquisaPage } from './pages/pesquisa/PesquisaPage'
 import { ContatosPage } from './pages/contatos/ContatosPage'
 import { MapaImoveisPage } from './pages/mapa/MapaImoveisPage'
 import { AutomacoesPage } from './pages/automacoes/AutomacoesPage'
+import { RoboDisponibilidadePage } from './pages/disponibilidade/RoboDisponibilidadePage'
+import { CampanhasPage } from './pages/campanhas/CampanhasPage'
+import { ConfiguracoesPage } from './pages/ConfiguracoesPage'
+import { TemplatesPage } from './pages/TemplatesPage'
+import { ExtratorCnpjPage } from './pages/disponibilidade/ExtratorCnpjPage'
+import { LeadDetailsPage } from './pages/disponibilidade/LeadDetailsPage'
+import { DesignerPage } from './pages/designer/DesignerPage'
+import { CaptadorPage } from './pages/captador/CaptadorPage'
+
 
 function HomeRedirect() {
   return <Navigate to="/dashboard" replace />
@@ -88,6 +97,70 @@ export default function App() {
             <PrivateRoute>
               <AppLayout>
                 <AutomacoesPage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/disponibilidade" element={
+            <PrivateRoute>
+              <AppLayout>
+                <RoboDisponibilidadePage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/campanhas" element={
+            <PrivateRoute>
+              <AppLayout>
+                <CampanhasPage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/configuracoes" element={
+            <PrivateRoute>
+              <AppLayout>
+                <ConfiguracoesPage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/extrator-cnpj" element={
+            <PrivateRoute>
+              <AppLayout>
+                <ExtratorCnpjPage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/extrator-cnpj/lead/:id" element={
+            <PrivateRoute>
+              <AppLayout>
+                <LeadDetailsPage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/templates" element={
+            <PrivateRoute>
+              <AppLayout>
+                <TemplatesPage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/designer" element={
+            <PrivateRoute>
+              <AppLayout>
+                <DesignerPage />
+              </AppLayout>
+            </PrivateRoute>
+          } />
+
+          <Route path="/captador" element={
+            <PrivateRoute>
+              <AppLayout>
+                <CaptadorPage />
               </AppLayout>
             </PrivateRoute>
           } />

@@ -5,14 +5,27 @@ import asyncio
 
 # Aqui vamos importar o orquestrador que roda os ciclos de IA
 import orchestrator
-from orchestrator import run_daily_scraper_cycle, extract_phone_single_lead
+from orchestrator import (
+    run_daily_scraper_cycle, 
+    extract_phone_single_lead,
+    STOP_SIGNAL, PAUSE_SIGNAL, 
+    process_batch_phone_extraction,
+    geocode_single_google,
+    geocode_full_google,
+    send_chat_single_lead,
+    process_batch_chat_sending,
+)
 from tools.phone_extractor import extract_phones_from_olx
 from pegar_cookies_nativos import extrair_cookies_do_chrome_ubuntu
 import tools.geocoder
 import tools.geocoder_reprocess
-import tools.geocoder_google
+import tools.geocoder_maps_scraper
 import tools.geocoder_google_reprocess
 import tools.geocode_signals as geocode_signals
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("scraper")
 
 from contextlib import asynccontextmanager
 import tools.browser_manager as browser_manager
@@ -40,10 +53,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="OLX Scraper Pro", description="Orquestrador Python com Browser Persistente", lifespan=lifespan)
 
-# Libera CORS para o CRM React no localhost:5173 e 5174
+# Libera CORS para o CRM React no localhost:5173 e 127.0.0.1
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174"],
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -145,7 +163,7 @@ async def run_geocoder_google(background_tasks: BackgroundTasks):
     Segundo motor: usa a Google Maps Geocoding API para geocodificar
     imóveis que ainda não têm coordenadas (latitude IS NULL).
     """
-    background_tasks.add_task(tools.geocoder_google.main)
+    background_tasks.add_task(tools.geocoder_maps_scraper.main)
     return {"status": "started", "message": "Geocodificador Google Maps iniciado em background!"}
 
 @app.post("/geocode/google/reprocess")
@@ -156,6 +174,22 @@ async def run_geocoder_google_reprocess(background_tasks: BackgroundTasks):
     """
     background_tasks.add_task(tools.geocoder_google_reprocess.main)
     return {"status": "started", "message": "Reprocessamento Google Maps iniciado! Imóveis com needs_review serão corrigidos."}
+
+@app.post("/geocode/google/single")
+async def geocode_one_google(payload: ImovelRequest):
+    """
+    Geocodifica via Google Maps um único imóvel (revisão pontual).
+    """
+    logger.info(f"📍 Recebido pedido de geocodificação para ID {payload.imovel_id}")
+    return await geocode_single_google(payload.imovel_id)
+
+@app.post("/geocode/google/full")
+async def run_geocoder_google_full(background_tasks: BackgroundTasks):
+    """
+    Novo motor: Reprocessa TODOS os anúncios ativos e não-expirados via Google Maps.
+    """
+    background_tasks.add_task(geocode_full_google)
+    return {"status": "started", "message": "Revisão geral do banco de dados (Google Maps) iniciada em background!"}
 
 @app.post("/geocode/stop")
 async def stop_geocoder():
@@ -168,6 +202,50 @@ async def get_geocode_status():
     """Retorna se o geocodificador está rodando."""
     return {
         "running": geocode_signals.IS_RUNNING
+    }
+
+@app.post("/send-chat")
+async def send_one_chat(payload: ImovelRequest, background_tasks: BackgroundTasks):
+    """
+    Envia mensagem de chat OLX para um imóvel específico.
+    Dispara em background para não bloquear a interface.
+    """
+    background_tasks.add_task(send_chat_single_lead, payload.imovel_id)
+    return {"status": "started", "message": f"Envio de chat para imóvel {payload.imovel_id} iniciado em background."}
+
+@app.post("/send-chat/batch")
+async def send_chat_batch(background_tasks: BackgroundTasks):
+    """
+    Aciona o disparador (sender.py) dentro do robo_chat_prospeccao isolado.
+    """
+    def run_sender():
+        import subprocess
+        import sys
+        import os
+        # O orquestrador fica na pasta ../robo_chat_prospeccao
+        sender_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "robo_chat_prospeccao", "orquestrador_reverso.py"))
+        python_exec = os.path.abspath(os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"))
+        log_file_path = "/tmp/robo_chat_batch.log"
+        try:
+            with open(log_file_path, "a") as f:
+                subprocess.Popen([python_exec, sender_path], stdout=f, stderr=f)
+        except Exception as e:
+            print(f"Erro ao disparar sender: {e}")
+            
+    background_tasks.add_task(run_sender)
+    return {"status": "started", "message": "Lote de envio de chat OLX iniciado no Workspace 3."}
+
+@app.post("/send-chat/stop")
+async def stop_chat_batch():
+    """Sinaliza para o lote de chat parar após o envio atual."""
+    orchestrator.CHAT_STOP_SIGNAL = True
+    return {"status": "stopping", "message": "Sinal de parada enviado. O chat terminará o item atual e parará."}
+
+@app.get("/send-chat/status")
+async def get_chat_status():
+    """Retorna se o bot de chat está rodando."""
+    return {
+        "running": orchestrator.CHAT_IS_RUNNING
     }
 
 if __name__ == "__main__":

@@ -60,3 +60,11 @@ scraper/run_ciclo_*.py
 scraper/analyze_*.py
 scraper/verificar_*.py
 scraper/olx_session.json
+
+# Robô de Disponibilidade
+robo_disponibilidade/.env
+robo_disponibilidade/.venv/
+robo_disponibilidade/__pycache__/
+robo_disponibilidade/*.xlsx
+*/.venv/
+*/__pycache__/

@@ -35,6 +35,14 @@ interface KanbanStats {
     total: number
 }
 
+interface CampaignStats {
+    total_leads: number
+    atendidos: number
+    nao_atendidos: number
+    interessados: number
+    whatsapp_enviados: number
+}
+
 interface ScraperRun {
     id: number
     data_inicio: string
@@ -105,6 +113,7 @@ export function DashboardPage() {
     const [kanbanStats, setKanbanStats] = useState<KanbanStats[]>([])
     const [scraperRuns, setScraperRuns] = useState<ScraperRun[]>([])
     const [scraperLogs, setScraperLogs] = useState<ScraperLog[]>([])
+    const [campaignStats, setCampaignStats] = useState<CampaignStats | null>(null)
     const [loading, setLoading] = useState(true)
     const [executing, setExecuting] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
@@ -132,6 +141,23 @@ export function DashboardPage() {
             .limit(100)
 
         if (logs) setScraperLogs(logs as ScraperLog[])
+    }
+
+    const fetchCampaignStats = async () => {
+        const { data: leads } = await supabase
+            .from('leads_campanha')
+            .select('status, qualificacao, whatsapp_enviado')
+
+        if (leads) {
+            const stats: CampaignStats = {
+                total_leads: leads.length,
+                atendidos: leads.filter(l => l.status === 'Atendeu').length,
+                nao_atendidos: leads.filter(l => l.status === 'Não atendeu' || l.status === 'Ocupado').length,
+                interessados: leads.filter(l => l.qualificacao === 'Interessado' || l.qualificacao === 'Agendar Visita').length,
+                whatsapp_enviados: leads.filter(l => l.whatsapp_enviado).length
+            }
+            setCampaignStats(stats)
+        }
     }
 
     const fetchAll = async () => {
@@ -245,6 +271,7 @@ export function DashboardPage() {
         }
 
         await fetchScraperHistory()
+        await fetchCampaignStats()
         setLoading(false)
     }
 
@@ -398,6 +425,19 @@ export function DashboardPage() {
                 <MetricCard label="Aceita Permuta" value={imovelStats?.aceita_permuta || 0} icon="🔄" color="var(--success)" />
                 <MetricCard label="Não Aceita Permuta" value={imovelStats?.nao_aceita_permuta || 0} icon="🚫" color="var(--error)" />
             </div>
+
+            {/* ── Desempenho de Campanhas ── */}
+            {campaignStats && (
+                <>
+                    <SectionTitle>📞 Desempenho de Campanhas (Prospecção)</SectionTitle>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                        <MetricCard label="Total Leads em Campanhas" value={campaignStats.total_leads} icon="👥" color="var(--brand-500)" />
+                        <MetricCard label="Contatos Atendidos" value={campaignStats.atendidos} icon="📞" color="var(--success)" sub={`${Math.round((campaignStats.atendidos / (campaignStats.total_leads || 1)) * 100)}% de taxa`} />
+                        <MetricCard label="Leads Interessados" value={campaignStats.interessados} icon="🔥" color="var(--error)" sub="alta intenção" />
+                        <MetricCard label="WhatsApps Enviados" value={campaignStats.whatsapp_enviados} icon="💬" color="#25D366" />
+                    </div>
+                </>
+            )}
 
             {/* ── Distribuição por tipo: 2 blocos separados ── */}
             {(imovelStats?.por_tipo?.length || 0) > 0 && (

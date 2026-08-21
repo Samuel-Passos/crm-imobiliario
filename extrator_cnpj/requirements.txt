@@ -1,0 +1,8 @@
+# Dependências — Extrator de CNPJ
+pandas
+tqdm
+playwright
+supabase
+python-dotenv
+requests
+git+https://github.com/turicas/rows.git@develop#egg=rows

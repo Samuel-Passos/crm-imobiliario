@@ -1,0 +1,303 @@
+/* CampanhasPage.css - Dialer & Campaign Dashboard Theme */
+
+:root {
+  --m3-primary: #0056D2;
+  --m3-on-primary: #FFFFFF;
+  --m3-primary-container: #D3E3FD;
+  --m3-on-primary-container: #001C38;
+  
+  --m3-secondary: #535F70;
+  --m3-on-secondary: #FFFFFF;
+  --m3-secondary-container: #D7E3F7;
+  
+  --m3-tertiary: #8b5cf6;
+  --m3-on-tertiary: #FFFFFF;
+  
+  --m3-surface: #F8FAFD;
+  --m3-on-surface: #1F1F1F;
+  --m3-surface-variant: #E1E2EC;
+  --m3-on-surface-variant: #44474E;
+  
+  --m3-outline: #C4C7C5;
+  --m3-outline-variant: #E1E2EC;
+  
+  --m3-error: #BA1A1A;
+  --m3-success: #10B981;
+  --m3-warning: #F59E0B;
+  
+  --m3-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+  --m3-radius-sm: 8px;
+  --m3-radius-md: 12px;
+  --m3-radius-lg: 16px;
+  --m3-radius-xl: 28px;
+}
+
+.campaigns-container {
+  background-color: var(--m3-surface);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--m3-on-surface);
+}
+
+.campaigns-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.campaigns-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 3rem;
+}
+
+.campaigns-header h1 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #1A1C1E;
+  margin: 0;
+}
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card-m3 {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--m3-radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid var(--m3-outline-variant);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #535F70;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--m3-primary);
+}
+
+.stat-highlight-m3 {
+  border: 1px solid var(--m3-primary);
+  background: rgba(0, 86, 210, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 86, 210, 0.1);
+}
+
+/* Campaign Grid */
+.campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.campaign-card-m3 {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--m3-radius-xl);
+  border: 1px solid var(--m3-outline-variant);
+  box-shadow: var(--m3-shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  cursor: default;
+}
+
+.campaign-card-m3:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+}
+
+.badge-m3 {
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* Dialer Layout - 3 Colunas (War Room) */
+.dialer-layout-3col {
+  display: grid;
+  grid-template-columns: 320px 1fr 380px;
+  gap: 1.5rem;
+  align-items: start;
+  max-width: 100%;
+}
+
+@media (max-width: 1400px) {
+  .dialer-layout-3col {
+    grid-template-columns: 280px 1fr 340px;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 1100px) {
+  .dialer-layout-3col {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.left-context-panel {
+  background: #F1F4F9;
+  padding: 1.5rem;
+  border-radius: var(--m3-radius-xl);
+  border: 1px solid var(--m3-outline-variant);
+  height: calc(100vh - 12rem);
+  overflow-y: auto;
+  position: sticky;
+  top: 1rem;
+}
+
+.center-script-panel {
+  background: white;
+  padding: 2.5rem;
+  border-radius: var(--m3-radius-xl);
+  box-shadow: var(--m3-shadow);
+  min-height: calc(100vh - 12rem);
+}
+
+.right-action-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.action-card-m3 {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--m3-radius-xl);
+  box-shadow: var(--m3-shadow);
+  border: 1px solid var(--m3-outline-variant);
+}
+
+/* Dialer Buttons - Redesenhados para Premium M3 */
+.action-btn-m3 {
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 20px;
+  border: none;
+  font-weight: 900;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-transform: none;
+}
+
+.btn-dial-main { 
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%); 
+  color: white; 
+  box-shadow: 0 8px 25px rgba(16,185,129,0.3);
+  font-size: 1.2rem;
+  height: 64px;
+}
+
+.btn-communication-m3 {
+  height: 52px;
+  font-size: 0.9rem;
+  border-radius: 14px;
+  color: white;
+  border: none;
+}
+
+.btn-wa-msg { background: #25D366; }
+.btn-wa-call { background: #075E54; }
+.btn-sms-m3 { background: #3B82F6; }
+.btn-skip-m3 { background: white; color: #535F70; border: 1px solid var(--m3-outline); }
+
+.action-btn-m3:hover {
+  filter: brightness(1.1);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+}
+
+.action-btn-m3:active {
+  transform: translateY(-1px);
+}
+
+/* Results Panel */
+.feedback-panel-m3 {
+  background: #F8FAFD;
+  padding: 2rem;
+  border-radius: var(--m3-radius-lg);
+  border: 1px solid var(--m3-outline-variant);
+  margin-top: 2rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Field Styles */
+.m3-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--m3-outline);
+  background: white;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.m3-input:focus {
+  border-color: var(--m3-primary);
+  box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.08);
+  outline: none;
+}
+
+/* Timeline */
+.timeline-item {
+  padding: 1rem;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid var(--m3-outline-variant);
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.timeline-status {
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Utility */
+.m3-btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.m3-btn-icon:hover {
+  background: rgba(0,0,0,0.05);
+}

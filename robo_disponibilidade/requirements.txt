@@ -1,0 +1,12 @@
+# Dependências — Robô de Disponibilidade
+# Instale com:  pip install -r requirements.txt
+
+supabase>=2.0.0        # Cliente oficial do Supabase para Python
+pandas>=2.0.0          # Leitura e manipulação da planilha
+openpyxl>=3.1.0        # Engine para leitura de .xlsx pelo pandas
+python-dotenv>=1.0.0   # Carregamento do arquivo .env
+fastapi>=0.110.0       # Framework web do servidor
+uvicorn>=0.29.0        # Servidor ASGI
+playwright>=1.40.0     # Automação do browser para scraper
+groq>=0.5.0            # Cliente da API Groq (IA)
+zeroconf>=0.132.0      # Descoberta mDNS — para parear ADB via QR code

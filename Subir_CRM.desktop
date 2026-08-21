@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Subir CRM Imobiliario
+Comment=Inicia todos os servicos: Scraper, Robo e CRM Frontend
+Exec=bash -c "x-terminal-emulator -e bash -c '/home/samuel/Desktop/Scraper_antigravity/start_all.sh; exec bash'"
+Icon=utilities-terminal
+Terminal=false
+StartupNotify=true
+Categories=Development;

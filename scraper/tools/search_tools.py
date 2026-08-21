@@ -15,7 +15,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def buscar_imoveis_para_extrair_telefone() -> List[Dict[str, Any]]:
+def buscar_imoveis_para_extrair_telefone(limite: int = 200) -> List[Dict[str, Any]]:
     """
     Busca imóveis que:
     1. Ainda não tiveram tentativa de extração (telefone_pesquisado = false)
@@ -46,7 +46,7 @@ def buscar_imoveis_para_extrair_telefone() -> List[Dict[str, Any]]:
             .eq("kanban_coluna_id", caixa_entrada_id) \
             .order("telefone_existe", desc=True, nullsfirst=False) \
             .order("id", desc=True) \
-            .limit(200) \
+            .limit(limite) \
             .execute()
             
         return imoveis.data
