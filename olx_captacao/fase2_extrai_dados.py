@@ -391,20 +391,8 @@ async def extrair_dados(lote: int = LOTE_PADRAO) -> dict:
     print(f"   Lote: {lote} links")
     print("=" * 60)
 
-    # 1. Verifica quantos já foram processados hoje
-    hoje = datetime.now(timezone.utc).date().isoformat()
-    resp_hoje = supabase.table("imoveis").select("id", count="exact").gte("scraped_at", hoje).execute()
-    processados_hoje = resp_hoje.count or 0
-    limite_diario = 50
-    
-    print(f"   📊 Imóveis processados hoje: {processados_hoje}/{limite_diario}")
-    
-    if processados_hoje >= limite_diario:
-        print("   ⛔ Limite diário de 50 extrações atingido. Abortando Fase 2.")
-        return {"processados": 0, "salvos": 0, "erros": 0, "expirados": 0}
-        
-    vagas_restantes = limite_diario - processados_hoje
-    lote_efetivo = min(lote, vagas_restantes)
+    # Processa o lote estabelecido para este ciclo
+    lote_efetivo = lote
 
     links = _buscar_links_pendentes(lote_efetivo)
     total = len(links)

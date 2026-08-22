@@ -34,10 +34,10 @@ from playwright_stealth import Stealth
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 from supabase_client import supabase
-from parser_olx import extrair_links_do_datalayer, extrair_links_do_html, tem_proxima_pagina
+from parser_olx import extrair_links_do_datalayer, extrair_links_do_html
 
 # ── Configurações ──────────────────────────────────────────────────────────────
-URL_BASE = "https://www.olx.com.br/imoveis/estado-sp/vale-do-paraiba-e-litoral-norte/sao-jose-dos-campos?f=p"
+URL_BASE = "https://www.olx.com.br/imoveis/estado-sp/vale-do-paraiba-e-litoral-norte/sao-jose-dos-campos?sf=1&f=p"
 CHROME_PROFILE = os.getenv("CHROME_PROFILE_PATH", "/home/samuel/.config/google-chrome")
 MAX_PAGINAS = int(os.getenv("MAX_PAGINAS", "100"))
 DELAY_MIN = float(os.getenv("DELAY_MIN_SEGUNDOS", "3"))
@@ -71,19 +71,23 @@ def _url_pagina(pagina: int, base_url: str = URL_BASE) -> str:
     return f"{base_url}{separador}o={pagina}"
 
 
-def _salvar_links_supabase(links: list[dict]) -> tuple[int, int]:
+def _salvar_links_supabase(links: list[dict], limite_repetidos: int, repetidos_atuais: int) -> tuple[int, int, int, bool]:
     """
     Salva links em `links_anuncios`.
-    Insere apenas links novos (verifica existência por URL antes de inserir).
-    Retorna (novos_inseridos, ja_existiam).
+    Rastreia anúncios repetidos consecutivos para interromper a coleta precocemente.
+    Retorna (novos_inseridos, ja_existiam, repetidos_atuais_atualizado, limite_atingido).
     """
     if not links:
-        return 0, 0
+        return 0, 0, repetidos_atuais, False
 
     novos = 0
     existiam = 0
+    limite_atingido = False
 
     for link in links:
+        if limite_atingido:
+            break
+            
         url = link["url"]
         list_id = link.get("list_id")
 
@@ -91,6 +95,9 @@ def _salvar_links_supabase(links: list[dict]) -> tuple[int, int]:
 
         if res.data:
             existiam += 1
+            repetidos_atuais += 1
+            if repetidos_atuais >= limite_repetidos:
+                limite_atingido = True
         else:
             payload = {"url": url, "status": "pendente"}
             if list_id:
@@ -99,10 +106,11 @@ def _salvar_links_supabase(links: list[dict]) -> tuple[int, int]:
             try:
                 supabase.table("links_anuncios").insert(payload).execute()
                 novos += 1
+                repetidos_atuais = 0  # Zera a contagem ao encontrar um novo!
             except Exception as e:
                 print(f"  ⚠️ Erro ao inserir {url}: {e}")
 
-    return novos, existiam
+    return novos, existiam, repetidos_atuais, limite_atingido
 
 
 async def _configurar_browser(p):
@@ -202,8 +210,8 @@ async def coletar_links(max_paginas: int = 50, url_base: str = None) -> dict:
     """
     total_novos = 0
     total_existiam = 0
-    paginas_sem_novos = 0
-    MAX_PAGINAS_SEM_NOVOS = 3
+    repetidos_consecutivos = 0
+    LIMITE_REPETIDOS_CONSECUTIVOS = 10
     num_pagina = 0
     url_alvo = url_base if url_base else URL_BASE
 
@@ -250,7 +258,6 @@ async def coletar_links(max_paginas: int = 50, url_base: str = None) -> dict:
                 if "just a moment" in title.lower():
                     print(f"  🚫 Cloudflare detectado — aguardando 30s")
                     await asyncio.sleep(30)
-                    paginas_sem_novos += 1
                     continue
 
                 # Extrai links
@@ -259,32 +266,30 @@ async def coletar_links(max_paginas: int = 50, url_base: str = None) -> dict:
 
                 if len(links) == 0:
                     print(f"  ⚠️ Nenhum link encontrado nesta página")
-                    paginas_sem_novos += 1
-                    if paginas_sem_novos >= MAX_PAGINAS_SEM_NOVOS:
-                        print(f"  ⛔ {MAX_PAGINAS_SEM_NOVOS} páginas sem links — encerrando")
-                        break
                     continue
 
-                # Salva no Supabase
-                novos, existiam = _salvar_links_supabase(links)
+                # Salva no Supabase e checa repetidos consecutivos
+                novos, existiam, repetidos_consecutivos, limite_atingido = _salvar_links_supabase(
+                    links, 
+                    LIMITE_REPETIDOS_CONSECUTIVOS, 
+                    repetidos_consecutivos
+                )
                 total_novos += novos
                 total_existiam += existiam
 
-                print(f"  ✅ Salvos: {novos} novos | {existiam} já existiam")
+                print(f"  ✅ Salvos: {novos} novos | {existiam} já existiam (Sequência repetidos: {repetidos_consecutivos}/{LIMITE_REPETIDOS_CONSECUTIVOS})")
 
-                if novos == 0:
-                    paginas_sem_novos += 1
-                    print(f"  📊 Páginas sem novos: {paginas_sem_novos}/{MAX_PAGINAS_SEM_NOVOS}")
-                    if paginas_sem_novos >= MAX_PAGINAS_SEM_NOVOS:
-                        print(f"  ⛔ Todos os links já estão no banco — encerrando")
-                        break
-                else:
-                    paginas_sem_novos = 0
+                if limite_atingido:
+                    print(f"  🛑 {LIMITE_REPETIDOS_CONSECUTIVOS} anúncios repetidos seguidos encontrados! Interrompendo coleta incremental na hora.")
+                    break
 
-                # Verifica próxima página via HTML
-                html = await page.content()
-                if not tem_proxima_pagina(html) and num_pagina > 1:
-                    print(f"  ✅ Última página detectada pelo HTML")
+                # Verifica próxima página via botão DOM
+                has_next = await page.evaluate('''() => {
+                    const btn = document.querySelector('[data-testid="next-page"]');
+                    return btn && !btn.hasAttribute('disabled');
+                }''')
+                if not has_next:
+                    print(f"  ✅ Fim da paginação alcançado de forma precisa (botão 'Próxima' inativo/inexistente).")
                     break
 
                 # Delay humano entre páginas

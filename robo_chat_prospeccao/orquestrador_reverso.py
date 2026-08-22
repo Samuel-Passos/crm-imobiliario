@@ -43,15 +43,27 @@ async def extract_chat_state(page):
             return {autor: 'usuario', texto: text};
         }
         
+        const comp = window.getComputedStyle(ultima);
+        const parentComp = window.getComputedStyle(ultima.parentElement);
+        const html = ultima.outerHTML;
+        
+        if (comp.alignSelf === 'flex-end' || parentComp.justifyContent === 'flex-end') {
+            return {autor: 'usuario', texto: text, html: html};
+        } else if (comp.alignSelf === 'flex-start' || parentComp.justifyContent === 'flex-start') {
+            return {autor: 'proprietario', texto: text, html: html};
+        }
+
         const rect = ultima.getBoundingClientRect();
         const screenMid = window.innerWidth / 2;
-        if (rect.right > screenMid * 1.5) {
-            return {autor: 'usuario', texto: text};
-        } else if (rect.left < screenMid * 0.5) {
-            return {autor: 'proprietario', texto: text};
+        const msgMid = (rect.left + rect.right) / 2;
+        
+        if (msgMid > screenMid) {
+            return {autor: 'usuario', texto: text, html: html};
+        } else if (msgMid < screenMid) {
+            return {autor: 'proprietario', texto: text, html: html};
         }
         
-        return {autor: 'desconhecido', texto: text};
+        return {autor: 'desconhecido', texto: text, html: html};
     }''')
     return state
 
@@ -153,7 +165,9 @@ async def processar_kanban(nome_kanban: str, col_id_atual: str, col_id_destino: 
                 chat_state = await extract_chat_state(page)
                 autor_ultima = chat_state["autor"]
                 texto_ultima = chat_state["texto"]
+                html_ultima = chat_state.get("html", "")
                 print(f"  🗣️ Autor última msg: {autor_ultima} | Texto: '{texto_ultima[:30]}...'")
+                print(f"  🔍 HTML da mensagem (DEBUG): {html_ultima[:200]}...") # Mostra o começo do HTML para análise
                 
                 if autor_ultima == "proprietario":
                     print("  🚨 CLIENTE INTERAGIU! Movendo para coluna 'Cliente Interagiu' e abortando scripts.")
@@ -164,19 +178,23 @@ async def processar_kanban(nome_kanban: str, col_id_atual: str, col_id_destino: 
                     continue
             
             # Se não interagiu, manda mensagem pelo histórico atual
-            print(f"  -> Preparando envio do template '{template_tipo}'")
-            if page and not dry_run:
-                if await envia_msg(page, corpo_msg, dry_run):
-                    sucesso_envio = True
-                else:
-                    print(f"  ⚠️ Caixa de texto não abriu ou erro ao enviar. Movendo para Expirados.")
-                    supabase.table("imoveis").update({
-                        "anuncio_expirado": True, 
-                        "kanban_coluna_id": KANBAN_IDS["EXPIRADOS"]
-                    }).eq("id", imovel_id).execute()
-            else:
-                print("  [DRY-RUN] Simulação: Mensagem de seguimento enviada.")
+            if nome_kanban == "Script 3":
+                print(f"  -> Verificação final concluída. Movendo para 'Sem Resposta' sem enviar nova mensagem.")
                 sucesso_envio = True
+            else:
+                print(f"  -> Preparando envio do template '{template_tipo}'")
+                if page and not dry_run:
+                    if await envia_msg(page, corpo_msg, dry_run):
+                        sucesso_envio = True
+                    else:
+                        print(f"  ⚠️ Caixa de texto não abriu ou erro ao enviar. Movendo para Expirados.")
+                        supabase.table("imoveis").update({
+                            "anuncio_expirado": True, 
+                            "kanban_coluna_id": KANBAN_IDS["EXPIRADOS"]
+                        }).eq("id", imovel_id).execute()
+                else:
+                    print("  [DRY-RUN] Simulação: Mensagem de seguimento enviada.")
+                    sucesso_envio = True
 
         if sucesso_envio:
             print(f"  ✅ Movendo Kanban para ID: {col_id_destino}")

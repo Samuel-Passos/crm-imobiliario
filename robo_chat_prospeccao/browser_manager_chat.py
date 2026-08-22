@@ -18,7 +18,7 @@ async def start_chat_browser() -> BrowserContext:
     if _context is not None:
         return _context
 
-    print("🌐 [CHAT BROWSER] Iniciando sessão persistente (Workspace 3)...")
+    print("🌐 [CHAT BROWSER] Iniciando sessão persistente (Workspace 2)...")
     _playwright = await async_playwright().start()
 
     _browser = await _playwright.chromium.launch(
@@ -56,27 +56,27 @@ async def start_chat_browser() -> BrowserContext:
     stealth = Stealth()
     _context.on('page', lambda page: asyncio.create_task(stealth.apply_stealth_async(page)))
 
-    print("  -> Preparando a aba de Chat no Workspace 3...")
+    print("  -> Preparando a aba de Chat no Workspace 2...")
     _page = await _context.new_page()
     
-    # ── ANCORAR NO WORKSPACE 3 ──
-    magical_title = "OLX_CHAT_MONITOR_WS3"
+    # ── ANCORAR NO WORKSPACE 2 ──
+    magical_title = "OLX_CHAT_MONITOR_WS2"
     await _page.evaluate(f'document.title = "{magical_title}"')
     
     import time
     moved = False
     for _ in range(20):
-        # -t 2 move para o Workspace 3 (index 2)
-        res = subprocess.run(['wmctrl', '-r', magical_title, '-t', '2'], capture_output=True)
+        # -t 1 move para o Workspace 2 (index 1)
+        res = subprocess.run(['wmctrl', '-r', magical_title, '-t', '1'], capture_output=True)
         if res.returncode == 0:
             moved = True
             break
         time.sleep(0.5)
         
     if moved:
-        print("  🖥️  [WORKSPACE] ✅ Janela firmemente fixada no Workspace 3.")
+        print("  🖥️  [WORKSPACE] ✅ Janela firmemente fixada no Workspace 2.")
     else:
-        print("  ⚠️  [WORKSPACE] Falha ao tentar mover a janela para o Workspace 3 (talvez não haja interface gráfica).")
+        print("  ⚠️  [WORKSPACE] Falha ao tentar mover a janela para o Workspace 2 (talvez não haja interface gráfica).")
 
     try:
         await _page.goto("https://chat.olx.com.br/", timeout=60000, wait_until='domcontentloaded')

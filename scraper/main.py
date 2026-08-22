@@ -126,6 +126,14 @@ async def extract_one_phone(payload: ImovelRequest, background_tasks: Background
     background_tasks.add_task(extract_phone_single_lead, payload.imovel_id)
     return {"status": "started", "message": f"Extração de telefones do imóvel {payload.imovel_id} iniciada!"}
 
+@app.post("/extract-phone/batch")
+async def extract_phone_batch(background_tasks: BackgroundTasks, lote: int = 10):
+    """
+    Processa um lote de imóveis pendentes, usando a página persistente do Workspace 2.
+    """
+    background_tasks.add_task(process_batch_phone_extraction, lote)
+    return {"status": "started", "message": f"Extração de telefones em lote ({lote} imóveis) iniciada!"}
+
 @app.post("/test-url")
 async def test_url(payload: UrlRequest):
     """
@@ -247,6 +255,46 @@ async def get_chat_status():
     return {
         "running": orchestrator.CHAT_IS_RUNNING
     }
+
+@app.post("/run-gerente-geral")
+async def run_gerente_geral_endpoint(background_tasks: BackgroundTasks):
+    """Aciona a esteira completa do Gerente Geral."""
+    import subprocess
+    import sys
+    import os
+    
+    # Verifica se já está rodando
+    try:
+        res = subprocess.run(["pgrep", "-f", "gerente_geral.py"], capture_output=True, text=True)
+        if res.stdout.strip():
+            return {"status": "already_running", "message": "O Gerente Geral já está trabalhando!"}
+    except Exception:
+        pass
+
+    def run_gerente():
+        gerente_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "gerente_geral.py"))
+        python_exec = os.path.abspath(os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"))
+        log_file_path = "/tmp/gerente_geral.log"
+        cwd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        try:
+            with open(log_file_path, "w") as f:
+                subprocess.Popen([python_exec, gerente_path], stdout=f, stderr=f, cwd=cwd_path)
+        except Exception as e:
+            print(f"Erro ao disparar gerente geral: {e}")
+            
+    background_tasks.add_task(run_gerente)
+    return {"status": "started", "message": "Gerente Geral iniciado no Workspace!"}
+
+@app.get("/status-gerente-geral")
+async def status_gerente_geral_endpoint():
+    """Retorna se o Gerente Geral está rodando."""
+    import subprocess
+    try:
+        res = subprocess.run(["pgrep", "-f", "gerente_geral.py"], capture_output=True, text=True)
+        is_running = bool(res.stdout.strip())
+        return {"running": is_running}
+    except Exception:
+        return {"running": False}
 
 if __name__ == "__main__":
     import uvicorn

@@ -68,3 +68,4 @@ robo_disponibilidade/__pycache__/
 robo_disponibilidade/*.xlsx
 */.venv/
 */__pycache__/
+robo_disponibilidade/user_config.json

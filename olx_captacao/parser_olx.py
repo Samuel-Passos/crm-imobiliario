@@ -78,15 +78,7 @@ def extrair_links_do_html(html: str) -> list[dict]:
     return links
 
 
-def tem_proxima_pagina(html: str) -> bool:
-    """Verifica se existe botão/link para próxima página na listagem OLX."""
-    if 'aria-label="Próxima página"' in html or 'rel="next"' in html:
-        return True
-    if re.search(r'[?&]o=\d+', html):
-        return True
-    if 'data-testid="next-page"' in html or 'Próxima' in html:
-        return True
-    return False
+
 
 
 # ──────────────────────────────────────────────────────────────────────────────

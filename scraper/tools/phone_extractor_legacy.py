@@ -51,43 +51,6 @@ def _extrair_numeros(texto: str, ad_id: str | None = None) -> list[str]:
     return list(dict.fromkeys(numeros))
 
 
-def _extrair_numeros_e_nomes(texto: str, ad_id: str | None = None) -> list[dict]:
-    """Extrai telefones e nomes adjacentes."""
-    resultados = []
-    for m in PHONE_REGEX.finditer(texto):
-        raw = m.group()
-        num = re.sub(r'\D', '', raw)
-        if ad_id and str(ad_id) in num:
-            continue
-        if len(num) in (8, 9):
-            num = '12' + num
-        if 10 <= len(num) <= 13:
-            end_pos = m.end()
-            contexto_apos = texto[end_pos:end_pos+30]
-            nome_encontrado = None
-            contexto_limpo = re.sub(r'^[^\w]+', ' ', contexto_apos).strip()
-            match_c = re.search(r'c/\s*([A-Za-zÀ-ÖØ-öø-ÿ]+)', texto[end_pos:end_pos+30])
-            if match_c:
-                nome_encontrado = match_c.group(1).strip()
-            else:
-                match_palavra = re.search(r'^([A-Z][a-zÀ-ÖØ-öø-ÿ]+)', contexto_limpo)
-                if match_palavra:
-                    nome_encontrado = match_palavra.group(1).strip()
-                elif contexto_limpo:
-                    primeira = contexto_limpo.split()[0]
-                    if len(primeira) > 2 and primeira.lower() not in ['falar', 'ligar', 'contato', 'tratar', 'zap', 'whatsapp', 'com']:
-                        nome_encontrado = primeira.capitalize()
-            resultados.append({"telefone": num, "nome": nome_encontrado})
-    
-    unicos = []
-    vistos = set()
-    for r in resultados:
-        if r["telefone"] not in vistos:
-            vistos.add(r["telefone"])
-            unicos.append(r)
-    return unicos
-
-
 def _is_xpath(selector: str) -> bool:
     """Detecta se o seletor é XPath (começa com '/' ou '(' como em (xpath)[n])."""
     return selector.startswith('/') or selector.startswith('(')
@@ -269,39 +232,6 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
                 # ═══════════════════════════════════════════════════════════
                 # DEFINIÇÃO DOS GRUPOS DE PASSOS
                 # ═══════════════════════════════════════════════════════════
-
-                async def _grupo_json_ld():
-                    """Grupo C: Extrai do JSON-LD sem cliques (Ultra Rápido)"""
-                    try:
-                        print("  -> [JSON-LD] Buscando telefones no código-fonte via JSON-LD...")
-                        html = await page.content()
-                        from bs4 import BeautifulSoup
-                        soup = BeautifulSoup(html, 'html.parser')
-                        scripts = soup.find_all('script', type='application/ld+json')
-                        encontrou_jsonld = False
-                        
-                        for script in scripts:
-                            try:
-                                data = json.loads(script.string)
-                                if 'Object' in data and 'description' in data['Object']:
-                                    desc = data['Object']['description']
-                                    nums = _extrair_numeros_e_nomes(desc, ad_id)
-                                    for item in nums:
-                                        if item["telefone"] not in [t["telefone"] for t in dados["telefones"]]:
-                                            dados["telefones"].append({
-                                                "nome": item["nome"], "telefone": item["telefone"], "origem": "json-ld"
-                                            })
-                                            print(f"  ✅ [JSON-LD] Telefone extraído: {item['telefone']} | Nome: {item['nome']}")
-                                            encontrou_jsonld = True
-                            except Exception:
-                                pass
-                        
-                        if not encontrou_jsonld:
-                            print("  ℹ️ [JSON-LD] Nenhum telefone na descrição JSON-LD.")
-                        return encontrou_jsonld
-                    except Exception as e_json:
-                        print(f"  ℹ️ [JSON-LD] Erro na extração: {e_json}")
-                        return False
 
                 async def _grupo_botao():
                     """Grupo A: Botão principal de telefone (price-box lateral)"""
@@ -500,19 +430,18 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
                         print(f"  ℹ️ [DESC] Varredura final falhou: {e_sweep}")
 
                 # ═══════════════════════════════════════════════════════════
-                # EXECUTA OS GRUPOS NA NOVA ORDEM OTIMIZADA
+                # EXECUTA OS GRUPOS EM ORDEM ALEATÓRIA
                 # ═══════════════════════════════════════════════════════════
-                # PASSO 1: Sempre pega o botão principal
-                await _grupo_botao()
-                await asyncio.sleep(random.uniform(1.0, 2.0))
-                
-                # PASSO 2: Tenta extração via JSON-LD para a descrição
-                sucesso_json_ld = await _grupo_json_ld()
-                
-                # PASSO 3: Se o JSON-LD falhar em encontrar algo na descrição, usa os cliques como fallback
-                if not sucesso_json_ld:
-                    print("  🔀 [FALLBACK] Usando cliques na descrição (JSON-LD vazio).")
+                if random.random() < 0.5:
+                    print("  🔀 Ordem sorteada: BOTÃO → DESCRIÇÃO")
+                    await _grupo_botao()
+                    await asyncio.sleep(random.uniform(1.5, 4.0))
                     await _grupo_descricao()
+                else:
+                    print("  🔀 Ordem sorteada: DESCRIÇÃO → BOTÃO")
+                    await _grupo_descricao()
+                    await asyncio.sleep(random.uniform(1.5, 4.0))
+                    await _grupo_botao()
 
                 # ═══════════════════════════════════════════════════════════
                 # FALLBACK ─ Retentativa do botão se necessário

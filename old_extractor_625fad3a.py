@@ -3,9 +3,8 @@ import re
 import json
 import os
 import random
-import time
 from typing import Dict, Any
-from playwright.async_api import BrowserContext
+from playwright.async_api import async_playwright
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,16 +16,9 @@ XPATHS_TELEFONE_PRINCIPAL = [
     '#price-box-container > div.flex.flex-col > div[class*="ad__sc-"] > span', # Seletor flexível baseado no do Samuel
     '#price-box-container span' # Fallback final mais amplo
 ]
-XPATH_BTN_DESCRICAO = '//*[@id="description-title"]/div/div[2]/div/button'
-
-# Seletores candidatos para as máscaras de telefone na descrição (ordem de prioridade).
-# O scraper testa cada um e usa o primeiro que encontrar ≥1 elemento visível.
-SELETORES_MASCARA_DESCRICAO = [
-    '//*[@id="description-title"]/div/div[2]/div/span/span/span',  # XPath original (Samuel)
-    'span[data-element="button_show-phone"]',                       # Atributo semântico OLX
-    'span:has-text("ver número")',                                  # Texto da máscara
-    '#description-title span span span',                            # CSS equivalente ao XPath
-]
+XPATH_BTN_DESCRICAO      = '//*[@id="description-title"]/div/div[2]/div/button'
+XPATH_MASCARA_DESCRICAO  = '//*[@id="description-title"]/div/div[2]/div/span/span/span'
+XPATH_TEL_DESCRICAO      = '//*[@id="description-title"]/div/div[2]/div/span/span/span'
 # ─────────────────────────────────────────────────────────────────────────────
 
 PHONE_REGEX = re.compile(
@@ -51,66 +43,19 @@ def _extrair_numeros(texto: str, ad_id: str | None = None) -> list[str]:
     return list(dict.fromkeys(numeros))
 
 
-def _extrair_numeros_e_nomes(texto: str, ad_id: str | None = None) -> list[dict]:
-    """Extrai telefones e nomes adjacentes."""
-    resultados = []
-    for m in PHONE_REGEX.finditer(texto):
-        raw = m.group()
-        num = re.sub(r'\D', '', raw)
-        if ad_id and str(ad_id) in num:
-            continue
-        if len(num) in (8, 9):
-            num = '12' + num
-        if 10 <= len(num) <= 13:
-            end_pos = m.end()
-            contexto_apos = texto[end_pos:end_pos+30]
-            nome_encontrado = None
-            contexto_limpo = re.sub(r'^[^\w]+', ' ', contexto_apos).strip()
-            match_c = re.search(r'c/\s*([A-Za-zÀ-ÖØ-öø-ÿ]+)', texto[end_pos:end_pos+30])
-            if match_c:
-                nome_encontrado = match_c.group(1).strip()
-            else:
-                match_palavra = re.search(r'^([A-Z][a-zÀ-ÖØ-öø-ÿ]+)', contexto_limpo)
-                if match_palavra:
-                    nome_encontrado = match_palavra.group(1).strip()
-                elif contexto_limpo:
-                    primeira = contexto_limpo.split()[0]
-                    if len(primeira) > 2 and primeira.lower() not in ['falar', 'ligar', 'contato', 'tratar', 'zap', 'whatsapp', 'com']:
-                        nome_encontrado = primeira.capitalize()
-            resultados.append({"telefone": num, "nome": nome_encontrado})
-    
-    unicos = []
-    vistos = set()
-    for r in resultados:
-        if r["telefone"] not in vistos:
-            vistos.add(r["telefone"])
-            unicos.append(r)
-    return unicos
-
-
-def _is_xpath(selector: str) -> bool:
-    """Detecta se o seletor é XPath (começa com '/' ou '(' como em (xpath)[n])."""
-    return selector.startswith('/') or selector.startswith('(')
-
-
 async def _aguardar_numero_revelar(page, selector: str, timeout_ms: int = 8000) -> str:
     """Aguarda o span mudar de máscara para número real e retorna o texto."""
-    # XPath pode começar com '/' OU '(' (forma indexada: (xpath)[n])
-    is_xpath = _is_xpath(selector)
-    loc_str = f"xpath={selector}" if is_xpath else selector
-
-    # Escapa as aspas do seletor para injeção segura no JS
-    sel_escaped = selector.replace('"', '\\"')
-
+    # Prefixar xpath= se for xpath, senão é css selector
+    loc_str = f"xpath={selector}" if selector.startswith('/') else selector
+    
+    # A query js precisa usar querySelector ou evaluate dependendo do tipo
     js_query = f"""() => {{
-        const sel = "{sel_escaped}";
-        const isXPath = sel.startsWith('/') || sel.startsWith('(');
-        const el = isXPath
-            ? document.evaluate(sel, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
-            : document.querySelector(sel);
+        const el = "{selector}".startsWith('/') 
+            ? document.evaluate("{selector}", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+            : document.querySelector("{selector}");
         if (!el) return false;
         const txt = el.textContent || '';
-        const isNotMasked = !txt.includes('ver n\\u00famero') && !txt.includes('..');
+        const isNotMasked = !txt.includes('ver número') && !txt.includes('..');
         const hasDigits = (txt.replace(/\\D/g, '').length >= 8);
         return isNotMasked && hasDigits;
     }}"""
@@ -197,7 +142,7 @@ async def _fechar_modal_se_aberto(page) -> str:
 
 
 
-async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
+async def extract_phones_from_olx(url: str) -> Dict[str, Any]:
     """
     Acessa a URL do anúncio OLX usando Playwright + cookies do Samuel.
 
@@ -218,9 +163,47 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
     if id_match:
         ad_id = id_match.group(1)
 
+    session_file = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), '..', 'olx_session.json')
+    )
+
     try:
-        print(f"🔍 Iniciando extração na Aba Fixa do WS2: {url}")
-        if True:
+        async with async_playwright() as p:
+            print(f"🔍 Iniciando extração (Playwright + Sessão Samuel): {url}")
+
+            # headless=False é OBRIGATÓRIO: o Cloudflare da OLX detecta
+            # "HeadlessChrome" no header sec-ch-ua e bloqueia a API showphone
+            # com 403. Em modo headed, a API retorna 200 normalmente.
+            browser = await p.chromium.launch(
+                headless=False,
+                args=[
+                    '--disable-blink-features=AutomationControlled',
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                ]
+            )
+
+            try:
+                context = await browser.new_context(
+                    storage_state=session_file,
+                    user_agent=(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/121.0.0.0 Safari/537.36"
+                    ),
+                    viewport={'width': 1280, 'height': 800}
+                )
+                print("  ✅ Sessão do Samuel carregada.")
+            except Exception as e:
+                print(f"  ⚠️ Sessão não encontrada, rodando sem login: {e}")
+                context = await browser.new_context()
+
+            await context.add_init_script(
+                "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });"
+            )
+
+            page = await context.new_page()
+
             # ── Rastreamento de bloqueios de API ──────────────────────────
             api_bloqueada = False
 
@@ -250,58 +233,18 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
                 # ── Verifica expirado ─────────────────────────────────────────
                 title   = await page.title()
                 content = await page.content()
-                
-                # Checa bloqueio na pagina principal
-                if "attention required" in title.lower() or "cloudflare" in title.lower() or "access denied" in title.lower():
-                    print("  🚫 BLOQUEIO DETECTADO: Página principal bloqueada pelo Cloudflare (403).")
-                    dados["bloqueado"] = True
-                    return dados
-
                 if any(kw in title.lower() or kw in content.lower() for kw in [
                     "anúncio finalizado", "ops!", "não encontrado",
                     "anúncio desativado", "página não encontrada"
                 ]):
                     print("  ⚠️ Anúncio expirado ou indisponível.")
                     dados["expirado"] = True
-                    # Não fechamos a página (await page.close()) pois ela é a aba fixa global do Workspace 2
+                    await browser.close()
                     return dados
 
                 # ═══════════════════════════════════════════════════════════
                 # DEFINIÇÃO DOS GRUPOS DE PASSOS
                 # ═══════════════════════════════════════════════════════════
-
-                async def _grupo_json_ld():
-                    """Grupo C: Extrai do JSON-LD sem cliques (Ultra Rápido)"""
-                    try:
-                        print("  -> [JSON-LD] Buscando telefones no código-fonte via JSON-LD...")
-                        html = await page.content()
-                        from bs4 import BeautifulSoup
-                        soup = BeautifulSoup(html, 'html.parser')
-                        scripts = soup.find_all('script', type='application/ld+json')
-                        encontrou_jsonld = False
-                        
-                        for script in scripts:
-                            try:
-                                data = json.loads(script.string)
-                                if 'Object' in data and 'description' in data['Object']:
-                                    desc = data['Object']['description']
-                                    nums = _extrair_numeros_e_nomes(desc, ad_id)
-                                    for item in nums:
-                                        if item["telefone"] not in [t["telefone"] for t in dados["telefones"]]:
-                                            dados["telefones"].append({
-                                                "nome": item["nome"], "telefone": item["telefone"], "origem": "json-ld"
-                                            })
-                                            print(f"  ✅ [JSON-LD] Telefone extraído: {item['telefone']} | Nome: {item['nome']}")
-                                            encontrou_jsonld = True
-                            except Exception:
-                                pass
-                        
-                        if not encontrou_jsonld:
-                            print("  ℹ️ [JSON-LD] Nenhum telefone na descrição JSON-LD.")
-                        return encontrou_jsonld
-                    except Exception as e_json:
-                        print(f"  ℹ️ [JSON-LD] Erro na extração: {e_json}")
-                        return False
 
                 async def _grupo_botao():
                     """Grupo A: Botão principal de telefone (price-box lateral)"""
@@ -366,153 +309,77 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
                         print("  ℹ️ [BOTÃO] Botão principal não encontrado (normal em alguns anúncios).")
 
                 async def _grupo_descricao():
-                    """Grupo B: Expandir descrição + clicar máscaras de telefone."""
-
-                    # ── Sub-passo 1: Expandir descrição ───────────────────────────────────
+                    """Grupo B: Expandir descrição + clicar máscara oculta"""
+                    # Sub-passo: Expandir descrição
                     try:
                         print("  -> [DESC] Verificando botão 'Ver descrição completa'...")
-                        btn_desc = None
-                        for sel in [
-                            'button:has-text("Ver descrição completa")',
-                            f"xpath={XPATH_BTN_DESCRICAO}",
-                        ]:
-                            try:
-                                await page.wait_for_selector(sel, state="visible", timeout=3000)
-                                btn_desc = page.locator(sel).first
-                                break
-                            except Exception:
-                                continue
-
-                        if btn_desc:
+                        btn_desc = page.locator(f"xpath={XPATH_BTN_DESCRICAO}").first
+                        if await btn_desc.count() > 0 and await btn_desc.is_visible():
                             await btn_desc.scroll_into_view_if_needed()
                             await asyncio.sleep(random.uniform(0.3, 1.0))
                             await btn_desc.click()
                             print("  -> [DESC] Descrição expandida.")
                             await asyncio.sleep(random.uniform(1.5, 3.0))
                         else:
-                            print("  ℹ️ [DESC] Botão de descrição não encontrado ou já expandido.")
+                            print("  ℹ️ [DESC] Descrição já visível.")
                     except Exception as e_desc:
-                        print(f"  ℹ️ [DESC] Erro ao expandir descrição: {e_desc}")
+                        print(f"  ℹ️ [DESC] Botão de descrição indisponível: {e_desc}")
 
-                    # ── Sub-passo 2: Localizar máscaras com múltiplos seletores ──────────
-                    mascaras = None
-                    seletor_ativo = None
+                    # Sub-passo: Clicar na máscara de telefone na descrição
                     try:
-                        print("  -> [DESC] Procurando máscaras de telefone...")
-                        for candidato in SELETORES_MASCARA_DESCRICAO:
-                            loc_str = f"xpath={candidato}" if candidato.startswith('/') else candidato
-                            loc = page.locator(loc_str)
-                            try:
-                                count_cand = await loc.count()
-                            except Exception:
-                                count_cand = 0
-                            if count_cand > 0:
-                                mascaras = loc
-                                seletor_ativo = candidato
-                                print(f"  -> [DESC] Seletor ativo: '{candidato}' ({count_cand} elemento(s))")
-                                break
+                        print("  -> [DESC] Verificando telefone oculto na descrição...")
+                        mascara = page.locator(f"xpath={XPATH_MASCARA_DESCRICAO}").first
 
-                        if mascaras is None:
-                            print("  ℹ️ [DESC] Nenhuma máscara encontrada com nenhum seletor.")
-                            return
-
-                        count = await mascaras.count()
-
-                    except Exception as e_loc:
-                        print(f"  ℹ️ [DESC] Erro ao localizar máscaras: {e_loc}")
-                        return
-
-                    # ── Sub-passo 3: Clicar em cada máscara e coletar telefone ──────────
-                    for i in range(count):
-                        try:
-                            mascara = mascaras.nth(i)
-                            if not await mascara.is_visible():
-                                continue
-
+                        if await mascara.count() > 0 and await mascara.is_visible():
                             texto_mascara = (await mascara.text_content() or "").strip()
-                            print(f"  -> [DESC] Elemento [{i+1}/{count}]: '{texto_mascara}'")
+                            print(f"  -> [DESC] Elemento encontrado: '{texto_mascara}'")
 
-                            is_masked = any(kw in texto_mascara for kw in MASKED_KEYWORDS)
+                            is_masked = any(kw in (texto_mascara or "") for kw in MASKED_KEYWORDS)
                             if is_masked:
                                 await mascara.scroll_into_view_if_needed()
-                                await asyncio.sleep(random.uniform(0.5, 1.2))
+                                await asyncio.sleep(random.uniform(0.3, 1.0))
                                 await mascara.click()
-                                print(f"  -> [DESC] Clique na máscara [{i+1}]. Aguardando API...")
+                                print("  -> [DESC] Clique na máscara. Aguardando API...")
 
-                                # Monta seletor específico para aguardar revelação
-                                if _is_xpath(seletor_ativo):
-                                    # XPath: usa notação de índice 1-based ex: (xpath)[2]
-                                    sel_rev = f"({seletor_ativo})[{i+1}]"
-                                else:
-                                    # CSS: usa pseudo-seletor nth-of-type
-                                    sel_rev = f"{seletor_ativo}:nth-of-type({i+1})"
-
-                                tel_texto = await _aguardar_numero_revelar(
-                                    page, sel_rev, timeout_ms=10000
+                                tel_desc_texto = await _aguardar_numero_revelar(
+                                    page, XPATH_TEL_DESCRICAO, timeout_ms=8000
                                 )
-                                print(f"  -> [DESC] Texto [{i+1}] após revelação: '{tel_texto}'")
+                                print(f"  -> [DESC] Texto após revelação: '{tel_desc_texto}'")
 
-                                for num in _extrair_numeros(tel_texto, ad_id):
+                                for num in _extrair_numeros(tel_desc_texto, ad_id):
                                     if num not in [t["telefone"] for t in dados["telefones"]]:
                                         dados["telefones"].append({
                                             "nome": None, "telefone": num, "origem": "descricao"
                                         })
-                                        print(f"  ✅ [DESC] Telefone [{i+1}] via descrição: {num}")
-
-                                # Delay humano entre cliques consecutivos (maior para dar tempo à API)
-                                if i < count - 1:
-                                    await asyncio.sleep(random.uniform(2.0, 3.5))
-
+                                        print(f"  ✅ [DESC] Telefone via descrição: {num}")
                             else:
-                                # Número já visível (máscara já revelada)
-                                print(f"  -> [DESC] Número [{i+1}] já visível: '{texto_mascara}'")
+                                # Número já visível diretamente
+                                print(f"  -> [DESC] Número já visível: '{texto_mascara}'")
                                 for num in _extrair_numeros(texto_mascara, ad_id):
                                     if num not in [t["telefone"] for t in dados["telefones"]]:
                                         dados["telefones"].append({
                                             "nome": None, "telefone": num, "origem": "descricao"
                                         })
-                                        print(f"  ✅ [DESC] Telefone [{i+1}] já visível: {num}")
+                                        print(f"  ✅ [DESC] Telefone visível: {num}")
+                        else:
+                            print("  ℹ️ [DESC] Nenhum telefone oculto na descrição.")
 
-                        except Exception as e_idx:
-                            print(f"  ⚠️ [DESC] Erro ao processar máscara [{i+1}]: {e_idx}")
-
-                    # ── Sub-passo 4: Varredura final ──────────────────────────────────────
-                    # Após todos os cliques, relê TODOS os spans para capturar números que
-                    # foram revelados mas o timeout impediu a leitura em tempo real.
-                    try:
-                        print("  -> [DESC] Varredura final dos spans revelados...")
-                        await asyncio.sleep(1.5)
-                        total_spans = await mascaras.count()
-                        for j in range(total_spans):
-                            try:
-                                txt = (await mascaras.nth(j).text_content() or "").strip()
-                                is_still_masked = any(kw in txt for kw in MASKED_KEYWORDS)
-                                if not is_still_masked:
-                                    for num in _extrair_numeros(txt, ad_id):
-                                        if num not in [t["telefone"] for t in dados["telefones"]]:
-                                            dados["telefones"].append({
-                                                "nome": None, "telefone": num, "origem": "descricao"
-                                            })
-                                            print(f"  ✅ [DESC] Varredura final capturou: {num}")
-                            except Exception:
-                                pass
-                    except Exception as e_sweep:
-                        print(f"  ℹ️ [DESC] Varredura final falhou: {e_sweep}")
+                    except Exception as e_mask:
+                        print(f"  ℹ️ [DESC] Sem máscara na descrição: {e_mask}")
 
                 # ═══════════════════════════════════════════════════════════
-                # EXECUTA OS GRUPOS NA NOVA ORDEM OTIMIZADA
+                # EXECUTA OS GRUPOS EM ORDEM ALEATÓRIA
                 # ═══════════════════════════════════════════════════════════
-                # PASSO 1: Sempre pega o botão principal
-                await _grupo_botao()
-                await asyncio.sleep(random.uniform(1.0, 2.0))
-                
-                # PASSO 2: Tenta extração via JSON-LD para a descrição
-                sucesso_json_ld = await _grupo_json_ld()
-                
-                # PASSO 3: Se o JSON-LD falhar em encontrar algo na descrição, usa os cliques como fallback
-                if not sucesso_json_ld:
-                    print("  🔀 [FALLBACK] Usando cliques na descrição (JSON-LD vazio).")
+                if random.random() < 0.5:
+                    print("  🔀 Ordem sorteada: BOTÃO → DESCRIÇÃO")
+                    await _grupo_botao()
+                    await asyncio.sleep(random.uniform(1.5, 4.0))
                     await _grupo_descricao()
+                else:
+                    print("  🔀 Ordem sorteada: DESCRIÇÃO → BOTÃO")
+                    await _grupo_descricao()
+                    await asyncio.sleep(random.uniform(1.5, 4.0))
+                    await _grupo_botao()
 
                 # ═══════════════════════════════════════════════════════════
                 # FALLBACK ─ Retentativa do botão se necessário
@@ -569,7 +436,7 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
                 print(f"  🚨 Erro durante navegação/interação: {e}")
                 dados["erro"] = str(e)
 
-            # NÃO USAMOS "await page.close()", a página vive para a próxima extração.
+            await browser.close()
             print(f"✅ Extração finalizada: {len(dados['telefones'])} contato(s) encontrado(s).")
 
     except Exception as e:
@@ -583,7 +450,7 @@ if __name__ == "__main__":
     url_teste = "https://sp.olx.com.br/vale-do-paraiba-e-litoral-norte/imoveis/casa-a-venda-no-j-satelite-aceita-troca-por-casa-no-jardim-portugal-ou-bosque-1467276395"
 
     async def teste_local():
-        resultado = await extract_phones_from_olx(url_teste, None)  # Requer page no uso real
+        resultado = await extract_phones_from_olx(url_teste)
         print("\n📋 Resultado Final:")
         print(json.dumps(resultado, indent=2, ensure_ascii=False))
 

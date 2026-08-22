@@ -1,9 +1,25 @@
 import subprocess
 import sys
 import os
+import urllib.request
+import urllib.error
 
 # Caminho para o ambiente virtual de Python que o projeto usa
 VENV_PYTHON = "scraper/.venv/bin/python"
+
+from dotenv import load_dotenv
+
+# Carrega as configurações do arquivo .env central
+load_dotenv(os.path.join("scraper", ".env"))
+
+# =============================================================================
+# ⚙️ CONFIGURAÇÕES DE LOTE (Puxando do arquivo scraper/.env)
+# =============================================================================
+
+LOTE_FASE2 = int(os.getenv("LOTE_FASE2", 50))
+LOTE_FASE3 = int(os.getenv("LOTE_FASE3", 50))
+LOTE_CHAT = int(os.getenv("LOTE_CHAT", 50))
+# =============================================================================
 
 def executar_script(nome_etapa, caminho_script):
     """Executa um script de forma isolada e aguarda ele terminar."""
@@ -33,11 +49,13 @@ def executar_geocodificador():
     print("=" * 60)
     
     comando_python = """
-import asyncio
 import sys
+import os
 sys.path.append('scraper')
-from tools.geocoder_maps_scraper import main
-asyncio.run(main())
+from dotenv import load_dotenv
+load_dotenv(os.path.join('scraper', '.env'))
+from tools.geocoder import main
+main()
     """
     
     try:
@@ -49,20 +67,43 @@ asyncio.run(main())
     except Exception as e:
         print(f"\n❌ ERRO FATAL AO EXECUTAR MAPS: {e}\n")
 
+def executar_extracao_telefone(lote=10):
+    """Aciona a extração de telefone em lote via endpoint do servidor, reaproveitando o navegador persistente."""
+    nome_etapa = "FASE 3 (EXTRAÇÃO DE TELEFONE VIA BACKEND)"
+    print("=" * 60)
+    print(f"📱 INICIANDO ETAPA: {nome_etapa}")
+    print("=" * 60)
+    
+    url = f"http://localhost:8765/extract-phone/batch?lote={lote}"
+    try:
+        req = urllib.request.Request(url, method="POST")
+        with urllib.request.urlopen(req) as response:
+            if response.status == 200:
+                print(f"\n✅ {nome_etapa} INICIADA COM SUCESSO NO SERVIDOR!\n")
+            else:
+                print(f"\n⚠️ {nome_etapa} RETORNOU STATUS {response.status}. Continuando...\n")
+    except urllib.error.URLError as e:
+        print(f"\n❌ ERRO AO ACIONAR {nome_etapa}: Servidor backend não está rodando? {e}\n")
+    except Exception as e:
+        print(f"\n❌ ERRO FATAL EM {nome_etapa}: {e}\n")
+
 def run_gerente_geral():
     print("\n" + "★" * 60)
     print("👔 BEM-VINDO AO GERENTE GERAL DO SISTEMA")
     print("Orquestrando a esteira completa de captação e relacionamento.")
     print("★" * 60 + "\n")
     
+    # 0. Varre a Caixa de Entrada da OLX em busca de respostas tardias
+    executar_script("SCANNER DE INBOX (RESPOSTAS)", "robo_chat_prospeccao/scanner_inbox.py")
+
     # 1. Libera o funil enviando mensagens (Onda Reversa)
-    executar_script("ONDA REVERSA (CHAT)", "robo_chat_prospeccao/orquestrador_reverso.py")
+    executar_script("ONDA REVERSA (CHAT)", f"robo_chat_prospeccao/orquestrador_reverso.py --lote {LOTE_CHAT}")
     
     # 2. Raspa novos links na OLX
     executar_script("FASE 1 (COLETA DE LINKS OLX)", "olx_captacao/fase1_coleta_links.py")
     
     # 3. Pega detalhes dos imóveis novos
-    executar_script("FASE 2 (EXTRAÇÃO DE DADOS OLX)", "olx_captacao/fase2_extrai_dados.py")
+    executar_script("FASE 2 (EXTRAÇÃO DE DADOS OLX)", f"olx_captacao/fase2_extrai_dados.py --lote {LOTE_FASE2}")
     
     # 4. Remove corretores da Caixa de Entrada
     executar_script("FASE 2.5 (FILTRO DE PROFISSIONAIS)", "olx_captacao/fase2_5_filtro_mercado.py")
@@ -71,8 +112,8 @@ def run_gerente_geral():
     executar_geocodificador()
     
     # 6. Extrai o Telefone em Lote dos sobreviventes
-    # Usando limite conservador por padrão (ex: 10), mas isso pode ser alterado
-    executar_script("FASE 3 (EXTRAÇÃO DE TELEFONE)", "olx_captacao/fase3_extrai_telefone_em_lote.py --lote 10")
+    # Usando o endpoint do backend para reaproveitar a página persistente do Workspace 2
+    executar_extracao_telefone(lote=LOTE_FASE3)
     
     print("\n" + "★" * 60)
     print("🏁 ESTEIRA COMPLETA FINALIZADA COM SUCESSO!")

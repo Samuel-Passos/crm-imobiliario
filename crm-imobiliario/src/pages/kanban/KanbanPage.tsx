@@ -163,6 +163,8 @@ export function KanbanPage() {
     const [executing, setExecuting] = useState(false)
     const [isPaused, setIsPaused] = useState(false)
     const [chatLoadingAction, setChatLoadingAction] = useState(false)
+    const [gerenteRunning, setGerenteRunning] = useState(false)
+    const [gerenteLoading, setGerenteLoading] = useState(false)
     const [activeCard, setActiveCard] = useState<ImovelKanban | null>(null)
     const initParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
     const [filtros, setFiltrosState] = useState<FiltrosKanban>({
@@ -273,11 +275,32 @@ export function KanbanPage() {
         }
     }
 
+    async function handleIniciarGerente() {
+        if (!confirm('Deseja iniciar a esteira completa (Gerente Geral)? Ele vai rodar Fase 1, 2, 2.5 e 3 automaticamente em background.')) return
+        setGerenteLoading(true)
+        try {
+            const res = await fetch('http://localhost:8765/run-gerente-geral', { method: 'POST' })
+            const data = await res.json()
+            if (data.status === 'already_running') {
+                toast('O Gerente Geral já está trabalhando!')
+            } else {
+                toast.success('Esteira Completa Iniciada!')
+                setGerenteRunning(true)
+            }
+        } catch {
+            toast.error('Erro ao conectar com o scraper. Ele está online?')
+        } finally {
+            setGerenteLoading(false)
+        }
+    }
+
     // Polling para sincronizar status com o backend
     useEffect(() => {
         let interval: any;
-        if (executing) {
-            interval = setInterval(async () => {
+        
+        const checkStatuses = async () => {
+            // Checa extrator normal
+            if (executing) {
                 try {
                     const response = await fetch('http://localhost:8765/status-execution')
                     if (response.ok) {
@@ -285,18 +308,29 @@ export function KanbanPage() {
                         if (!data.executing && executing) {
                             setExecuting(false)
                             setIsPaused(false)
-                            clearInterval(interval)
-                            // Quando para de executar, recarrega para garantir que pegamos os telefones novos
-                            window.location.reload()
+                            // window.location.reload()
                         } else if (data.isPaused !== isPaused) {
                             setIsPaused(data.isPaused)
                         }
                     }
                 } catch (error) {
-                    console.error('Erro no polling de status:', error)
+                    console.error('Erro no polling de status extrator:', error)
                 }
-            }, 3000)
+            }
+            
+            // Checa Gerente Geral
+            try {
+                const res = await fetch('http://localhost:8765/status-gerente-geral')
+                if (res.ok) {
+                    const data = await res.json()
+                    setGerenteRunning(data.running)
+                }
+            } catch (error) {
+                // ignorar
+            }
         }
+
+        interval = setInterval(checkStatuses, 3000)
         return () => clearInterval(interval)
     }, [executing, isPaused])
 
@@ -631,6 +665,29 @@ export function KanbanPage() {
                         }}
                     >
                         🔄 Sincronizar
+                    </button>
+
+                    <button
+                        onClick={handleIniciarGerente}
+                        disabled={gerenteLoading || gerenteRunning}
+                        style={{
+                            padding: '0.6rem 1.2rem',
+                            background: gerenteRunning ? 'rgba(0, 200, 83, 0.1)' : '#00c853',
+                            color: gerenteRunning ? '#00c853' : 'white',
+                            border: gerenteRunning ? '1px solid rgba(0, 200, 83, 0.5)' : 'none',
+                            borderRadius: 'var(--radius-md)',
+                            fontSize: '0.87rem',
+                            fontWeight: 800,
+                            cursor: (gerenteLoading || gerenteRunning) ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            boxShadow: gerenteRunning ? 'none' : '0 4px 6px -1px rgba(0,200,83,0.3)',
+                            transition: 'all 0.2s',
+                            zIndex: 100,
+                        }}
+                    >
+                        {gerenteLoading ? '⏳ Iniciando...' : gerenteRunning ? '⚙️ Gerente Trabalhando...' : '👔 Iniciar Gerente Geral'}
                     </button>
 
                     {!executing ? (
