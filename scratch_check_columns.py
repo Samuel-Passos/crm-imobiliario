@@ -7,10 +7,6 @@ supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(supabase_url, supabase_key)
 
-res = supabase.table("imoveis").select("*").limit(1).execute()
-if res.data:
-    print("Colunas na tabela imoveis:")
-    for key in res.data[0].keys():
-        print(f" - {key}")
-else:
-    print("Tabela vazia")
+res = supabase.table("kanban_colunas").select("*").execute()
+for c in res.data:
+    print(c["id"], c["nome"])

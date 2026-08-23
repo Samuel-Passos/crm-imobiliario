@@ -192,7 +192,7 @@ export function DashboardPage() {
         while (true) {
             const { data, error } = await supabase
                 .from('imoveis')
-                .select('telefone_existe, tipo_imovel, tipo_negocio, aceita_permuta')
+                .select('telefone_existe, telefone, telefones_extraidos, tipo_imovel, tipo_negocio, aceita_permuta')
                 .eq('ativo', true)
                 .neq('anuncio_expirado', true)
                 .range(from, from + PAGE - 1)
@@ -221,18 +221,27 @@ export function DashboardPage() {
         }
 
         const porTipoMap: Record<string, { venda: number; aluguel: number }> = {}
-        let com_tel = 0, sem_tel = 0, venda = 0, locacao = 0, aceita = 0, nao_aceita = 0
+        let com_tel = 0, sem_tel = 0, venda = 0, locacao = 0, aceita = 0, nao_aceita = 0, permuta_nao_inf = 0
 
         imoveisAll.forEach(im => {
-            if (im.telefone_existe) com_tel++; else sem_tel++
+            const hasTel = im.telefone_existe || !!im.telefone || (im.telefones_extraidos && im.telefones_extraidos.length > 0)
+            if (hasTel) com_tel++; else sem_tel++
             const neg = typeof im.tipo_negocio === 'string' ? im.tipo_negocio.trim().toLowerCase() : ''
             const isVenda = neg === 'venda'
             const isLocacao = neg === 'locação' || neg === 'locacao' || neg === 'aluguel'
             if (isVenda) venda++
             else if (isLocacao) locacao++
-            const isPermuta = !!im.aceita_permuta && im.aceita_permuta !== 'nao_aceita' && im.aceita_permuta !== 'Não' && im.aceita_permuta !== 'false'
-            if (isPermuta) aceita++
-            else nao_aceita++
+            
+            // Permuta logic
+            const permutaStr = typeof im.aceita_permuta === 'string' ? im.aceita_permuta.toLowerCase() : ''
+            if (permutaStr === 'nao_informado' || !permutaStr) {
+                permuta_nao_inf++
+            } else if (permutaStr === 'nao_aceita' || permutaStr === 'não' || permutaStr === 'false') {
+                nao_aceita++
+            } else {
+                aceita++
+            }
+
             const tipo = im.tipo_imovel || 'Outros'
             if (!porTipoMap[tipo]) porTipoMap[tipo] = { venda: 0, aluguel: 0 }
             if (isVenda) porTipoMap[tipo].venda++
@@ -254,6 +263,7 @@ export function DashboardPage() {
             locacao,
             aceita_permuta: aceita,
             nao_aceita_permuta: nao_aceita,
+            permuta_nao_informada: permuta_nao_inf,
             expirados: expiradosImoveis || 0,
             total_absoluto: totalImoveisAbsoluto || 0
         })
@@ -424,6 +434,7 @@ export function DashboardPage() {
                 <MetricCard label="Expirados" value={imovelStats?.expirados || 0} icon="⚠️" color="var(--warning)" sub="removidos da contagem" />
                 <MetricCard label="Aceita Permuta" value={imovelStats?.aceita_permuta || 0} icon="🔄" color="var(--success)" />
                 <MetricCard label="Não Aceita Permuta" value={imovelStats?.nao_aceita_permuta || 0} icon="🚫" color="var(--error)" />
+                <MetricCard label="Permuta Não Informada" value={imovelStats?.permuta_nao_informada || 0} icon="❓" color="var(--text-muted)" />
             </div>
 
             {/* ── Desempenho de Campanhas ── */}

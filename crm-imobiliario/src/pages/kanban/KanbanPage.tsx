@@ -560,6 +560,20 @@ export function KanbanPage() {
                     historico_kanban: historico
                 }).eq('id', activeId)
 
+                // Se moveu para a coluna Expirados, também atualizar tabelas relacionadas
+                const nomeColunaDestino = colunas.find(c => c.id === destColId)?.nome
+                if (colChanged && nomeColunaDestino === 'Expirados') {
+                    // Atualiza a flag na tabela de imoveis
+                    await supabase.from('imoveis').update({ anuncio_expirado: true }).eq('id', activeId)
+                    
+                    // Atualiza o status na tabela links_anuncios
+                    if (originalCard?.list_id) {
+                        await supabase.from('links_anuncios')
+                            .update({ status: 'expirado' })
+                            .eq('list_id', originalCard.list_id)
+                    }
+                }
+
                 // Atualiza os outros cards da coluna para manter a sequência
                 const otherUpdates = updates.filter(u => u.id !== activeId).map(up =>
                     supabase.from('imoveis').update({ kanban_ordem: up.kanban_ordem }).eq('id', up.id)

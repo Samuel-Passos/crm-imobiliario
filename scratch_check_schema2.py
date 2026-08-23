@@ -7,9 +7,9 @@ supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(supabase_url, supabase_key)
 
-res = supabase.table("imoveis").select("*").limit(1).execute()
+res = supabase.table("links_anuncios").select("*").limit(1).execute()
 if res.data:
-    print("Colunas na tabela imoveis:")
+    print("Colunas na tabela links_anuncios:")
     for key in res.data[0].keys():
         print(f" - {key}")
 else:
