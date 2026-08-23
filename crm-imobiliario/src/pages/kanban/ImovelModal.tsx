@@ -814,7 +814,8 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
                             {fotos.map((url, i) => (
                                 <div key={i} style={{ position: 'relative', borderRadius: 'var(--radius-sm)', overflow: 'hidden', aspectRatio: '4/3', background: 'var(--bg-base)' }}>
-                                    <img src={url} alt={`Foto ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    <img src={typeof url === 'string' ? url : ((url as any).original || (url as any).url || (url as any).webp || '')} 
+                                        alt={`Foto ${i + 1}`} referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         onError={e => { (e.target as HTMLImageElement).style.opacity = '0.2' }} />
                                     {i === 0 && <span style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(0,0,0,0.7)', color: 'var(--gold-400)', fontSize: '0.65rem', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: 4 }}>CAPA</span>}
                                     {editando && (

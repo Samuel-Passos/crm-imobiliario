@@ -49,12 +49,15 @@ export const KanbanCard = memo(function KanbanCard({ imovel, onUpdate, isDraggin
                 }}
             >
                 {/* Foto */}
-                {imovel.foto_capa && (
+                {(imovel.foto_capa || (imovel.fotos && imovel.fotos.length > 0)) && (
                     <div style={{
                         height: 100, borderRadius: 'var(--radius-sm)', overflow: 'hidden',
                         marginBottom: '0.75rem', background: 'var(--bg-base)'
                     }}>
-                        <img src={imovel.foto_capa} alt={imovel.titulo} loading="lazy"
+                        <img 
+                            src={imovel.foto_capa || (typeof imovel.fotos![0] === 'string' ? imovel.fotos![0] : (imovel.fotos![0] as any).url || (imovel.fotos![0] as any).original || (imovel.fotos![0] as any).webp || '')} 
+                            alt={imovel.titulo} loading="lazy"
+                            referrerPolicy="no-referrer"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                     </div>
