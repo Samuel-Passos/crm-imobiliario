@@ -42,6 +42,14 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
     const [latitude, setLatitude] = useState(imovel.latitude || null)
     const [longitude, setLongitude] = useState(imovel.longitude || null)
     const [buscandoGeocodaGoogle, setBuscandoGeocodaGoogle] = useState(false)
+    const [kanbanColunas, setKanbanColunas] = useState<{ id: string, nome: string }[]>([])
+
+    // Buscar colunas do Kanban para o dropdown de mover
+    useEffect(() => {
+        supabase.from('kanban_colunas').select('id, nome').order('ordem').then(({ data }) => {
+            if (data) setKanbanColunas(data)
+        })
+    }, [])
 
     // ── Campos editáveis ──────────────────────────────────────
 
@@ -403,6 +411,36 @@ export function ImovelModal({ imovel, onClose, onUpdate }: Props) {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
+                        {kanbanColunas.length > 0 && (
+                            <select
+                                className="form-select"
+                                value={imovel.kanban_coluna_id || ''}
+                                onChange={async (e) => {
+                                    const newCol = e.target.value;
+                                    const { error } = await supabase.from('imoveis').update({ kanban_coluna_id: newCol }).eq('id', imovel.id);
+                                    if (!error) {
+                                        onUpdate({ kanban_coluna_id: newCol });
+                                        toast.success('Imóvel movido!');
+                                    } else {
+                                        toast.error('Erro ao mover');
+                                    }
+                                }}
+                                style={{
+                                    padding: '0.3rem 1.8rem 0.3rem 0.6rem',
+                                    fontSize: '0.75rem',
+                                    width: 'auto',
+                                    height: 'auto',
+                                    backgroundPosition: 'right 0.4rem center'
+                                }}
+                            >
+                                <option value="" disabled style={{ background: 'var(--bg-surface)' }}>Mover para...</option>
+                                {kanbanColunas.map(c => (
+                                    <option key={c.id} value={c.id} style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>
+                                        {c.nome}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                         <a href={imovel.url} target="_blank" rel="noopener noreferrer"
                             style={{ fontSize: '0.75rem', color: 'var(--brand-500)', textDecoration: 'none' }}>↗ Anúncio</a>
                         <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>

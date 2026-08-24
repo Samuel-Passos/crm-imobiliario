@@ -243,6 +243,92 @@ async def send_chat_batch(background_tasks: BackgroundTasks):
     background_tasks.add_task(run_sender)
     return {"status": "started", "message": "Lote de envio de chat OLX iniciado no Workspace 3."}
 
+scanner_is_running = False
+
+@app.post("/run-scanner")
+async def run_scanner_endpoint(background_tasks: BackgroundTasks):
+    global scanner_is_running
+    if scanner_is_running:
+        return {"status": "already_running", "message": "O Scanner já está rodando!"}
+        
+    scanner_is_running = True
+    def run_scanner():
+        global scanner_is_running
+        import subprocess, os
+        scanner_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "robo_chat_prospeccao", "scanner_inbox.py"))
+        python_exec = os.path.abspath(os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"))
+        log_file_path = "/tmp/scanner_isolado.log"
+        try:
+            with open(log_file_path, "w") as f:
+                subprocess.run([python_exec, "-u", scanner_path], stdout=f, stderr=f)
+        except Exception as e:
+            print(f"Erro ao disparar scanner isolado: {e}")
+        finally:
+            scanner_is_running = False
+            
+    background_tasks.add_task(run_scanner)
+    return {"status": "started", "message": "Scanner de Inbox iniciado!"}
+
+@app.get("/status-scanner")
+async def get_scanner_status():
+    return {"running": scanner_is_running}
+
+@app.post("/run-script3")
+async def run_script3_endpoint(background_tasks: BackgroundTasks):
+    def run_s3():
+        import subprocess, os
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "robo_chat_prospeccao", "orquestrador_reverso.py"))
+        python_exec = os.path.abspath(os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"))
+        try:
+            with open("/tmp/script3_isolado.log", "w") as f:
+                subprocess.Popen([python_exec, "-u", script_path, "--coluna", "script3", "--lote", "50"], stdout=f, stderr=f)
+        except Exception as e:
+            print(f"Erro no script3: {e}")
+    background_tasks.add_task(run_s3)
+    return {"status": "started", "message": "Execução isolada do Script 3 iniciada!"}
+
+@app.post("/run-script2")
+async def run_script2_endpoint(background_tasks: BackgroundTasks):
+    def run_s2():
+        import subprocess, os
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "robo_chat_prospeccao", "orquestrador_reverso.py"))
+        python_exec = os.path.abspath(os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"))
+        try:
+            with open("/tmp/script2_isolado.log", "w") as f:
+                subprocess.Popen([python_exec, "-u", script_path, "--coluna", "script2", "--lote", "50"], stdout=f, stderr=f)
+        except Exception as e:
+            print(f"Erro no script2: {e}")
+    background_tasks.add_task(run_s2)
+    return {"status": "started", "message": "Execução isolada do Script 2 iniciada!"}
+
+@app.post("/run-script1")
+async def run_script1_endpoint(background_tasks: BackgroundTasks):
+    def run_s1():
+        import subprocess, os
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "robo_chat_prospeccao", "orquestrador_reverso.py"))
+        python_exec = os.path.abspath(os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"))
+        try:
+            with open("/tmp/script1_isolado.log", "w") as f:
+                subprocess.Popen([python_exec, "-u", script_path, "--coluna", "script1", "--lote", "50"], stdout=f, stderr=f)
+        except Exception as e:
+            print(f"Erro no script1: {e}")
+    background_tasks.add_task(run_s1)
+    return {"status": "started", "message": "Execução isolada do Script 1 iniciada!"}
+
+@app.post("/run-extracao")
+async def run_extracao_endpoint(background_tasks: BackgroundTasks):
+    def run_ext():
+        import subprocess, os
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "robo_chat_prospeccao", "orquestrador_reverso.py"))
+        python_exec = os.path.abspath(os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"))
+        try:
+            with open("/tmp/extracao_isolada.log", "w") as f:
+                subprocess.Popen([python_exec, "-u", script_path, "--coluna", "extracao", "--lote", "50"], stdout=f, stderr=f)
+        except Exception as e:
+            print(f"Erro na extracao: {e}")
+    background_tasks.add_task(run_ext)
+    return {"status": "started", "message": "Execução isolada da Extração iniciada!"}
+
 @app.post("/send-chat/stop")
 async def stop_chat_batch():
     """Sinaliza para o lote de chat parar após o envio atual."""

@@ -138,12 +138,14 @@ async def processar_kanban(nome_kanban: str, col_id_atual: str, col_id_destino: 
                     if res_envio.get("enviado"):
                         print(f"  ✅ Primeiro contato enviado via botão do anúncio.")
                         sucesso_envio = True
-                    else:
-                        print(f"  ⚠️ Falha ao abrir chat ou anúncio indisponível. Motivo: {res_envio.get('erro', 'Desconhecido')}. Movendo para Expirados.")
+                    elif res_envio.get("expirado"):
+                        print(f"  ⚠️ Anúncio Expirado de fato. Movendo para Expirados.")
                         supabase.table("imoveis").update({
                             "anuncio_expirado": True, 
                             "kanban_coluna_id": KANBAN_IDS["EXPIRADOS"]
                         }).eq("id", imovel_id).execute()
+                    else:
+                        print(f"  ⚠️ Falha ao abrir chat ou anúncio indisponível. Motivo: {res_envio.get('erro', 'Desconhecido')}. Mantendo na coluna atual para tentar depois.")
                 except Exception as e:
                     print(f"  ❌ Erro na execução de send_chat_olx: {e}")
             else:
@@ -187,11 +189,7 @@ async def processar_kanban(nome_kanban: str, col_id_atual: str, col_id_destino: 
                     if await envia_msg(page, corpo_msg, dry_run):
                         sucesso_envio = True
                     else:
-                        print(f"  ⚠️ Caixa de texto não abriu ou erro ao enviar. Movendo para Expirados.")
-                        supabase.table("imoveis").update({
-                            "anuncio_expirado": True, 
-                            "kanban_coluna_id": KANBAN_IDS["EXPIRADOS"]
-                        }).eq("id", imovel_id).execute()
+                        print(f"  ⚠️ Caixa de texto não abriu ou erro ao enviar. Mantendo na coluna atual.")
                 else:
                     print("  [DRY-RUN] Simulação: Mensagem de seguimento enviada.")
                     sucesso_envio = True
@@ -205,12 +203,20 @@ async def processar_kanban(nome_kanban: str, col_id_atual: str, col_id_destino: 
                     print(f"  ❌ Erro ao atualizar o banco: {e}")
             else:
                 print("  [DRY-RUN] Simulação de mudança de coluna.")
+        
+        # Pausa humana (10s a 20s) entre cada contato para evitar bloqueios Cloudflare (Rate Limit)
+        import random
+        delay_humano = random.uniform(10.0, 20.0)
+        print(f"  ⏳ [ANTI-BOT] Pausa humana de {delay_humano:.1f}s antes do próximo contato...")
+        await asyncio.sleep(delay_humano)
 
-async def onda_reversa(dry_run: bool = False, lote: int = 1):
+async def onda_reversa(dry_run: bool = False, lote: int = 1, alvo_coluna: str = "ALL"):
     print("\n" + "#"*60)
     print("🌊 INICIANDO ORQUESTRADOR DE CHAT (ONDA REVERSA)")
     if dry_run:
          print("   ⚠️ MODO DRY-RUN: Nada será enviado ou alterado no banco!")
+    if alvo_coluna != "ALL":
+         print(f"   🎯 MODO ISOLADO: Rodando apenas na coluna: {alvo_coluna}")
     print("#"*60 + "\n")
     
     resp_tmpl = supabase.table("templates_mensagem").select("*").order("ordem").execute()
@@ -241,10 +247,14 @@ async def onda_reversa(dry_run: bool = False, lote: int = 1):
              page = None
 
     try:
-        await processar_kanban("Script 3", KANBAN_IDS["SCRIPT_3"], KANBAN_IDS["SEM_RESPOSTA"], key_msg_final, templates_map, page, dry_run, limite_lote=lote)
-        await processar_kanban("Script 2", KANBAN_IDS["SCRIPT_2"], KANBAN_IDS["SCRIPT_3"], key_msg3, templates_map, page, dry_run, limite_lote=lote)
-        await processar_kanban("Script 1", KANBAN_IDS["SCRIPT_1"], KANBAN_IDS["SCRIPT_2"], key_msg2, templates_map, page, dry_run, limite_lote=lote)
-        await processar_kanban("Extração de Telefone", KANBAN_IDS["EXTRACAO_TELEFONE"], KANBAN_IDS["SCRIPT_1"], key_msg1, templates_map, page, dry_run, limite_lote=lote)
+        if alvo_coluna in ["ALL", "script3"]:
+            await processar_kanban("Script 3", KANBAN_IDS["SCRIPT_3"], KANBAN_IDS["SEM_RESPOSTA"], key_msg_final, templates_map, page, dry_run, limite_lote=lote)
+        if alvo_coluna in ["ALL", "script2"]:
+            await processar_kanban("Script 2", KANBAN_IDS["SCRIPT_2"], KANBAN_IDS["SCRIPT_3"], key_msg3, templates_map, page, dry_run, limite_lote=lote)
+        if alvo_coluna in ["ALL", "script1"]:
+            await processar_kanban("Script 1", KANBAN_IDS["SCRIPT_1"], KANBAN_IDS["SCRIPT_2"], key_msg2, templates_map, page, dry_run, limite_lote=lote)
+        if alvo_coluna in ["ALL", "extracao"]:
+            await processar_kanban("Extração de Telefone", KANBAN_IDS["EXTRACAO_TELEFONE"], KANBAN_IDS["SCRIPT_1"], key_msg1, templates_map, page, dry_run, limite_lote=lote)
     finally:
         if page:
              print("\nFechando navegador e limpando processos...")
@@ -256,6 +266,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="Simula sem enviar nem salvar")
     parser.add_argument("--lote", type=int, default=1, help="Lote maximo por coluna (default 1)")
+    parser.add_argument("--coluna", type=str, default="ALL", help="ALL, script3, script2, script1, extracao")
     args = parser.parse_args()
 
-    asyncio.run(onda_reversa(dry_run=args.dry_run, lote=args.lote))
+    asyncio.run(onda_reversa(dry_run=args.dry_run, lote=args.lote, alvo_coluna=args.coluna))

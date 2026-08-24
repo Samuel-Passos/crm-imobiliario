@@ -7,16 +7,12 @@ from typing import Dict, Any
 # A OLX renderiza o chat como um painel lateral que abre ao clicar no botão Chat.
 # Listados em ordem de prioridade (mais específico → mais genérico).
 SELETORES_BTN_CHAT = [
-    'button[data-testid="chat-button"]',
-    '[data-ds-component] a[data-ds-component]:has-text("Chat")',
-    'button:has-text("Chat")',
-    'a:has-text("Chat")',
-    'button[aria-label*="Chat" i]',
-    'a[href*="chat"]',
+    '#price-box-button-chat',
 ]
 
 # ─── Seletores do campo textarea (onde digitamos a mensagem) ─────────────────
 SELETORES_TEXTAREA = [
+    '#input-text-message',
     'textarea[placeholder*="mensagem" i]',
     'textarea[placeholder*="message" i]',
     'textarea[name="message"]',
@@ -49,16 +45,34 @@ async def _digitar_humano(page, seletor_str: str, texto: str):
 
 async def _encontrar_elemento(page, seletores: list[str], timeout_ms: int = 8000) -> tuple[Any, str] | tuple[None, None]:
     """
-    Testa cada seletor da lista e retorna o primeiro que encontrar um elemento visível.
-    Retorna (locator, seletor_usado) ou (None, None).
+    Testa todos os seletores simultaneamente (em paralelo).
+    Retorna o primeiro que ficar visível.
     """
-    for sel in seletores:
-        try:
-            loc = page.locator(sel).first
-            await loc.wait_for(state="visible", timeout=timeout_ms)
-            return loc, sel
-        except Exception:
-            continue
+    async def _testar(sel):
+        loc = page.locator(sel).first
+        await loc.wait_for(state="visible", timeout=timeout_ms)
+        return loc, sel
+
+    tasks = [asyncio.create_task(_testar(sel)) for sel in seletores]
+    try:
+        while tasks:
+            done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            for t in done:
+                try:
+                    res = t.result()
+                    if res:
+                        # Achamos! Cancela as outras e retorna
+                        for p in pending:
+                            p.cancel()
+                        return res
+                except Exception:
+                    # Esta tarefa falhou, ignoramos
+                    pass
+            # Atualiza as tarefas para continuar esperando as que faltam
+            tasks = list(pending)
+    except Exception:
+        pass
+        
     return None, None
 
 
@@ -85,7 +99,12 @@ async def send_chat_olx(url: str, mensagem: str, page) -> Dict[str, Any]:
     try:
         # ── 1. Navega para o anúncio ──────────────────────────────────────────
         print("  -> Navegando para o anúncio...")
-        await page.goto(url, timeout=60000, wait_until="domcontentloaded")
+        try:
+            await page.goto(url, timeout=60000, wait_until="domcontentloaded")
+        except Exception as e:
+            print(f"  🚨 Falha no carregamento inicial da página: {e}")
+            dados["erro"] = f"Erro de timeout ou rede: {e}"
+            return dados
 
         # Delay humano para o React renderizar
         try:
@@ -108,40 +127,33 @@ async def send_chat_olx(url: str, mensagem: str, page) -> Dict[str, Any]:
             dados["expirado"] = True
             return dados
 
-        # ── 3. Procura o botão "Chat" ─────────────────────────────────────────
-        print("  -> Procurando botão Chat...")
-        btn_chat, sel_btn = await _encontrar_elemento(
-            page, SELETORES_BTN_CHAT, timeout_ms=12000
-        )
-
-        if not btn_chat:
-            # Pode ser que este anúncio não tenha chat habilitado (ex: só telefone)
-            print("  ℹ️ Botão Chat não encontrado neste anúncio.")
-            dados["chat_indisponivel"] = True
+        # ── 3. Pular botão Chat e ir direto para a URL do Chat (como os Scripts 1, 2, 3) ──
+        import re
+        m = re.search(r'-(\d+)$', url)
+        chat_page = page
+        
+        if m:
+            list_id = m.group(1)
+            chat_url = f"https://chat.olx.com.br/?list-id={list_id}"
+            print(f"  🌐 Navegando direto para o chat do anúncio: {chat_url}")
+            try:
+                await chat_page.goto(chat_url, wait_until="domcontentloaded", timeout=60000)
+                await asyncio.sleep(4.0) # Tempo para o React renderizar o histórico
+            except Exception as e:
+                print(f"  🚨 Falha na navegação direta: {e}")
+                dados["erro"] = f"erro_navegacao_direta: {e}"
+                return dados
+        else:
+            print("  🚨 URL não contém ID do anúncio no final.")
+            dados["erro"] = "url_sem_list_id"
             return dados
 
-        print(f"  ✅ Botão Chat encontrado via: {sel_btn}")
-
-        # Scroll suave + delay humano antes de clicar
-        await btn_chat.scroll_into_view_if_needed()
-        await asyncio.sleep(random.uniform(0.8, 2.0))
-        
-        try:
-            async with page.context.expect_page(timeout=4000) as new_page_info:
-                await btn_chat.click()
-            chat_page = await new_page_info.value
-            print("  -> Chat abriu em uma nova aba!")
-        except Exception:
-            chat_page = page
-            print("  -> Clicou no Chat. Aguardando painel abrir na mesma aba...")
-
-        # Aguarda o painel / modal de chat aparecer (textarea deve surgir)
-        await asyncio.sleep(random.uniform(2.0, 4.0))
+        await asyncio.sleep(random.uniform(1.0, 2.0))
 
         # ── 4. Localiza o campo de texto ─────────────────────────────────────
         print("  -> Procurando campo de texto...")
         textarea, sel_ta = await _encontrar_elemento(
-            chat_page, SELETORES_TEXTAREA, timeout_ms=10000
+            chat_page, SELETORES_TEXTAREA, timeout_ms=20000
         )
 
         if not textarea:

@@ -55,12 +55,14 @@ const SortableCard = memo(function SortableCard({ imovel, onUpdate }: {
 })
 
 // ── Droppable column ──────────────────────────────────────
-const DroppableColuna = memo(function DroppableColuna({ coluna, cards, totalCount, onUpdate, onLoadMore }: {
+const DroppableColuna = memo(function DroppableColuna({ coluna, cards, totalCount, onUpdate, onLoadMore, onExecutarFase, isExecuting }: {
     coluna: KanbanColuna
     cards: ImovelKanban[]
     totalCount: number
     onUpdate: (id: number, u: Partial<ImovelKanban>) => void
     onLoadMore: () => void
+    onExecutarFase?: (nome: string) => void
+    isExecuting?: boolean
 }) {
     // A própria coluna é droppable (para cards vindos de outras colunas)
     const { setNodeRef, isOver } = useDroppable({
@@ -79,12 +81,31 @@ const DroppableColuna = memo(function DroppableColuna({ coluna, cards, totalCoun
                 <span style={{ fontWeight: 700, fontSize: '0.87rem', color: 'var(--text-primary)' }}>
                     {coluna.nome}
                 </span>
-                <span style={{
-                    background: 'rgba(59,130,246,0.15)', color: 'var(--brand-500)',
-                    borderRadius: 99, padding: '0.1rem 0.5rem', fontSize: '0.72rem', fontWeight: 700
-                }}>
-                    {cards.length}
-                </span>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    {onExecutarFase && ['Sem Resposta', 'Script 3', 'Script 2', 'Script 1', 'Extração de Telefone'].includes(coluna.nome) && (
+                        <button
+                            onClick={() => onExecutarFase(coluna.nome)}
+                            disabled={isExecuting}
+                            title="Executar fase isolada"
+                            style={{
+                                background: isExecuting ? 'rgba(0,0,0,0.1)' : 'var(--brand-500)',
+                                color: isExecuting ? 'var(--text-muted)' : 'white',
+                                border: 'none', borderRadius: '4px',
+                                padding: '2px 8px', fontSize: '0.7rem', fontWeight: 'bold',
+                                cursor: isExecuting ? 'not-allowed' : 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {isExecuting ? '⏳' : '▶️ Iniciar'}
+                        </button>
+                    )}
+                    <span style={{
+                        background: 'rgba(59,130,246,0.15)', color: 'var(--brand-500)',
+                        borderRadius: 99, padding: '0.1rem 0.5rem', fontSize: '0.72rem', fontWeight: 700
+                    }}>
+                        {cards.length}
+                    </span>
+                </div>
             </div>
 
             {/* Área droppable com lista sortable */}
@@ -152,7 +173,9 @@ const DroppableColuna = memo(function DroppableColuna({ coluna, cards, totalCoun
         prev.cards === next.cards &&
         prev.totalCount === next.totalCount &&
         prev.onUpdate === next.onUpdate &&
-        prev.onLoadMore === next.onLoadMore;
+        prev.onLoadMore === next.onLoadMore &&
+        prev.onExecutarFase === next.onExecutarFase &&
+        prev.isExecuting === next.isExecuting;
 })
 
 // ── Página principal ──────────────────────────────────────
@@ -176,6 +199,43 @@ export function KanbanPage() {
         ordenacao: (initParams.get('ordenacao') || '') as FiltrosKanban['ordenacao'],
         busca: initParams.get('busca') || ''
     })
+
+    const [executingFases, setExecutingFases] = useState<Record<string, boolean>>({})
+
+    const handleRunFase = useCallback(async (nomeColuna: string) => {
+        if (!confirm(`Deseja iniciar apenas o robô para a fase: ${nomeColuna}?`)) return
+        
+        setExecutingFases(prev => ({...prev, [nomeColuna]: true}))
+        
+        let endpoint = ''
+        if (nomeColuna === 'Sem Resposta') endpoint = '/run-scanner'
+        else if (nomeColuna === 'Script 3') endpoint = '/run-script3'
+        else if (nomeColuna === 'Script 2') endpoint = '/run-script2'
+        else if (nomeColuna === 'Script 1') endpoint = '/run-script1'
+        else if (nomeColuna === 'Extração de Telefone') endpoint = '/run-extracao'
+
+        if (endpoint) {
+            try {
+                const res = await fetch(`http://localhost:8765${endpoint}`, { method: 'POST' })
+                if (res.ok) {
+                    toast.success(`Fase ${nomeColuna} iniciada no servidor!`)
+                } else {
+                    toast.error(`Erro ao iniciar fase ${nomeColuna}`)
+                    setExecutingFases(prev => ({...prev, [nomeColuna]: false}))
+                }
+            } catch (e) {
+                toast.error('Erro de conexão com o servidor')
+                setExecutingFases(prev => ({...prev, [nomeColuna]: false}))
+            }
+        }
+        
+        // Se não for o Scanner (que agora tem polling de status real), solta o loading após 5s
+        if (nomeColuna !== 'Sem Resposta') {
+            setTimeout(() => {
+                setExecutingFases(prev => ({...prev, [nomeColuna]: false}))
+            }, 5000)
+        }
+    }, [])
 
     // Limits the amount of items shown per column initially to 50
     const [limitesPorColuna, setLimitesPorColuna] = useState<Record<string, number>>({})
@@ -324,6 +384,31 @@ export function KanbanPage() {
                 if (res.ok) {
                     const data = await res.json()
                     setGerenteRunning(data.running)
+                }
+            } catch (error) {
+                // ignorar
+            }
+
+            // Checa Scanner
+            try {
+                const res = await fetch('http://localhost:8765/status-scanner')
+                if (res.ok) {
+                    const data = await res.json()
+                    setExecutingFases(prev => {
+                        const wasRunning = prev['Sem Resposta']
+                        const isRunningNow = data.running
+                        
+                        // Se estava rodando e agora o backend diz que não está mais
+                        if (wasRunning && !isRunningNow) {
+                            toast.success('Varredura do Scanner finalizada!', { icon: '🔍', duration: 4000 })
+                        }
+                        
+                        // Se o estado mudou, atualizamos
+                        if (wasRunning !== isRunningNow) {
+                            return {...prev, 'Sem Resposta': isRunningNow}
+                        }
+                        return prev
+                    })
                 }
             } catch (error) {
                 // ignorar
@@ -823,6 +908,8 @@ export function KanbanPage() {
                                 totalCount={allCards.length}
                                 onUpdate={updateImovel}
                                 onLoadMore={() => handleLoadMore(col.id)}
+                                onExecutarFase={handleRunFase}
+                                isExecuting={executingFases[col.nome]}
                             />
                         )
                     })}
