@@ -382,6 +382,58 @@ async def status_gerente_geral_endpoint():
     except Exception:
         return {"running": False}
 
+@app.post("/run-nova-captacao")
+async def run_nova_captacao_endpoint(background_tasks: BackgroundTasks):
+    """Aciona a Nova Captação (Caixa de Entrada)."""
+    import subprocess
+    import sys
+    import os
+    import urllib.request
+
+    try:
+        # Pgrep checking for the script name directly instead of dummy process
+        res = subprocess.run(["pgrep", "-f", "olx_captacao/fase1_coleta_links.py"], capture_output=True, text=True)
+        if res.stdout.strip():
+            return {"status": "already_running", "message": "A Nova Captação já está rodando!"}
+    except Exception:
+        pass
+
+    def run_captacao():
+        python_exec = os.path.abspath(os.path.join(os.path.dirname(__file__), ".venv", "bin", "python"))
+        cwd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        
+        # Disable python log buffering so logs appear in real-time in tail -f
+        env = os.environ.copy()
+        env["PYTHONUNBUFFERED"] = "1"
+        
+        print("🚀 INICIANDO NOVA CAPTAÇÃO (CAIXA DE ENTRADA)")
+        try:
+            subprocess.run([python_exec, "olx_captacao/fase1_coleta_links.py"], cwd=cwd_path, env=env)
+            
+            from dotenv import load_dotenv
+            load_dotenv(os.path.join(cwd_path, "scraper", ".env"))
+            lote_fase2 = os.getenv("LOTE_FASE2", "50")
+            subprocess.run([python_exec, "olx_captacao/fase2_extrai_dados.py", "--lote", lote_fase2], cwd=cwd_path, env=env)
+            
+            subprocess.run([python_exec, "olx_captacao/fase2_5_filtro_mercado.py"], cwd=cwd_path, env=env)
+            
+            comando_maps = "import sys, os; sys.path.append('scraper'); from dotenv import load_dotenv; load_dotenv(os.path.join('scraper', '.env')); import asyncio; from tools.geocoder_maps_scraper import main; asyncio.run(main())"
+            subprocess.run([python_exec, "-c", comando_maps], cwd=cwd_path, env=env)
+            
+            # Aciona APENAS a Extração de Telefones (via navegador oculto), sem enviar mensagens
+            print("🚀 INICIANDO EXTRAÇÃO DE TELEFONE (SEM MENSAGEM)")
+            try:
+                import urllib.request
+                req = urllib.request.Request("http://localhost:8765/extract-phone/batch?lote=5", method="POST")
+                urllib.request.urlopen(req)
+            except Exception as ex:
+                print(f"Aviso ao iniciar extração de telefone: {ex}")            
+        except Exception as e:
+            print(f"Erro na nova captação: {e}")
+
+    background_tasks.add_task(run_captacao)
+    return {"status": "started", "message": "Nova Captação iniciada!"}
+
 if __name__ == "__main__":
     import uvicorn
     # A porta padrão será 8765 para não conflitar com nada do React

@@ -209,4 +209,59 @@ async def run_test():
         await context.close()
 
 if __name__ == "__main__":
-    asyncio.run(run_test())
+    asyncio.run(main())
+
+# --- ADICIONADO PARA PROCESSAMENTO EM LOTE ---
+async def main():
+    print("🚀 Iniciando Geocodificador via Maps Scraper (Playwright)...")
+    geocode_signals.IS_RUNNING = True
+    geocode_signals.STOP_SIGNAL = False
+    
+    try:
+        # Busca dinâmica do ID da Caixa de Entrada para evitar hardcode se possível, mas usando o ID atual por segurança
+        res_col = supabase.table('kanban_colunas').select('id').eq('nome', 'Caixa de Entrada').execute()
+        caixa_id = res_col.data[0]['id'] if res_col.data else '71723ac2-b725-4bf9-b215-6e7993d93673'
+        
+        response = supabase.table('imoveis').select("id, titulo, rua, bairro, cidade, estado, numero").is_("latitude", "null").eq("ativo", True).eq("kanban_coluna_id", caixa_id).limit(20).execute()
+        imoveis = response.data
+        
+        if not imoveis:
+            print("✅ Nenhum imóvel sem geocodificação! Todos já possuem coordenadas.")
+            return
+
+        print(f"📍 {len(imoveis)} imóveis sem coordenadas neste lote. Processando...\n")
+        
+        async with async_playwright() as p:
+            context = await _configurar_contexto(p)
+            page = await context.new_page()
+            await Stealth().apply_stealth_async(page)
+            await _aceitar_cookies(page)
+
+            for imovel in imoveis:
+                if geocode_signals.STOP_SIGNAL:
+                    print("🛑 Parada solicitada via sinal! Interrompendo geocoder...")
+                    break
+                    
+                id_ = imovel['id']
+                print(f"[{id_}] Buscando no Maps: {imovel.get('rua')} | {imovel.get('bairro')} | {imovel.get('cidade')}")
+                
+                coords, est, prec = await geocodificar_imovel_maps_scraper(
+                    page,
+                    rua=imovel.get('rua') or '',
+                    bairro=imovel.get('bairro') or '',
+                    cidade=imovel.get('cidade') or '',
+                    estado=imovel.get('estado') or 'SP',
+                    numero=imovel.get('numero') or ''
+                )
+                
+                if coords:
+                    lat, lng = coords
+                    print(f"  ✅ ({lat:.5f}, {lng:.5f}) salvo no banco!\n")
+                    supabase.table('imoveis').update({'latitude': lat, 'longitude': lng, 'geocode_strategy': est}).eq('id', id_).execute()
+                else:
+                    print(f"  ❌ Nenhuma coordenada encontrada no Maps.\n")
+            
+            await context.close()
+    finally:
+        geocode_signals.IS_RUNNING = False
+        geocode_signals.STOP_SIGNAL = False

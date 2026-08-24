@@ -27,8 +27,8 @@ def run_filtro_mercado():
         
     print(f"Buscando imóveis na Caixa de Entrada...")
     
-    # Busca apenas na Caixa de Entrada
-    res_imoveis = sup.table('imoveis').select('id, titulo, vendedor_nome, descricao, anuncio_profissional').eq('kanban_coluna_id', coluna_caixa_entrada).execute()
+    # Busca apenas na Caixa de Entrada, agora incluindo a cidade
+    res_imoveis = sup.table('imoveis').select('id, titulo, vendedor_nome, descricao, anuncio_profissional, cidade').eq('kanban_coluna_id', coluna_caixa_entrada).execute()
     imoveis = res_imoveis.data
     
     if not imoveis:
@@ -42,6 +42,15 @@ def run_filtro_mercado():
     
     for im in imoveis:
         im_id = im['id']
+        
+        # Passo NOVO: Filtro de Cidade (Apenas São José dos Campos)
+        cidade = (im.get('cidade') or '').strip().lower()
+        # Aceita "são josé dos campos", "sao jose dos campos", etc.
+        if "são josé dos campos" not in cidade and "sao jose dos campos" not in cidade:
+            print(f"[{im_id}] Bloqueado: Cidade diferente de São José dos Campos ({cidade}). Movendo.")
+            sup.table('imoveis').update({'kanban_coluna_id': coluna_anuncios_mercado}).eq('id', im_id).execute()
+            movidos += 1
+            continue
         
         # Passo B (primeiro, conforme seu pedido): É profissional pela OLX?
         if im.get('anuncio_profissional') == True:

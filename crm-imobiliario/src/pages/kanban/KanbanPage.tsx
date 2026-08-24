@@ -82,7 +82,7 @@ const DroppableColuna = memo(function DroppableColuna({ coluna, cards, totalCoun
                     {coluna.nome}
                 </span>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    {onExecutarFase && ['Sem Resposta', 'Script 3', 'Script 2', 'Script 1', 'Extração de Telefone'].includes(coluna.nome) && (
+                    {onExecutarFase && ['Caixa de Entrada', 'Sem Resposta', 'Script 3', 'Script 2', 'Script 1', 'Extração de Telefone'].includes(coluna.nome) && (
                         <button
                             onClick={() => onExecutarFase(coluna.nome)}
                             disabled={isExecuting}
@@ -208,7 +208,8 @@ export function KanbanPage() {
         setExecutingFases(prev => ({...prev, [nomeColuna]: true}))
         
         let endpoint = ''
-        if (nomeColuna === 'Sem Resposta') endpoint = '/run-scanner'
+        if (nomeColuna === 'Caixa de Entrada') endpoint = '/run-nova-captacao'
+        else if (nomeColuna === 'Sem Resposta') endpoint = '/run-scanner'
         else if (nomeColuna === 'Script 3') endpoint = '/run-script3'
         else if (nomeColuna === 'Script 2') endpoint = '/run-script2'
         else if (nomeColuna === 'Script 1') endpoint = '/run-script1'
