@@ -218,11 +218,14 @@ async def main():
     geocode_signals.STOP_SIGNAL = False
     
     try:
-        # Busca dinâmica do ID da Caixa de Entrada para evitar hardcode se possível, mas usando o ID atual por segurança
         res_col = supabase.table('kanban_colunas').select('id').eq('nome', 'Caixa de Entrada').execute()
-        caixa_id = res_col.data[0]['id'] if res_col.data else '71723ac2-b725-4bf9-b215-6e7993d93673'
+        col_id = res_col.data[0]['id'] if res_col.data else None
         
-        response = supabase.table('imoveis').select("id, titulo, rua, bairro, cidade, estado, numero").is_("latitude", "null").eq("ativo", True).eq("kanban_coluna_id", caixa_id).limit(20).execute()
+        query = supabase.table('imoveis').select("id, titulo, rua, bairro, cidade, estado, numero").is_("latitude", "null").eq("ativo", True)
+        if col_id:
+            query = query.eq("kanban_coluna_id", col_id)
+            
+        response = query.limit(20).execute()
         imoveis = response.data
         
         if not imoveis:

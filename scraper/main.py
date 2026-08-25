@@ -25,6 +25,8 @@ import tools.geocode_signals as geocode_signals
 import logging
 
 logging.basicConfig(level=logging.INFO)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 logger = logging.getLogger("scraper")
 
 from contextlib import asynccontextmanager
@@ -428,6 +430,9 @@ async def run_nova_captacao_endpoint(background_tasks: BackgroundTasks):
                 urllib.request.urlopen(req)
             except Exception as ex:
                 print(f"Aviso ao iniciar extração de telefone: {ex}")            
+            print("\n" + "="*60)
+            print("✅ ROTINA FINALIZADA: A Nova Captação concluiu todas as suas fases com sucesso!")
+            print("="*60 + "\n")
         except Exception as e:
             print(f"Erro na nova captação: {e}")
 

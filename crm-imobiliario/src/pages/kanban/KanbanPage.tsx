@@ -790,98 +790,9 @@ export function KanbanPage() {
                         {gerenteLoading ? '⏳ Iniciando...' : gerenteRunning ? '⚙️ Gerente Trabalhando...' : '👔 Iniciar Gerente Geral'}
                     </button>
 
-                    {!executing ? (
-                        <button
-                            onClick={handleRunExtractor}
-                            style={{
-                                padding: '0.6rem 1.2rem',
-                                background: 'var(--brand-500)',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: 'var(--radius-md)',
-                                fontSize: '0.87rem',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                boxShadow: '0 4px 6px -1px rgba(59,130,246,0.2)',
-                                transition: 'all 0.2s',
-                                zIndex: 100,
-                            }}
-                        >
-                            <span>🚀</span>
-                            Extrator Telefone
-                        </button>
-                    ) : (
-                        <>
-                            <button
-                                onClick={handlePauseToggle}
-                                style={{
-                                    padding: '0.6rem 1.2rem',
-                                    background: isPaused ? 'var(--brand-500)' : '#f59e0b',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: 'var(--radius-md)',
-                                    fontSize: '0.87rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    transition: 'all 0.2s',
-                                }}
-                            >
-                                <span>{isPaused ? '▶️' : '⏸️'}</span>
-                                {isPaused ? 'Retomar' : 'Pausar'}
-                            </button>
 
-                            <button
-                                onClick={handleStop}
-                                style={{
-                                    padding: '0.6rem 1.2rem',
-                                    background: '#ef4444',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: 'var(--radius-md)',
-                                    fontSize: '0.87rem',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    transition: 'all 0.2s',
-                                }}
-                            >
-                                <span>⏹️</span>
-                                Parar Extração
-                            </button>
-                        </>
-                    )}
 
-                    <button
-                        onClick={handleEnviarScripts}
-                        disabled={chatLoadingAction}
-                        style={{
-                            padding: '0.6rem 1.2rem',
-                            background: 'var(--brand-600)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 'var(--radius-md)',
-                            fontSize: '0.87rem',
-                            fontWeight: 700,
-                            cursor: chatLoadingAction ? 'not-allowed' : 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            boxShadow: '0 4px 6px -1px rgba(59,130,246,0.2)',
-                            transition: 'all 0.2s',
-                            zIndex: 100,
-                            opacity: chatLoadingAction ? 0.7 : 1
-                        }}
-                    >
-                        {chatLoadingAction ? '⏳ Iniciando...' : '▶ Enviar Scripts'}
-                    </button>
+
                 </div>
             </div>
 
