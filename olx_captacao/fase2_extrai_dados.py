@@ -40,7 +40,14 @@ from parser_olx import (
 CHROME_PROFILE = os.getenv("CHROME_PROFILE_PATH", "/home/samuel/.config/google-chrome")
 DELAY_MIN = float(os.getenv("DELAY_MIN_SEGUNDOS", "2"))
 DELAY_MAX = float(os.getenv("DELAY_MAX_SEGUNDOS", "5"))
-LOTE_PADRAO = 50
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "scraper"))
+try:
+    from config_db import get_config
+    _cfg = get_config()
+    LOTE_PADRAO = _cfg.get("lote_fase2")
+except ImportError:
+    LOTE_PADRAO = 50
 MAX_FALHAS_CONSECUTIVAS = 5
 
 # Usa o Chromium do sistema (mesmo que o scraper existente usa)
@@ -361,6 +368,7 @@ async def processar_e_salvar_unico(url: str) -> bool:
                 
         if _upsert_imovel(dados):
             print(f"  ✅ Salvo — {dados.get('titulo', 'sem título')[:60]}")
+            print(f"     💰 {dados.get('preco_str', 'sem preço')} | 📍 {dados.get('bairro', '?')} — 🏙️ {dados.get('cidade', '?')}")
             
             # Insere/atualiza também na tabela links_anuncios como 'processado'
             if list_id:
@@ -447,7 +455,7 @@ async def extrair_dados(lote: int = LOTE_PADRAO) -> dict:
                         salvos += 1
                         falhas_consecutivas = 0
                         print(f"  ✅ Salvo — {dados.get('titulo', 'sem título')[:60]}")
-                        print(f"     💰 {dados.get('preco_str', 'sem preço')} | 📍 {dados.get('bairro', '?')}")
+                        print(f"     💰 {dados.get('preco_str', 'sem preço')} | 📍 {dados.get('bairro', '?')} — 🏙️ {dados.get('cidade', '?')}")
                     else:
                         _atualizar_status_link(link_id, "erro")
                         erros += 1

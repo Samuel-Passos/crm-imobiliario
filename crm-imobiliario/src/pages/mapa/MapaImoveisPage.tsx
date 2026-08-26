@@ -48,21 +48,27 @@ function MultiSelectDropdown({
 
     return (
         <div ref={containerRef} className="m3-dropdown-container">
-            <label className="m3-label" style={{ marginBottom: '0.5rem', display: 'block' }}>{label}</label>
+            <label className="m3-label">{label}</label>
             <div 
                 onClick={() => setIsOpen(!isOpen)}
-                className={`m3-dropdown-trigger ${isOpen ? 'open' : ''}`}
+                className={`form-select ${isOpen ? 'open' : ''}`}
+                style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    cursor: 'pointer'
+                }}
             >
                 <span style={{ 
-                    fontSize: '0.9rem', 
+                    fontSize: '0.85rem', 
                     whiteSpace: 'nowrap', 
                     overflow: 'hidden', 
                     textOverflow: 'ellipsis',
-                    color: selected.length > 0 ? 'var(--m3-on-surface)' : 'var(--m3-on-surface-variant)'
+                    color: selected.length > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'
                 }}>
                     {selected.length === 0 ? placeholder : `${selected.length} selecionado(s)`}
                 </span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', color: 'var(--text-muted)' }}>
                     <path d="M6 9l6 6 6-6"/>
                 </svg>
             </div>
@@ -72,7 +78,7 @@ function MultiSelectDropdown({
                     <input 
                         autoFocus
                         type="text"
-                        className="m3-input"
+                        className="form-input"
                         placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -82,7 +88,7 @@ function MultiSelectDropdown({
                     
                     <div className="m3-dropdown-options">
                         {filteredOptions.length === 0 && (
-                            <div style={{ padding: '8px', fontSize: '0.85rem', color: 'var(--m3-on-surface-variant)', textAlign: 'center' }}>Nenhum resultado</div>
+                            <div style={{ padding: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)', textAlign: 'center' }}>Nenhum resultado</div>
                         )}
                         {filteredOptions.map(opt => (
                             <div 
@@ -103,11 +109,11 @@ function MultiSelectDropdown({
                     </div>
 
                     {selected.length > 0 && (
-                        <div style={{ borderTop: '1px solid var(--m3-outline-variant)', paddingTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '8px', display: 'flex', justifyContent: 'flex-end' }}>
                             <button 
                                 onClick={(e) => { e.stopPropagation(); onChange([]) }}
                                 className="m3-btn-text"
-                                style={{ color: 'var(--m3-primary)' }}
+                                style={{ color: 'var(--brand-500)' }}
                             >
                                 Limpar
                             </button>
@@ -144,21 +150,14 @@ export function MapaImoveisPage() {
     // Novo Estado: Área visível do mapa
     const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null)
 
+    // Estados para Categorias e Filtros Visuais
+    const [colunaNomesMap, setColunaNomesMap] = useState<Record<string, string>>({})
+    const [mostrarMercado, setMostrarMercado] = useState(true)
+    const [mostrarFunil, setMostrarFunil] = useState(true)
+    const [mostrarAutorizados, setMostrarAutorizados] = useState(true)
+
     useEffect(() => {
         carregarImoveis()
-        
-        // Polling para verificar se geocodificador está rodando
-        const interval = setInterval(async () => {
-            try {
-                const res = await fetch('http://127.0.0.1:8765/geocode/status')
-                const data = await res.json()
-                setIsGeocodingRunning(data.running)
-            } catch (err) {
-                // Silencie erro de polling se o servidor estiver offline
-            }
-        }, 3000)
-        
-        return () => clearInterval(interval)
     }, [])
 
     async function handleRevisarGoogleSingle(imovelId: number) {
@@ -189,13 +188,34 @@ export function MapaImoveisPage() {
 
     async function carregarImoveis() {
         setLoading(true)
+        
+        // 1. Carrega as colunas para mapear os nomes
+        const { data: cols } = await supabase.from('kanban_colunas').select('*')
+        if (cols) {
+            const map: Record<string, string> = {}
+            cols.forEach(c => map[c.id] = c.nome)
+            setColunaNomesMap(map)
+        }
+
+        // 2. Carrega os imóveis — apenas campos necessários para o mapa e sidebar
+        // (fotos[], descricao, outras_caracteristicas etc. são pesados e não são usados aqui)
         const { data, error } = await supabase
             .from('imoveis')
-            .select('*')
+            .select(`
+                id, titulo, preco, latitude, longitude,
+                tipo_imovel, subtipo, tipo_negocio,
+                foto_capa, bairro, cidade, quartos, area_m2,
+                autorizado, kanban_coluna_id, anuncio_expirado,
+                nome_condominio, vendedor_nome, telefone,
+                telefone_mascara, vendedor_whatsapp, url, ad_id,
+                rua, numero, complemento, estado, cep,
+                vagas, banheiros, suites, aceita_permuta,
+                em_condominio, bloco, numero_apartamento
+            `)
             .not('latitude', 'is', null)
             .not('longitude', 'is', null)
             .or('anuncio_expirado.is.null,anuncio_expirado.eq.false')
-            .limit(50000) // Voltando ao limite original estável
+            .limit(3000)
 
         if (error) {
             toast.error('Erro ao carregar mapa')
@@ -203,6 +223,13 @@ export function MapaImoveisPage() {
             setImoveis(data as ImovelKanban[])
         }
         setLoading(false)
+    }
+
+    const getImovelCategory = (im: ImovelKanban): 'autorizados' | 'funil' | 'mercado' => {
+        if (im.autorizado) return 'autorizados'
+        const colName = im.kanban_coluna_id ? colunaNomesMap[im.kanban_coluna_id] : ''
+        if (colName === 'Anúncios de Mercado' || !im.kanban_coluna_id) return 'mercado'
+        return 'funil'
     }
 
     const handleRunGoogleGeocoder = async () => {
@@ -257,6 +284,12 @@ export function MapaImoveisPage() {
     }, [imoveis])
 
     const filtrados = imoveis.filter(im => {
+        // Filtragem por Categoria (Autorizado, Funil, Mercado)
+        const cat = getImovelCategory(im)
+        if (cat === 'autorizados' && !mostrarAutorizados) return false
+        if (cat === 'mercado' && !mostrarMercado) return false
+        if (cat === 'funil' && !mostrarFunil) return false
+
         if (tipoNegocio && im.tipo_negocio !== tipoNegocio) return false
         
         if (precoMin) {
@@ -315,37 +348,15 @@ export function MapaImoveisPage() {
         id: im.id,
         lat: Number(im.latitude),
         lng: Number(im.longitude),
-        onMarkerClick: () => setImovelSelecionado(im),
-        tooltipContent: (
-            <div style={{ minWidth: 200, maxWidth: 240, overflow: 'hidden' }}>
-                {im.foto_capa && (
-                    <img
-                        src={im.foto_capa}
-                        alt=""
-                        style={{ height: 110, width: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                )}
-                <div style={{ padding: '10px' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.3, marginBottom: 4, color: '#1A1C1E' }}>
-                        {im.titulo}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--m3-on-surface-variant)', marginBottom: 6 }}>
-                        📍 {im.bairro || im.cidade || '—'}
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-                        <div style={{ fontWeight: 800, color: 'var(--m3-primary)', fontSize: '0.95rem' }}>
-                            {im.preco ? `R$ ${im.preco.toLocaleString('pt-BR')}` : 'S/P'}
-                        </div>
-                        {im.quartos && (
-                            <div style={{ fontSize: '0.7rem', background: 'var(--m3-surface)', padding: '2px 8px', borderRadius: 4, color: 'var(--m3-on-surface-variant)', border: '1px solid var(--m3-outline-variant)' }}>
-                                🛏 {im.quartos}q
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        )
+        category: getImovelCategory(im),
+        onMarkerClick: () => setImovelSelecionado(im)
     })), [filtrados])
+
+    const getCategoryLabel = (cat: 'autorizados' | 'funil' | 'mercado') => {
+        if (cat === 'autorizados') return 'Autorizado'
+        if (cat === 'funil') return 'Funil'
+        return 'Mercado'
+    }
 
     return (
         <div className="map-page-container">
@@ -353,139 +364,95 @@ export function MapaImoveisPage() {
             <header className="map-header">
                 <div>
                     <h1>🗺️ Mapa de Imóveis</h1>
-                    <p>Visualizando {filtrados.length} imóveis com coordenadas.</p>
                 </div>
-
-                <div className="filter-bar-main">
-                    <input
-                        className="m3-input"
-                        placeholder="🔍 Título, bairro ou cidade..."
-                        value={busca}
-                        onChange={e => setBusca(e.target.value)}
-                        style={{ maxWidth: 280 }}
-                    />
-                    <select
-                        className="m3-select"
-                        value={tipoNegocio}
-                        onChange={e => setTipoNegocio(e.target.value as any)}
-                        style={{ width: 'auto' }}
-                    >
-                        <option value="">Tipo Negócio</option>
-                        <option value="venda">Venda</option>
-                        <option value="aluguel">Aluguel</option>
-                    </select>
-                    
-                    <button 
-                        className={`m3-btn ${mostrarFiltrosAvancados ? 'm3-btn-active' : 'm3-btn-secondary'}`}
-                        onClick={() => setMostrarFiltrosAvancados(!mostrarFiltrosAvancados)}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
-                        Filtros
-                    </button>
-
-                    <button
-                        className="m3-btn m3-btn-success"
-                        onClick={handleRunGoogleGeocoder}
-                        disabled={loadingGoogle}
-                        title="Google Maps: geocodificar imóveis sem coordenadas"
-                    >
-                        {loadingGoogle ? <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> : <span>🗺️</span>}
-                        Google (novos)
-                    </button>
-
-                    {isGeocodingRunning && (
-                        <button
-                            className="m3-btn"
-                            onClick={handleStopGeocoder}
-                            style={{ background: '#FCE8E6', color: 'var(--m3-error)', border: '1px solid var(--m3-error)' }}
-                        >
-                            🛑 Cancelar
-                        </button>
-                    )}
+                <div className="map-header-sub">
+                    <p>Visualizando</p>
+                    <span className="header-badge">{filtrados.length} imóveis</span>
                 </div>
             </header>
+
+            {/* Barra de Filtros Principal */}
+            <div className="filter-bar-main">
+                <span className="filter-bar-label">Filtros</span>
+
+                <input
+                    className="form-input"
+                    placeholder="🔍 Buscar título, bairro ou cidade..."
+                    value={busca}
+                    onChange={e => setBusca(e.target.value)}
+                    style={{ width: 230, flex: 'none' }}
+                />
+
+                <select
+                    className="form-select"
+                    value={tipoNegocio}
+                    onChange={e => setTipoNegocio(e.target.value as any)}
+                    style={{ width: 140, flex: 'none' }}
+                >
+                    <option value="">Negócio (todos)</option>
+                    <option value="venda">💰 Venda</option>
+                    <option value="aluguel">🔑 Aluguel</option>
+                </select>
+
+                <div className="filter-category-pills">
+                    <label className="filter-category-pill">
+                        <input type="checkbox" checked={mostrarAutorizados} onChange={e => setMostrarAutorizados(e.target.checked)} style={{ margin: 0 }} />
+                        <span style={{ color: '#ef4444' }}>🔴</span> Autorizados
+                    </label>
+                    <label className="filter-category-pill">
+                        <input type="checkbox" checked={mostrarFunil} onChange={e => setMostrarFunil(e.target.checked)} style={{ margin: 0 }} />
+                        <span style={{ color: '#f97316' }}>🟠</span> Funil
+                    </label>
+                    <label className="filter-category-pill">
+                        <input type="checkbox" checked={mostrarMercado} onChange={e => setMostrarMercado(e.target.checked)} style={{ margin: 0 }} />
+                        <span style={{ color: '#3b82f6' }}>🔵</span> Mercado
+                    </label>
+                </div>
+
+                <button
+                    className={`filter-adv-btn ${mostrarFiltrosAvancados ? 'active' : ''}`}
+                    onClick={() => setMostrarFiltrosAvancados(!mostrarFiltrosAvancados)}
+                >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    Filtros Avançados
+                </button>
+            </div>
 
             {/* Filtros Avançados */}
             {mostrarFiltrosAvancados && (
                 <div className="advanced-filters-panel">
-                    <div className="m3-field-group">
-                        <label className="m3-label">Preço Mín</label>
-                        <input
-                            className="m3-input"
-                            type="number"
-                            placeholder="R$"
-                            value={precoMin}
-                            onChange={e => setPrecoMin(e.target.value)}
-                        />
+                    <div className="adv-field">
+                        <label>Preço Mín</label>
+                        <input className="form-input" type="number" placeholder="R$" value={precoMin} onChange={e => setPrecoMin(e.target.value)} />
                     </div>
-                    <div className="m3-field-group">
-                        <label className="m3-label">Preço Máx</label>
-                        <input
-                            className="m3-input"
-                            type="number"
-                            placeholder="R$"
-                            value={precoMax}
-                            onChange={e => setPrecoMax(e.target.value)}
-                        />
+                    <div className="adv-field">
+                        <label>Preço Máx</label>
+                        <input className="form-input" type="number" placeholder="R$" value={precoMax} onChange={e => setPrecoMax(e.target.value)} />
                     </div>
-                    
-                    <MultiSelectDropdown 
-                        label="Cidades" 
-                        options={options.cidades} 
-                        selected={cidadesSelecionadas} 
-                        onChange={setCidadesSelecionadas}
-                        placeholder="Todas"
-                    />
-                    
-                    <MultiSelectDropdown 
-                        label="Bairros" 
-                        options={options.bairros} 
-                        selected={bairrosSelecionados} 
-                        onChange={setBairrosSelecionados}
-                        placeholder="Todos"
-                    />
-                    
-                    <MultiSelectDropdown 
-                        label="Condomínios" 
-                        options={options.condominios} 
-                        selected={condominiosSelecionados} 
-                        onChange={setCondominiosSelecionados}
-                        placeholder="Todos"
-                    />
 
-                    <div className="m3-field-group">
-                        <label className="m3-label">Tipo</label>
-                        <select
-                            className="m3-select"
-                            value={tipoImovel}
-                            onChange={e => setTipoImovel(e.target.value)}
-                        >
+                    <MultiSelectDropdown label="Cidades" options={options.cidades} selected={cidadesSelecionadas} onChange={setCidadesSelecionadas} placeholder="Todas" />
+                    <MultiSelectDropdown label="Bairros" options={options.bairros} selected={bairrosSelecionados} onChange={setBairrosSelecionados} placeholder="Todos" />
+                    <MultiSelectDropdown label="Condomínios" options={options.condominios} selected={condominiosSelecionados} onChange={setCondominiosSelecionados} placeholder="Todos" />
+
+                    <div className="adv-field">
+                        <label>Tipo</label>
+                        <select className="form-select" value={tipoImovel} onChange={e => setTipoImovel(e.target.value)}>
                             <option value="">Todos</option>
                             {options.tipos.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
-
-                    <div className="m3-field-group">
-                        <label className="m3-label">Subtipo</label>
-                        <select
-                            className="m3-select"
-                            value={subtipo}
-                            onChange={e => setSubtipo(e.target.value)}
-                        >
+                    <div className="adv-field">
+                        <label>Subtipo</label>
+                        <select className="form-select" value={subtipo} onChange={e => setSubtipo(e.target.value)}>
                             <option value="">Todos</option>
                             {options.subtipos.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                     </div>
-
-                    <div className="m3-field-group">
-                        <label className="m3-label">Quartos</label>
-                        <select
-                            className="m3-select"
-                            value={quartos}
-                            onChange={e => setQuartos(e.target.value)}
-                        >
+                    <div className="adv-field" style={{ flex: 'none', width: 110 }}>
+                        <label>Quartos</label>
+                        <select className="form-select" value={quartos} onChange={e => setQuartos(e.target.value)}>
                             <option value="">Qualquer</option>
                             <option value="1">1+</option>
                             <option value="2">2+</option>
@@ -493,10 +460,9 @@ export function MapaImoveisPage() {
                             <option value="4">4+</option>
                         </select>
                     </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', paddingBottom: '1.5rem' }}>
-                         <button 
-                            className="m3-btn-text"
+                    <div className="adv-field" style={{ flex: 'none', justifyContent: 'flex-end', width: 'auto' }}>
+                        <label>&nbsp;</label>
+                        <button
                             onClick={() => {
                                 setPrecoMin('')
                                 setPrecoMax('')
@@ -507,9 +473,13 @@ export function MapaImoveisPage() {
                                 setTipoImovel('')
                                 setSubtipo('')
                             }}
-                            style={{ color: 'var(--m3-primary)' }}
+                            style={{
+                                background: 'none', border: 'none', color: 'var(--brand-500)',
+                                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', padding: '0.45rem 0',
+                                whiteSpace: 'nowrap'
+                            }}
                         >
-                            Limpar Filtros
+                            ✕ Limpar
                         </button>
                     </div>
                 </div>
@@ -520,7 +490,7 @@ export function MapaImoveisPage() {
                 {/* Mapa */}
                 <div style={{ position: 'absolute', inset: 0 }}>
                     {loading ? (
-                        <div className="loading-screen" style={{ background: 'var(--m3-surface)' }}>
+                        <div className="loading-screen">
                             <div className="spinner" />
                         </div>
                     ) : (
@@ -528,7 +498,7 @@ export function MapaImoveisPage() {
                     )}
                 </div>
 
-                {/* Sidebar M3 */}
+                {/* Sidebar */}
                 <aside className="m3-map-sidebar">
                     <header className="sidebar-header">
                         <h2>📌 Imóveis na visão</h2>
@@ -537,47 +507,79 @@ export function MapaImoveisPage() {
 
                     <div className="sidebar-scroll">
                         {imoveisVisiveis.length === 0 && (
-                            <div style={{ textAlign: 'center', color: 'var(--m3-on-surface-variant)', fontSize: '0.85rem', padding: '3rem 1rem' }}>
-                                Nenhum imóvel visível nesta área.
+                            <div className="sidebar-empty">
+                                <div className="sidebar-empty-icon">🗺️</div>
+                                <p>Nenhum imóvel visível nesta área.<br/>Navegue pelo mapa para explorar.</p>
                             </div>
                         )}
-                        {imoveisVisiveis.map(im => (
-                            <div
-                                key={im.id}
-                                className="m3-property-card"
-                                onClick={() => setImovelSelecionado(im)}
-                            >
-                                <div className="card-img-box">
-                                    {im.foto_capa ? (
-                                        <img src={im.foto_capa} alt="" />
-                                    ) : (
-                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.3 }}>🏠</div>
-                                    )}
-                                </div>
 
-                                <div className="card-info-box">
-                                    <div className="card-title">{im.titulo}</div>
-                                    <div className="card-price">
-                                        {im.preco ? `R$ ${im.preco.toLocaleString('pt-BR')}` : 'S/P'}
+                        {imoveisVisiveis.map(im => {
+                            const cat = getImovelCategory(im)
+                            return (
+                                <div
+                                    key={im.id}
+                                    className="property-card"
+                                    onClick={() => setImovelSelecionado(im)}
+                                >
+                                    {/* Foto */}
+                                    <div className="property-card-img">
+                                        {im.foto_capa ? (
+                                            <img src={im.foto_capa} alt={im.titulo} loading="lazy" />
+                                        ) : (
+                                            <div className="property-card-no-img">🏠</div>
+                                        )}
+                                        <span className={`property-card-category ${cat}`}>
+                                            {getCategoryLabel(cat)}
+                                        </span>
                                     </div>
-                                    <div className="card-meta">
-                                        <span title={im.bairro}>📍 {im.bairro || '—'}</span>
-                                        {im.quartos && <span>• 🛏 {im.quartos}q</span>}
+
+                                    {/* Corpo */}
+                                    <div className="property-card-body">
+                                        <div className="property-card-price">
+                                            {im.preco ? `R$ ${im.preco.toLocaleString('pt-BR')}` : <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Preço não informado</span>}
+                                        </div>
+                                        <div className="property-card-title" title={im.titulo}>
+                                            {im.titulo}
+                                        </div>
+                                        <div className="property-card-location">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: 'var(--text-muted)' }}>
+                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                                <circle cx="12" cy="10" r="3"/>
+                                            </svg>
+                                            {[im.bairro, im.cidade].filter(Boolean).join(', ') || '—'}
+                                        </div>
+
+                                        <div className="property-card-chips">
+                                            {im.tipo_imovel && <span className="property-chip">🏡 {im.tipo_imovel}</span>}
+                                            {im.quartos != null && <span className="property-chip">🛏 {im.quartos}q</span>}
+                                            {im.area_m2 != null && <span className="property-chip">📐 {im.area_m2}m²</span>}
+                                            {im.tipo_negocio && <span className="property-chip">{im.tipo_negocio === 'venda' ? '💰' : '🔑'} {im.tipo_negocio}</span>}
+                                        </div>
                                     </div>
-                                    <div 
-                                        title="Clique para copiar ID"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            navigator.clipboard.writeText(String(im.id))
-                                            toast.success('ID copiado!')
-                                        }}
-                                        style={{ fontSize: '0.7rem', opacity: 0.5, cursor: 'pointer', marginTop: '4px' }}
-                                    >
-                                        ID: {im.id}
+
+                                    {/* Footer */}
+                                    <div className="property-card-footer">
+                                        <span
+                                            className="property-card-id"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                navigator.clipboard.writeText(String(im.id))
+                                                toast.success('ID copiado!')
+                                            }}
+                                            title="Clique para copiar ID"
+                                        >
+                                            ID #{im.id}
+                                        </span>
+                                        <span className="property-card-open">
+                                            Ver detalhes
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <polyline points="9 18 15 12 9 6"/>
+                                            </svg>
+                                        </span>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </aside>
             </div>

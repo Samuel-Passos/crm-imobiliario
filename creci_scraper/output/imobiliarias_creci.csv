@@ -1,0 +1,410 @@
+razao_social,creci,status,nome_fantasia,cnpj,endereco,cep,email,telefone,responsavel_tecnico,creci_responsavel,coletado_em
+,036314-J,Ativo,Grupo 07 Brasil,38.126.425/0001-14,,12228-004,,,Sebastião da Fonseca Pinto,105949-F,2026-08-26 11:23:52
+,032934-J,Ativo,Morabili,14.511.903/0001-41,,12245-030,,,Renato Ferreira Ribeiro,114352-F,2026-08-26 11:24:16
+,031301-J,Ativo,,,,12242-670,111imoveis@terra.com.br,,Wilden Schmidt Cardozo,164601-F,2026-08-26 11:24:30
+,026095-J,Ativo,2p Imóveis,,,12230-010,,,Ederson Wilson dos Santos,139563-F,2026-08-26 11:24:54
+,044765-J,Ativo,365 Imóveis,52.425.308/0001-82,,12236-440,,,Rafael Inacio Portela,124447-F,2026-08-26 11:25:20
+,042046-J,Ativo,414 Imob,48.094.041/0001-10,,12245-030,,,Manoel Messias Rodrigues Junior,255487-F,2026-08-26 11:25:38
+,052313-J,Ativo,7 Etapas Negocios Imobiliarios,64.596.896/0001-04,,12228-253,,,Rosângela Silva de Araújo,249754-F,2026-08-26 11:25:58
+,021711-J,Ativo,Migra Consultoria Imobiliaria,10.334.165/0001-53,,12210-190,,,Alexandre Vicente Gomes,076658-F,2026-08-26 11:26:18
+,052254-J,Ativo,Imobiliaria a Mesa,63.792.178/0001-32,,12235-690,,,Daniel Alves de Paula Machado,300279-F,2026-08-26 11:26:32
+,017236-J,Ativo,,,,12243-690,,,Pedro Luiz Rodrigues Placa,049176-F,2026-08-26 11:26:50
+,052693-J,Ativo,A Gimenes Imoveis,51.819.775/0001-24,,12221-000,,,Antonio Gimenes Martinez,012198-F,2026-08-26 11:27:18
+,037176-J,Ativo,Abba Corretora e Servicos Imobiliarios,37.049.204/0001-27,,12210-060,,,Anderson Borges Bahia,197859-F,2026-08-26 11:27:32
+,053588-J,Ativo,,66.604.552/0001-17,,12233-001,,,Aloisio Barbosa Lopes,030229-F,2026-08-26 11:27:45
+,039093-J,Ativo,Anata Imoveis,44.056.086/0001-40,,12237-060,,,Abner Marcelo Sarmeiro Correa,201897-F,2026-08-26 11:28:03
+,027899-J,Ativo,Adimac,23.228.718/0001-35,,12235-560,,,Altair Hitler Cardoso,146630-F,2026-08-26 11:28:18
+,052244-J,Ativo,Adriana Mallmann,58.943.610/0001-09,,12243-010,,,Adriana Scarpato Mallmann,180798-F,2026-08-26 11:28:48
+,040299-J,Ativo,Mirai Imoveis,43.869.235/0001-27,,12210-060,,,Adriana Mara Rezende,228663-F,2026-08-26 11:29:06
+,048797-J,Ativo,Adrimar Imóveis,59.330.166/0001-19,,12243-360,,,Marcio Antonio Brito Oliveira,039709-F,2026-08-26 11:29:36
+,028507-J,Ativo,Imobiliaria Seiko,24.294.364/0001-90,,12209-650,,,Alessandro Fernandes da Silva,161333-F,2026-08-26 11:30:02
+,030655-J,Ativo,,27.283.772/0001-34,,12246-876,,,Roberto Vieira de Castro Neeser,178156-F,2026-08-26 11:30:20
+,042218-J,Ativo,,48.680.197/0001-83,,12216-540,,,Alexandre de Souza Archanjo,242244-F,2026-08-26 11:30:38
+,049675-J,Ativo,Aj House Imoveis,28.545.545/0001-00,,12220-281,,,Andressa Guimbala dos Santos Araujo,296113-F,2026-08-26 11:30:56
+,050747-J,Ativo,Ajm Imobiliaria,61.460.365/0001-93,,12246-020,,,Sebastiao Claudinei dos Santos,131092-F,2026-08-26 11:31:44
+,048690-J,Ativo,,59.308.313/0001-54,,12224-790,,,Alan da Silva Soares,208712-F,2026-08-26 11:32:47
+,052801-J,Ativo,Portella Negocios & Solucoes,63.928.823/0001-00,,12237-070,,,Alessandra Alencar Portella,186055-F,2026-08-26 11:34:29
+,053166-J,Ativo,Ale Queiroz Imoveis,14.582.436/0001-40,,12240-120,,,Alessandra Cristina Fernandes de Queiroz,266328-F,2026-08-26 11:35:54
+,042948-J,Ativo,Telo Imoveis,49.917.643/0001-93,,12245-483,,,Alex Cristiano da Silva,166502-F,2026-08-26 11:36:55
+,016828-J,Ativo,,02.576.493/0001-38,,12220-380,,,Valeria Aquino de Oliveira Paiva,049205-F,2026-08-26 11:38:37
+,043769-J,Ativo,Allure Imoveis Negocios Imobiliarios,51.064.150/0001-08,,12246-020,,,Danielle Moreira da Silva Lopes,134705-F,2026-08-26 11:42:22
+,043342-J,Ativo,Altina Corretora Imoveis,50.208.564/0001-92,,12233-130,,,Altina Matheus Machado,054306-F,2026-08-26 11:43:38
+,028667-J,Ativo,Alugue-ja.com,24.661.200/0001-53,,12242-000,,,Dario Junio Alves,166470-F,2026-08-26 11:44:37
+,024311-J,Ativo,Grupo Alves Negocios Imobiliarios,09.407.268/0001-17,,12248-460,,,José Leandro Alves da Cunha,122312-F,2026-08-26 11:48:04
+,028088-J,Ativo,Imobiliaria Lins,21.572.058/0001-80,,12243-700,,,Anderson Lins,100709-F,2026-08-26 11:50:45
+,013933-J,Ativo,,,"AV Nove de Julho 899 Apto01 Nº Bairro Vila Adyana, Sao Jose dos Campos SP",12243-000,,,Maria Bernardina Amantino de Andrade,042621-F,2026-08-26 11:56:00
+,049174-J,Ativo,Amantiqueira Imobiliária,42.385.460/0001-25,,12249-027,,,Delsnira Alves Magalhães Lima,145043-F,2026-08-26 11:57:48
+,051446-J,Ativo,,60.146.752/0001-97,,12244-122,,,Ana Cecilia Salles Dundr,234454-F,2026-08-26 12:00:17
+,038472-J,Ativo,Nuvale Imoveis,04.299.364/0001-75,,12237-865,,,Anderson Clayton da Costa,146197-F,2026-08-26 12:01:16
+,045106-J,Ativo,Ross 23 Negócios Imobiliários,,,12220-440,,,Anderson de Oliveira Rosa,183910-F,2026-08-26 12:03:01
+,046107-J,Ativo,Asc Construções e Negócios Imobiliários,11.107.508/0001-00,,12249-027,,,Vanessa Diniz de Souza Carvalho,089501-F,2026-08-26 12:08:19
+,046629-J,Ativo,Cia - Andrade e Domingos,42.254.071/0001-60,,12246-870,,,Gabriel da Silva Andrade,169096-F,2026-08-26 12:11:04
+,024937-J,Ativo,Imobiliaria Riccio Imoveis,14.851.724/0001-53,,12246-002,,,Andre Riccio Alves,111277-F,2026-08-26 12:12:40
+,046333-J,Ativo,Imóveis Gaucha,24.826.272/0001-03,,12242-460,,,Andreia Machado Schmitz,152677-F,2026-08-26 12:13:33
+,013994-J,Ativo,,,,12233-001,,,Jose Luiz Evangelista,042116-F,2026-08-26 12:16:48
+,037620-J,Ativo,Julio Angeli Imoveis,,,12236-660,,,Julio Cesar Castanho Angeli,100547-F,2026-08-26 12:21:56
+,008357-J,Ativo,,,,12223-220,,,Marcia Tromboni Gonçalves,262215-F,2026-08-26 12:27:13
+,041241-J,Ativo,Apê 161 Imobiliaria,47.407.649/0001-95,"R Capitao Paulo Jose de Menezes Filho Nº 51 Bairro Jardim Santa Ines Ii, Sao Jose dos Campos SP",12248-516,franca@ape161.com.br,,Auxiliadora França Nelson,200651-F,2026-08-26 12:34:00
+,040310-J,Ativo,Grupo Aprisco,43.884.184/0001-02,"AV Alfredo Ignacio Nogueira Penido Nº 305 - Sala 101 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-000,contato@aprisco.cnt.br,,Marcio Rogerio da Silva,242799-F,2026-08-26 12:37:56
+,018806-J,Ativo,Aquarius Imoveis,51.621.951/0001-19,"AV Cassiano Ricardo Nº 1382 Bairro Jardim Alvorada, Sao Jose dos Campos SP",12240-540,jeremias1551@gmail.com,,João Fernando Guilherme da Silva Jeremias,068431-F,2026-08-26 12:41:28
+,043509-J,Ativo,Aquarius Exclusive Negocios Imobiliarios,49.353.377/0001-13,"AV Alfredo Ignacio Nogueira Penido Nº 255 - Sala 908 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-000,aquariusexclusiveimob@gmail.com,,Gisele de Souza Gomes Oliveira,264487-F,2026-08-26 12:43:27
+,041602-J,Ativo,Dugois Negocios Imobiliarios,47.880.012/0001-11,"R Leme Nº 101 - Apto 41 Bairro Jardim das Industria, Sao Jose dos Campos SP",12240-180,jts.silva@uol.com.br,,Áurea Elisabeth Ferreira Dugois,136405-F,2026-08-26 12:45:29
+,035526-J,Ativo,0001 Arremate Solucoes Imobiliarias,37.883.959/0001-22,"PC Mikado Nº 114 - Ap 14 Bairro Jardim Oriente, Sao Jose dos Campos SP",12236-160,marinafariamarcondes@gmail.com,,Marina Faria Marcondes,202197-F,2026-08-26 12:47:01
+,014208-J,Ativo,,96.486.378/0001-16,"R Jose Dias de Aguiar 117 Nº Bairro Santana, Sao Jose dos Campos SP",12212-080,,,Mario Nelson Ribeiro Gomes,054171-F,2026-08-26 12:47:50
+,043889-J,Ativo,Imobiliaria Morada,46.778.178/0001-69,"AV Salinas Nº 393 Bairro Bq dos Eucaliptos, Sao Jose dos Campos SP",12233-593,pedroalves87@hotmail.com,,Pedro Arthur Luiz Alves Oliveira,149285-F,2026-08-26 12:48:51
+,021901-J,Ativo,Astor Imoveis,08.801.149/0001-81,"R Eng Prudente Meireles de Morais Nº 670 Bairro Vila Adyana, Sao Jose dos Campos SP",12243-750,cesar@astorimoveis.com.br;diretoria@admcondominial.com.br,,Nilton Roberto Servino,037376-F,2026-08-26 12:49:45
+,027683-J,Ativo,,22.514.380/0001-15,"R Icatu Nº 834 Bairro Cj Res 31 de Março, Sao Jose dos Campos SP",12237-010,astralimoveis834@hotmail.com,,Daniel Oliveira dos Santos,067903-F,2026-08-26 12:50:40
+,018809-J,Ativo,Aurora Borealis Imoveis,05.644.822/0001-29,"R Jurema Vieira Medrado Nº 65 - Sala 1009 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-180,carol@auroraimoveis.imb.br,,Carolina Toledo de Almeida,077052-F,2026-08-26 12:51:42
+,038326-J,Ativo,Avant Imoveis e Investimentos,43.172.629/0001-21,"R Siria Nº 71 - Sala 30 Bairro Jardim Oswaldo Cruz, Sao Jose dos Campos SP",12216-530,mvalmeida1@gmail.com,,Matheus Vilela Almeida,217886-F,2026-08-26 12:53:15
+,041361-J,Ativo,,47.403.426/0001-50,"R Jose Mattar Nº 232 Bairro Jardim Sao Dimas, Sao Jose dos Campos SP",12245-450,joycemoraisferr@gmail.com,,Joyce Morais Ferreira,249042-F,2026-08-26 12:54:01
+,047225-J,Ativo,Azv Imoveis,42.386.172/0001-95,"AV Cassiano Ricardo Nº 101 - Bloco a Apt 222 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-870,rodrigomello.azv@gmail.com,,Rodrigo Mello Azevedo,204747-F,2026-08-26 12:54:57
+,033346-J,Ativo,,27.252.044/0001-65,"R Condelac Chaves de Andrade Nº 241 Bairro Urbanova Iii, Sao Jose dos Campos SP",12244-461,habilitacaonautica@uol.com.br,,Bruno de Oliveira Barros,189009-F,2026-08-26 12:55:52
+,014387-J,Ativo,,96.488.762/0001-58,"AV Perseu Nº 417 - Sala 01 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-470,bm.imoveis2020@gmail.com,,Braz Donizeti de Souza,043192-F,2026-08-26 12:56:54
+,040120-J,Ativo,B R Negocios Imobiliarios,21.526.393/0001-41,"R Jose Lenir Silvestre Nº 422 Bairro Cidade Morumbi, Sao Jose dos Campos SP",12236-480,brunomrv.ricardo@gmail.com,,Bruno Ricardo de Jesus,116966-F,2026-08-26 12:57:40
+,045161-J,Ativo,Ana Prime Imóveis,51.906.603/0001-98,"R Doutor Orlando Feirabend Filho Nº 230 - Sala 709 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-190,ana@anaprimeimoveis.com,,Ana Maria de Souza Barros Santos,172293-F,2026-08-26 12:58:37
+,040229-J,Ativo,Meta Imóveis Sjc,45.609.882/0001-25,"AV Alfredo Ignacio Nogueira Penido Nº 335 - Sala 1007 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-000,redemorarimoveis@gmail.com,,Benedito Campos Santos,151601-F,2026-08-26 12:59:21
+,016395-J,Ativo,,02.002.089/0001-50,"PC Primeiro de Maio Nº 187 Bairro Pq Novo Horizonte, Sao Jose dos Campos SP",12225-661,,,Claudio Ribas Demetrio,165428-F,2026-08-26 13:00:12
+,047068-J,Ativo,Belloti Consultoria Imobiliaria,46.849.099/0001-00,"R Doutor Orlando Feirabend Filho Nº 230 - Sala 1602 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-190,belloticonsultoriaimobiliaria@gmail.com,,Lucia Diniz Belloti,204942-F,2026-08-26 13:01:02
+,051590-J,Ativo,,59.995.509/0001-64,"AV Engenheiro Francisco Jose Longo Nº 622 - Apt 91 Bairro Jardim Sao Dimas, Sao Jose dos Campos SP",12245-000,felipesbianchi@gmail.com,,Felipe Soares Bianchi,153432-F,2026-08-26 13:01:48
+,048863-J,Ativo,Bertossi Soluções Financeiras,48.931.614/0001-13,"AV Doutor Nelson D'avila Nº 389 - Loja 16b Bairro Centro, Sao Jose dos Campos SP",12245-641,beatriz.agrabe@gmail.com,,Bruno Juliao Duarte Bertossi,292271-F,2026-08-26 13:02:34
+,018263-J,Ativo,,04.800.582/0001-41,"AV Anchieta Nº 1079 Bairro J Nova Europa, Sao Jose dos Campos SP",12242-280,,,Suely Rosa Blanco Passeri,048827-F,2026-08-26 13:03:20
+,041047-J,Ativo,,31.148.867/0001-12,"R Claudio Lemes Nº 45 Bairro Urbanova Iii, Sao Jose dos Campos SP",12244-521,legalize.contabildovale@gmail.com,,Debora Bedini de Abreu,309207-F,2026-08-26 13:04:06
+,042534-J,Ativo,,,"AV Doutor Joao Guilhermino Nº 261 - Sala 102 Bairro Centro, Sao Jose dos Campos SP",12210-131,celia.orgvichi@hotmail.com,,Alberto Marini,040745-F,2026-08-26 13:04:50
+,050894-J,Ativo,,62.587.966/0001-24,"AV Nove de Julho Nº 242 - Sala 8 Bairro Jardim Apolo I, Sao Jose dos Campos SP",12243-000,fernandovinhal@remax.com.br,,Fernando Luiz Vinhal Batista,300617-F,2026-08-26 13:05:35
+,048342-J,Ativo,Brasil Galpoes,30.801.747/0002-90,"AV Doutor Jose Vieira Lopes da Costa Nº 35 - Apt 82 Bairro Condominio Residenci, Sao Jose dos Campos SP",12244-122,contato@brasilgalpoes.com.br,,Giancarlo de Aguiar Geremias,293076-F,2026-08-26 13:07:29
+,043480-J,Ativo,Brasil Property,50.746.209/0001-77,"R Paraibuna Nº 811 - Sala 710 Bairro Jardim Sao Dimas, Sao Jose dos Campos SP",12245-020,fabricioiesp@gmail.com,,Fabricio Barbosa dos Santos,231245-F,2026-08-26 13:09:00
+,049936-J,Ativo,,55.505.980/0001-76,"R Andrelandia Nº 154 Bairro Bosque dos Eucalipto, Sao Jose dos Campos SP",12233-597,processos@satelitecontabil.com.br,,Brenda Vitória Silva Evangelista,208540-F,2026-08-26 13:10:01
+,041408-J,Ativo,Bruno Augusto Imoveis,28.448.161/0001-61,"AV Sao Joao Nº 2375 - Sala 1016 Bairro Jardim das Colinas, Sao Jose dos Campos SP",12242-000,processo@contcam.com.br,,Bruno Augusto dos Santos Capita,233367-F,2026-08-26 13:10:57
+,035186-J,Ativo,Bruno de Araujo Negocios Imobiliarios,36.552.140/0001-10,"AV Guadalupe Nº 10 - Apt 205 Bloco 3 Bairro Jardim America, Sao Jose dos Campos SP",12235-000,bruno.araujo@creci.org.br,,Bruno de Araujo,134667-F,2026-08-26 13:11:47
+,053675-J,Ativo,,66.150.073/0001-78,"AV Sao Joao Nº 2375 - Sala 511 Edif Helbor Bairro Jardim das Colinas, Sao Jose dos Campos SP",12242-000,brunoimoveis.sjc@gmail.com,,Bruno dos Santos Ferreira,323006-F,2026-08-26 13:12:52
+,032014-J,Ativo,Meu Imovel Sjc,26.085.222/0001-48,"R Santa Clara Nº 690 Bairro Vila Adyana, Sao Jose dos Campos SP",12243-630,cervoni@cervoni.com.br,,Bruno Garcia dos Reis Cervoni,186794-F,2026-08-26 13:13:36
+,054241-J,Ativo,,60.957.252/0001-35,"R Diamantina Nº 181 Bairro Jardim Ismenia, Sao Jose dos Campos SP",12220-663,baxinvestimentos@gmail.com,,William Miguel de Alvarenga,168922-F,2026-08-26 13:14:21
+,042953-J,Ativo,,46.617.638/0001-77,"R San Marino Nº 43 - Apt 33 Bairro Jardim America, Sao Jose dos Campos SP",12235-080,caiofaria_sjc@yahoo.com.br,,Caio César Cassiano de Oliveira Faria,180824-F,2026-08-26 13:15:06
+,036617-J,Ativo,Suaimobi,38.313.802/0001-24,"R Dos Piquiroes Nº 40 - Sala 205 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-020,financeiro@suaimobi.com.br,,Camila Gude de Souza Valandro,120639-F,2026-08-26 13:15:52
+,051576-J,Ativo,Chaves Consultoria Imobiliaria,63.000.736/0001-80,"R Rio Tibagi Nº 112 Bairro Jardim Pararangaba, Sao Jose dos Campos SP",12224-801,chavesimobiliaria@gmail.com,,Cleusa Rodrigues Chaves Batista,287444-F,2026-08-26 13:17:24
+,037618-J,Ativo,Corretores 24 Horas,42.272.453/0001-17,"AV Sao Joao Nº 2375 - Sala 1001 Bairro Jardim das Colinas, Sao Jose dos Campos SP",12242-000,regis.perfectservicos@gmail.com,,Anderson Rodrigo Bitencourt Ribeiro de Souza,214136-F,2026-08-26 13:18:08
+,045835-J,Ativo,,53.175.103/0001-59,"R Euclides Miragaia Nº 145 - Sala 811 Bairro Centro, Sao Jose dos Campos SP",12245-820,leandro.ra84@gmail.com,,Leandro Ramos de Almeida,194396-F,2026-08-26 13:18:52
+,038454-J,Ativo,Caio Imoveis,42.985.632/0001-00,"R Alvaro Goncalves Junior Nº 330 - Ap 309 Bl D Bairro Parque Industrial, Sao Jose dos Campos SP",12235-670,caio.pinelli@live.com,,Caio Pinelli Pazzini,195721-F,2026-08-26 13:19:42
+,030465-J,Ativo,Mvendazz Central de Investimentos,27.488.693/0001-60,"R Dos Piquiroes Nº 40 - Sala 205 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-020,financeiro@suaimobi.com.br,,Camila Gude de Souza Valandro,120639-F,2026-08-26 13:20:48
+,047767-J,Ativo,Sfx Com Charme,43.538.937/0001-28,"R Siria Nº 65 - Apt 32 Bairro Jardim Oswaldo Cruz, Sao Jose dos Campos SP",12216-530,camilamaciel119@gmail.com,,Camila de Fatima Maciel,256733-F,2026-08-26 13:21:32
+,036099-J,Ativo,,39.583.925/0001-48,"AV Nove de Julho Nº 242 - Sala 6 Bairro Jardim Apolo, Sao Jose dos Campos SP",12243-000,vinicius@lojasjb.com.br,,Blaird Pinho Cardoso,199098-F,2026-08-26 13:22:49
+,041646-J,Ativo,Sky Imoveis,31.628.493/0001-32,"R Milton Martins Nº 91 - Urbanova V Bairro Urbanova, Sao Jose dos Campos SP",12244-867,ccrocruz@gmail.com,,Caren Cristina Rodrigues Cruz,216118-F,2026-08-26 13:23:45
+,049262-J,Ativo,Carlos Campos Imoveis,60.407.181/0001-05,"R Doutor Orlando Feirabend Filho Nº 230 - Sala 1708 Torre a Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-190,carloscamposimoveiss@gmail.com,,Alessandra Ramasco,315409-F,2026-08-26 13:24:51
+,049642-J,Ativo,,58.807.299/0001-70,"R Lamartine Maia da Silva Torres Nº 177 - Bloco 40 Apt 24 Bairro Bosque dos Eucalipto, Sao Jose dos Campos SP",12232-380,processos@satelitecontabil.com.br,,Caroline Caetano Santos,200157-F,2026-08-26 13:25:36
+,040911-J,Ativo,,45.438.468/0001-09,,12240-000,sergio@casabrasilnegocios.com.br,,Sergio Yuji Tsuruda,176585-F,2026-08-26 13:26:37
+,035400-J,Ativo,Casa Brasil Projetos e Neg Imob Ltda,37.232.363/0001-62,"AV Doutor Joao Batista Soares de Queiroz Junior Nº 931 Bairro Jardim das Industria, Sao Jose dos Campos SP",12240-000,sergiotsuruda@gmail.com,,Sergio Yuji Tsuruda,176585-F,2026-08-26 13:28:07
+,050019-J,Ativo,Casa Nobre Premium Gestao Imobiliaria,30.899.735/0001-60,"AV Andromeda Nº 1024 - Sala 4 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-000,nobreca@hotmail.com,,Carlos Nobre,231136-F,2026-08-26 13:30:41
+,011874-J,Ativo,Casa Vista,61.880.340/0001-49,"AV Manoel Borba Gato Nº 16 Bairro Jardim Nova America, Sao Jose dos Campos SP",12242-270,atendimento@excelimoveis.com.br,,Paulo Pinto Cunha,026364-F,2026-08-26 13:31:50
+,030603-J,Ativo,Cassiano Dimitry,27.056.367/0001-83,"AV Nove de Julho Nº 781 Bairro Jardim Apolo, Sao Jose dos Campos SP",12243-000,,,Cassiano Dimitry Ferreira,063700-F,2026-08-26 13:33:56
+,015619-J,Ativo,,,,12245-901,,,Lourdes Nazareth de Souza,008566-F,2026-08-26 13:34:44
+,036145-J,Ativo,,,,12246-870,,,Renato Sampaio Ferreira,209877-F,2026-08-26 13:35:20
+,034886-J,Ativo,Maciel Negocios Imobiliarios Dutra,,"AV Joao Batista de Souza Soares Nº 221 Bairro Jardim America, Sao Jose dos Campos SP",12235-200,recepcao.dutra@imobiliariamaciel.com.br,,Ilson de Sene Maciel,038524-F,2026-08-26 13:35:53
+,051532-J,Ativo,,,,12236-895,cristiellenzw@gmail.com,,Cristiéllen dos Santos Zwaricz,280722-F,2026-08-26 13:37:12
+,027694-J,Ativo,Celeste Imoveis,,,12210-120,adm@celesteimoveis.com,,Celeste Moreira da Silva Ramos,035540-F,2026-08-26 13:37:54
+,038125-J,Ativo,Celia Teixeira Imoveis Sjc,,,12246-021,corretoraceliateixeira@gmail.com,,Célia Regina de Oliveira Teixeira,095387-F,2026-08-26 13:38:59
+,018883-J,Ativo,,,,12243-670,,,José Donizete de Lima,032443-F,2026-08-26 13:39:57
+,052940-J,Ativo,Lopes D - Consultoria Imobiliaria,,,12221-780,,,Cesar Lopes Dalacqua,320174-F,2026-08-26 13:40:38
+,032938-J,Ativo,Innovact,,,12246-002,,,Cesar Augusto Vieira de Mello,062695-F,2026-08-26 13:41:11
+,033221-J,Ativo,Chaves Imoveis,31.966.142/0001-31,,12243-260,,,Venceslau Rodolfo Dias Chaves,170549-F,2026-08-26 13:41:42
+,040188-J,Ativo,Cintia Suemi Negocios Imobiliarios,,,12236-290,,,Cintia Suemi Hazuma,099090-F,2026-08-26 13:42:59
+,012157-J,Ativo,,65.044.182/0001-48,,12233-000,,,Clercio Marques Garcia,032147-F,2026-08-26 13:43:43
+,012518-J,Ativo,,,,12243-760,,,João Baptista Boudet Fernandes,039061-F,2026-08-26 13:44:55
+,037090-J,Ativo,Cnx Imóveis,,,12245-021,,,Fabricio Rodrigues de Azevedo,213904-F,2026-08-26 13:45:32
+,029202-J,Ativo,Colinas Negocios Imobiliarios,,"AV Cidade Jardim Nº 5561 Bairro Bq dos Eucaliptos, Sao Jose dos Campos SP",12233-002,executivo@fnascimento.com.br,,Ananias Ferreira da Silva,137166-F,2026-08-26 13:46:08
+,039855-J,Ativo,Conekta Vale Imóveis,,,12230-000,,,Pedro Augusto Martins,134078-F,2026-08-26 13:48:07
+,048279-J,Ativo,Conexao Premium Intermediacoes Imob Ltda,,,12243-020,conexaosjcimoveis@gmail.com,,Mauricio Silva dos Santos,155906-F,2026-08-26 13:48:43
+,037568-J,Ativo,Conexao Sjc Imoveis Ltda,40.217.125/0001-92,"R Comendador Remo Cesaroni Nº 162 - Sala 25 Bairro Vila Ema, Sao Jose dos Campos SP",12243-020,conexaosjcimoveis@gmail.com,,Mauricio Silva dos Santos,155906-F,2026-08-26 13:50:25
+,048606-J,Ativo,Imovelsa,58.512.763/0001-00,"R Teresina Nº 44 Bairro Parque Industrial, Sao Jose dos Campos SP",12235-610,processos@satelitecontabil.com.br,,João Paulo Baeta Esteves,269475-F,2026-08-26 13:52:00
+,028350-J,Ativo,,23.429.294/0001-77,"AV Joao Rodolfo Castelli Nº 665 - Sala 08 Bairro Putim, Sao Jose dos Campos SP",12228-000,juliana.barbosa@construtorapodium.com,,Luis Carlos Barbosa,031736-F,2026-08-26 13:54:04
+,034948-J,Ativo,Confidence Imoveis,35.951.329/0001-12,"R Bacabal Nº 140 - Sala 14 e 15 Bairro Parque Industrial, Sao Jose dos Campos SP",12235-680,ricardoasvg@creci.org.br,,Ricardo Augusto da Silva Viana Gonçalves,177179-F,2026-08-26 13:54:58
+,031643-J,Ativo,Consiglio Imoveis,29.313.316/0001-15,"R Jordania Nº 201 - Sala 04 Bairro Jardim Oswaldo Cruz, Sao Jose dos Campos SP",12216-550,julio@consiglioimoveis.com.br,,Julio Cesar Veloso Consiglio,163178-F,2026-08-26 13:55:59
+,031656-J,Ativo,Engcapi Construtora & Imobiliaria,65.783.003/0001-94,"AV Jose Francisco Marcondes Nº 125 Bairro Jardim Sao Vicente, Sao Jose dos Campos SP",12224-350,w-pimenta@hotmail.com,,Waldir Perpetuo Pimenta,159753-F,2026-08-26 13:57:31
+,013768-J,Ativo,,,"AV Cassiopeia Nº 263 - Sala 12 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-011,,,Tony Jefferson Rodrigues Bitencourt,034912-F,2026-08-26 13:58:40
+,011836-J,Ativo,,61.879.862/0001-20,"AV Eng Francisco Jose Longo Nº 149 - Sl 81/84 Bairro Sao Dimas, Sao Jose dos Campos SP",12245-000,consuplanloc@gmail.com,,Evanir Nunes Ferreira,234913-F,2026-08-26 13:58:55
+,015999-J,Ativo,,02.136.633/0001-57,"ROD Dos Tamoios Nº Km 11,5 Bairro B da Pernambucana, Sao Jose dos Campos SP",12228-845,eduardoa.mascarenhas@yahoo.com.br,,Eduardo de Andrade Mascarenhas,047272-F,2026-08-26 14:00:01
+,049178-J,Ativo,Corbani & Veneziani Administradora de Imoveis,55.216.034/0001-00,"R Benedito Osvaldo Lecques Nº 170 - Casa 04 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-021,marceloveneziani@gmail.com,,João Vicente Fernandes Lobo Miranda,242785-F,2026-08-26 14:01:15
+,050742-J,Ativo,Decio Imobiliaria,62.551.145/0001-38,"AV Joao Rodolfo Castelli Nº 348 - Sala 19 Bairro Putim, Sao Jose dos Campos SP",12228-000,imobiliariadecio@hotmail.com,,Carlos Junior Rezende Vieira,229401-F,2026-08-26 14:02:03
+,022526-J,Ativo,Cordeiro Imoveis,14.086.539/0001-10,"AL Jose Paula da Silva Nº 178 Bairro Vila Betania, Sao Jose dos Campos SP",12245-489,imobiliariacordeiro@hotmail.com,,Patricia Ferreira Cordeiro,060455-F,2026-08-26 14:03:05
+,026859-J,Ativo,Corretores Premium,21.819.408/0001-60,,12215-290,,,Raquel Jordan Rojas Machado,075510-F,2026-08-26 14:04:43
+,019836-J,Ativo,,02.864.146/0001-00,"AV Cassiopeia Nº 532 - Sala 7 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-010,imoveisneg@gmail.com,,José Silvio da Costa Manso,042942-F,2026-08-26 14:05:05
+,053679-J,Ativo,Costa Vale e Litoral Consultoria Imobili,26.289.786/0001-00,"PC Afonso Pena Nº 105 - Sala 26 Bairro Centro, Sao Jose dos Campos SP",12210-090,angelicapiovesan@gmail.com,,Angelica Piovesan da Costa,273848-F,2026-08-26 14:06:33
+,023455-J,Ativo,,12.747.427/0001-37,"AV Nove de Julho Nº 242 - Loja 5 Bairro Jardim Apolo, Sao Jose dos Campos SP",12243-001,cpfsjc@hotmail.com,,Cristiano Pinto Ferreira,074309-F,2026-08-26 14:07:56
+,012672-J,Ativo,,65.054.793/0001-77,"R Cel Joao Cursino Nº 101 Bairro V Adyana, Sao Jose dos Campos SP",12243-680,cristalimoveissjc@gmail.com,,Aristeu de Almeida,043187-F,2026-08-26 14:09:24
+,024967-J,Ativo,Viamax Imoveis,18.250.215/0001-26,"AV Comendador de Vicente Paulo Penido Nº 304 - Sala 2 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-856,contato@viamaximoveis.com.br,,Carlos Roberto Viana,108565-F,2026-08-26 14:10:19
+,020366-J,Ativo,,10.276.100/0001-07,"AV Andromeda Nº 682 - Sala 1 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-001,clprudente@gmail.com,,Claudio dos Santos Prudente,060594-F,2026-08-26 14:11:08
+,048216-J,Ativo,,57.239.491/0001-45,"R Bacabal Nº 140 - Sala 85 Bairro Parque Industrial, Sao Jose dos Campos SP",12235-680,cursino@creci.org.br,,Sergio Natalino Cursino França,235270-F,2026-08-26 14:12:22
+,044050-J,Ativo,,51.553.941/0001-93,"R Icatu Nº 1821 Bairro Parque Independencia, Sao Jose dos Campos SP",12237-601,agilizacred@uol.com.br,,Maria Aparecida da Silva,068449-F,2026-08-26 14:13:30
+,050858-J,Ativo,Trulli Imoveis,62.355.434/0001-61,"AV Deputado Benedito Matarazzo Nº 5101 Bairro Jardim das Colinas, Sao Jose dos Campos SP",12242-010,imoveistrulli@gmail.com,,Douglas Goulart Cursino,275464-F,2026-08-26 14:14:15
+,029753-J,Ativo,Imoveis Premium,26.369.338/0001-09,"R Das Arraias Nº 50 - Sala 902 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-330,contato@imoveispremiumsjc.com.br,,Demetrius Alexandre D'addea,039646-F,2026-08-26 14:15:16
+,021499-J,Ativo,D'alê Imoveis,11.986.073/0001-10,"AV Cassiano Ricardo Nº 319 - Sala 1803 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-870,alessandra@daleimoveis.com.br,,Alessandra Christina Nunes,041559-F,2026-08-26 14:16:18
+,022453-J,Ativo,Danata,,"R Pedro Luiz de Oliveira Costa Nº 1040 Bairro Jardim Limoeiro, Sao Jose dos Campos SP",12241-420,anapaula@danataimoveis.com.br,,Carlos Rogerio de Almeida Esteves,086257-F,2026-08-26 14:17:24
+,042233-J,Ativo,Daniel Felipe Imoveis,,,12246-150,,,Daniel Felipe Paulino Flor,156912-F,2026-08-26 14:18:21
+,048614-J,Ativo,Daniel Parodi Imoveis,,,12243-670,,,Daniel Zinsly Parodi,110358-F,2026-08-26 14:19:00
+,053393-J,Ativo,,66.400.648/0001-63,"R Benedito Osvaldo Lecques Nº 200 - Apt 192 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-021,daniellearoeira@yahoo.com.br,,Danielle Almeida de Araújo Aroeira,216399-F,2026-08-26 14:19:42
+,050752-J,Ativo,,47.063.980/0001-35,"AV Alto do Rio Doce Nº 1374 Bairro Jardim Altos de Sant, Sao Jose dos Campos SP",12214-010,,,Darcilene Aparecida Cunha,119728-F,2026-08-26 14:22:10
+,003184-J,Ativo,,,,12220-000,,,Antonio Carlos Milano Davoli,048728-F,2026-08-26 14:23:18
+,052872-J,Ativo,Dayane Santos Negocios Imobiliarios,,,12231-710,,,Dayane Pereira dos Santos,306030-F,2026-08-26 14:24:00
+,010801-J,Ativo,,60.129.392/0001-15,"R Sebastiao Humel Nº 113 - 1 And Bairro Centro, Sao Jose dos Campos SP",12210-200,,,Ana Alice de Finis Pagnano,030734-F,2026-08-26 14:24:42
+,020655-J,Ativo,,,,12242-280,,,Sergio Luiz de Novellis Junior,089807-F,2026-08-26 14:25:36
+,050939-J,Ativo,Debora Freitas Imoveis,,,12246-870,,,Débora Osses de Freitas Coutinho,260884-F,2026-08-26 14:26:15
+,049790-J,Ativo,Renovatop Construtora Imobiliaria,,,12225-732,djoliveiracorretor@yahoo.com.br,,Dejair de Oliveira,156122-F,2026-08-26 14:27:32
+,040497-J,Ativo,Delarth Negócios Imobiliários,,"R Bacabal Nº 140 - Sala 22 Bairro Parque Industrial, Sao Jose dos Campos SP",12235-680,,,Thais Ferreira Ernandes,280041-F,2026-08-26 14:28:20
+,044238-J,Ativo,Casanova Imoveis,,,12246-330,,,Marcelo Porto de Araujo,255265-F,2026-08-26 14:29:04
+,045905-J,Ativo,Demax Imoveis Alto Padrao & Luxo,,,12244-595,,,Maximiliano Lisboa de Oliveira,142203-F,2026-08-26 14:29:38
+,052906-J,Ativo,Denis Moura Team,,,12244-000,,,Denis Eduardo Silva Moura,192347-F,2026-08-26 14:30:34
+,046433-J,Ativo,Dpf Imoveis e Negocios Imobiliarios,,,12239-020,,,Douglas Pires Ferreira,280614-F,2026-08-26 14:31:35
+,038640-J,Ativo,Vale Ver Negocios Imobiliarios,43.394.082/0001-09,"AV Dos Astronautas Nº 1803 Bairro Jardim da Granja, Sao Jose dos Campos SP",12227-010,dianepsjc@gmail.com,,Diane Pereira da Silva,226819-F,2026-08-26 14:32:05
+,053179-J,Ativo,,,,12244-557,,,Diane Roberta Alves Costa,234281-F,2026-08-26 14:32:57
+,041725-J,Ativo,Dias & Geraldo Imoveis,47.791.148/0001-55,"R Icatu Nº 530 Bairro Conjunto Residencial, Sao Jose dos Campos SP",12237-010,felipe.geraldo85@gmail.com,,Tatiane dos Santos Dias Geraldo,124253-F,2026-08-26 14:33:48
+,024064-J,Ativo,Grupo Elite Imoveis,,,12246-002,,,Bruno Ricardo Dias Marques,074671-F,2026-08-26 14:34:56
+,050399-J,Ativo,Reve Lares dos Sonhos,,"R Siria Nº 45 - Apt 911 Bairro Jardim Oswaldo Cruz, Sao Jose dos Campos SP",12216-530,,,Rodrigo Jackson Pereira,301786-F,2026-08-26 14:36:18
+,021524-J,Ativo,,11.197.107/0001-98,,12246-870,,,Morgana Caetano,186519-F,2026-08-26 14:37:20
+,053878-J,Ativo,Diogo Lapena,,,12224-410,,,Diogo França de Lapena,291545-F,2026-08-26 14:38:17
+,048367-J,Ativo,Dipietro Negocios Imobiliarios,,"R Armando de Oliveira Cobra Nº 50 - Sala 1217 Pav 12 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-002,dipietro@creci.org.br,,Adriano Barbosa de Carvalho,291246-F,2026-08-26 14:38:55
+,045340-J,Ativo,,,,12211-620,,,Silvio Aparecido Bernardo,160734-F,2026-08-26 14:39:51
+,038891-J,Ativo,Dquerido Seguros e Imoveis Rurais,,,12230-083,,,Marco Aurelio Querido,165345-F,2026-08-26 14:40:28
+,023898-J,Ativo,,,"R Serimbura Nº 288 - Sala 12 Bairro Vila Guaianazes, Sao Jose dos Campos SP",12243-360,,,Janaina Barroso Augustinho,102971-F,2026-08-26 14:41:03
+,051089-J,Ativo,Duocorda Seguros & Solucoes Imobiliarias,49.417.953/0001-49,,12246-870,,,Marcos Aurélio Câmara Portilho Castellanos,279341-F,2026-08-26 14:41:48
+,050011-J,Ativo,Ragazini Imoveis,,,12221-490,,,Eduardo de Oliveira Ragazini,235933-F,2026-08-26 14:43:52
+,028705-J,Ativo,Sucesso Imoveis,,,12210-220,,,Ederson Rodolfo Hilgert,044547-F,2026-08-26 14:44:21
+,042588-J,Ativo,Eddie Imoveis,,,12236-121,,,Edilson Bernardino da Silva,223713-F,2026-08-26 14:44:52
+,035478-J,Ativo,Vista Verde Assessoria Imobiliaria,,"R Arapongas Nº 291 Bairro Vila Tatetuba, Sao Jose dos Campos SP",12220-250,,,Edna de Andrade Santos,094388-F,2026-08-26 14:45:31
+,034090-J,Ativo,Salles Brazil Imoveis,,,12235-620,,,Edson Roberto Sales dos Santos,071603-F,2026-08-26 14:47:22
+,040644-J,Ativo,Techimoveis,,,12242-840,,,Eduardo de Moraes Guedes Giraldella,150055-F,2026-08-26 14:48:27
+,043059-J,Ativo,Eduardo Westin Lemos,,,12244-392,,,Eduardo Westin Lemos,242265-F,2026-08-26 14:49:37
+,017272-J,Ativo,,,,12244-000,,,Zelicio Basilio,040070-F,2026-08-26 14:50:40
+,052296-J,Ativo,Ekoah Solucoes Imobiliarias Sjc,,,12220-690,,,Patrick Fagner Lopes,194864-F,2026-08-26 14:51:24
+,022104-J,Ativo,Hogar Imoveis,,"R Bacabal Nº 1280 - Térreo Bairro Pq Industrial, Sao Jose dos Campos SP",12235-680,e.loures@globo.com,,Angela Maria Ferri Loures,045234-F,2026-08-26 14:53:07
+,053862-J,Ativo,,67.004.399/0001-50,"AV Alberto Renart Nº 706 Bairro Jardim Santa Ines I, Sao Jose dos Campos SP",12248-240,,,Eliezer Jose dos Santos,130708-F,2026-08-26 14:55:06
+,047710-J,Ativo,Elite Valle Imoveis,56.161.877/0001-19,"AV Cidade Jardim Nº 714 - Apt 131 a Bairro Jardim Satelite, Sao Jose dos Campos SP",12231-675,andreiaflucchesi@gmail.com,,Andreia de Freitas Lucchesi Miranda,253347-F,2026-08-26 14:55:53
+,030782-J,Ativo,Ethos Imobiliaria,15.246.162/0001-81,,12230-010,,,Elvis Teles Damazio,069075-F,2026-08-26 14:57:09
+,007240-J,Ativo,,,,12245-810,financeiro@embaixatrizimoveis.com.br,,Binder Carlos de Vasconcellos,032647-F,2026-08-26 14:58:00
+,053609-J,Ativo,,65.418.136/0001-61,"R Ezequiel Martins Pereira Nº 51 Bairro Condominio Esplanada, Sao Jose dos Campos SP",12244-800,eliete.rosangela.corretoras@gmail.com,,Rosângela Daudt Polido,180594-F,2026-08-26 14:59:07
+,032096-J,Ativo,Espec Seguros & Imoveis,26.351.777/0001-94,"R Das Arraias Nº 50 - Sala 206 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-330,karendumas@especseguros.com.br,,Carlos Alberto de Almeida Junior,176642-F,2026-08-26 15:00:53
+,023292-J,Ativo,Estima Imoveis,15.146.526/0001-51,"R Ministro Jose Geraldo Rodrigues Alkmin Nº 15 Bairro Bq dos Eucaliptos, Sao Jose dos Campos SP",12233-510,fogal@estimaimoveis.com.br,,Alessandro José Fogal,119636-F,2026-08-26 15:01:57
+,012291-J,Ativo,,,,12225-690,,,Jaromil Marques,027545-F,2026-08-26 15:02:51
+,050150-J,Ativo,Valelar Imoveis,61.961.141/0001-65,"R Doutor Alvaro Augusto de Almeida Nº 50 Bairro Residencial Tatetuba, Sao Jose dos Campos SP",12220-090,everton.gueco@gmail.com,,Everton Leonardo de Oliveira,170847-F,2026-08-26 15:03:33
+,045140-J,Ativo,,,,12246-870,financeiro@excelimoveis.com.br,,Paulo Pinto Cunha,026364-F,2026-08-26 15:05:43
+,027670-J,Ativo,Exclusiva Vale Imoveis,23.036.179/0001-32,,12246-002,,,Marcelo de Camargo,116290-F,2026-08-26 15:06:32
+,049901-J,Ativo,Exclusivita House,,,12242-000,,,Aline Cardoso da Silva,300523-F,2026-08-26 15:07:47
+,024780-J,Ativo,,,,12242-270,,,Bruna Maciel Galvão de França,122964-F,2026-08-26 15:08:28
+,034506-J,Ativo,Imobiliária Parceira,35.353.521/0001-07,"AV Sao Joao Nº 532 Bairro Jardim Esplanada Ii, Sao Jose dos Campos SP",12242-840,,,Fabio Hamurabi Ragognetti Ferreira,096546-F,2026-08-26 15:09:31
+,053168-J,Ativo,,66.182.233/0001-60,"R Aurea Graciliana Dias Nº 74 Bairro Condominio Residenci, Sao Jose dos Campos SP",12244-146,,,Fabiana Costa Pereira Batista,232818-F,2026-08-26 15:10:55
+,046425-J,Ativo,Saito Imoveis,,,12230-000,,,Fabiana Moura Saito,274792-F,2026-08-26 15:12:18
+,025917-J,Ativo,,,"R Euclides Miragaia Nº 433 - Sala 501 Bairro Centro, Sao Jose dos Campos SP",12245-902,,,Fabio Dancuart Asdente,082023-F,2026-08-26 15:12:51
+,037614-J,Ativo,Conecta Imoveis Sjc,,,12244-000,,,Fabio Baroni Flygare,170078-F,2026-08-26 15:14:39
+,029833-J,Ativo,Familiar Imoveis,,"AV Aclimacao Nº 581 Bairro Jardim Alvorada, Sao Jose dos Campos SP",12240-570,carol@familiarimoveissjc.com.br,,João Batista de Carvalho,044890-F,2026-08-26 15:15:10
+,018874-J,Ativo,,,,12230-000,,,Maria Cecilia Enes Gonçalves Farinha,062343-F,2026-08-26 15:15:56
+,038216-J,Ativo,Imobiliária Like,,,12230-011,talita.feliciano87@gmail.com,,Talita Regina Feliciano,201852-F,2026-08-26 15:16:32
+,042536-J,Ativo,Top Imoveis Sjc,49.309.385/0001-62,,12245-591,,,Felipe Curcio Collard,163408-F,2026-08-26 15:17:20
+,046537-J,Ativo,Felipe J Santana Imoveis,55.363.032/0001-43,"R Paraguai Nº 74 Bairro Cidade Vista Verde, Sao Jose dos Campos SP",12223-040,,,Felipe Jose de Santana,195962-F,2026-08-26 15:18:22
+,037604-J,Ativo,Fenix Imoveis Sjc,42.470.699/0001-01,"R Vinte e Um de Abril Nº 777 - Ap 124 Bl B Bairro Monte Castelo, Sao Jose dos Campos SP",12215-290,,,Patricia Vaneza Lopes,114344-F,2026-08-26 15:19:49
+,019591-J,Ativo,Executiva Consultoria Imobiliaria,08.244.302/0001-17,"AV Sao Joao Nº 532 Bairro J Esplanada, Sao Jose dos Campos SP",12242-840,,,Diego Blair da Silva,077543-F,2026-08-26 15:21:19
+,036484-J,Ativo,,,,12244-650,,,Antonio Pedro de Castro Coimbra Fernandes da Silva,124801-F,2026-08-26 15:22:04
+,026320-J,Ativo,Flats Vale,,,12216-780,,,Fernando Amorim Carvalho,122277-F,2026-08-26 15:22:44
+,051515-J,Ativo,,,,12242-431,,,Fernando Luis Soares Filho,077559-F,2026-08-26 15:23:17
+,022859-J,Ativo,Ferreirinha Imoveis,,,12244-392,,,Pedro Antonio Ferreira,043788-F,2026-08-26 15:23:56
+,024385-J,Ativo,H & F Imoveis,,,12243-001,,,Fabio Hamurabi Ragognetti Ferreira,096546-F,2026-08-26 15:25:18
+,038049-J,Ativo,Fhpasquarelli,,,12243-740,,,Fernanda Haydee Pasquarelli,125522-F,2026-08-26 15:26:56
+,050729-J,Ativo,Filipe da Cunha Vaz Negocios Imobiliario,,,12240-710,,,Filipe da Cunha Vaz,221282-F,2026-08-26 15:27:34
+,041384-J,Ativo,Casa 12 Imóveis,,,12246-002,daniellla@contabilidadesupremacia.com.br,,Frank de Souza Queres,119082-F,2026-08-26 15:29:33
+,048129-J,Ativo,Foco Imoveis,,,12242-280,,,Flavio Milena Franceschini,041692-F,2026-08-26 15:30:32
+,023552-J,Ativo,Foco Imoveis,14.904.977/0001-48,,12242-280,,,Flavio Milena Franceschini,041692-F,2026-08-26 15:31:45
+,049477-J,Ativo,Foco Sharks,,,12246-870,focosharksimob@gmail.com,,Hellen Nayara Rezende Ribeiro,300521-F,2026-08-26 15:32:48
+,041666-J,Ativo,Braga Vale Imoveis,,,12237-071,lucasf_braga@creci.org.br,,Lucas Francisco Braga,207955-F,2026-08-26 15:33:50
+,043326-J,Ativo,Clarear Negocios Imobiliarios,,,12242-120,filipe.rochasa@gmail.com,,Filipe Francisco Rocha Fernandes de Sa,230051-F,2026-08-26 15:35:22
+,053898-J,Ativo,,37.978.314/0001-73,,12242-170,,,Filippo Ximenes Ferraz,311431-F,2026-08-26 15:36:28
+,054044-J,Ativo,,,,12232-160,gabriel.grupokaza@gmail.com,,Gabriel Ferraz Lopes,173144-F,2026-08-26 15:37:18
+,035028-J,Ativo,Souza Filho,,,12246-858,,,Gabriel José de Souza Filho,124356-F,2026-08-26 15:38:14
+,039511-J,Ativo,Imobiliaria Ligia Gaioso,35.777.936/0001-08,,12246-190,,,Ligia Gonçalves dos Santos Gaioso,114881-F,2026-08-26 15:38:54
+,027335-J,Ativo,,21.602.192/0001-86,"R Nelson Cesar de Oliveira Nº 470 Bairro Jd das Industrias, Sao Jose dos Campos SP",12240-220,secretaria@gardensjcimoveis.com.br,,Jonas Emerson Valente Gomes,172948-F,2026-08-26 15:40:03
+,040540-J,Ativo,Garufe Imoveis,,,12246-150,,,Maria Fernanda Amorim Garufe Quintino,137367-F,2026-08-26 15:41:09
+,030462-J,Ativo,,20.466.079/0001-58,"AV Alfredo Ignacio Nogueira Penido Nº 255 Sala 1701 - Ed Le Classique Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-000,gean.castro@gc3empreendimentos.com.br,,Genivaldo de Castro Silva Junior,209644-F,2026-08-26 15:42:12
+,030745-J,Ativo,Gdy Imoveis,21.947.907/0001-32,"R Emilio de Menezes Nº 190 Bairro Monte Castelo, Sao Jose dos Campos SP",12215-020,candidogdy@gmail.com,,Candido Francisco de Assis da Silva Godoy,070045-F,2026-08-26 15:43:40
+,006041-J,Ativo,Geração Imóveis,51.629.640/0001-04,"R Doutor Orlando Feirabend Filho Nº 230 - Loja 9 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-190,cassiano@geracaoimoveis.com.br,,Verusca Elaine da Silva,218204-F,2026-08-26 15:44:46
+,035180-J,Ativo,Rocha Imóveis Sjc,37.168.280/0001-51,"R Das Peonias Nº 105 - Sala 005 Bairro Jardim Motorama, Sao Jose dos Campos SP",12224-110,gerson.rocha@creci.org.br,,Gerson Rodrigues Rocha,205372-F,2026-08-26 15:46:30
+,027610-J,Ativo,Gfour Imoveis,12.120.104/0001-19,"R Corifeu de Azevedo Marques Nº 3202 - Ap 62-b Bairro Jd das Industrias, Sao Jose dos Campos SP",12241-040,,,Luiz Antonio Siqueira,101174-F,2026-08-26 15:48:40
+,037749-J,Ativo,Negocio Fechado Consultoria Imobiliaria,31.082.278/0001-89,"R Anna Ortega Traballi Nº 30 - Casa 25 Bairro Vila Sao Geraldo, Sao Jose dos Campos SP",12213-215,negociofechadosjc@gmail.com,,Gilvanildo Moreira de Sousa,181598-F,2026-08-26 16:05:18
+,053969-J,Ativo,,59.494.638/0001-79,"R Iraci Goncalves Ferreira Nº 50 - Apt 308 Bloco 06 Bairro Jardim America, Sao Jose dos Campos SP",12235-181,giovella.imob@gmail.com,,Tobias Costa Veloso,315663-F,2026-08-26 16:09:13
+,041610-J,Ativo,Nova Dimensão Negócios Imobiliários,41.107.019/0001-19,"R Corifeu de Azevedo Marques Nº 3202 - Apt 143 Bloco D Bairro Jardim das Industria, Sao Jose dos Campos SP",12241-040,gisele_dasilvaleme@hotmail.com,,Gisele da Silva Leme,134325-F,2026-08-26 16:11:35
+,049667-J,Ativo,Gisele Ribeiro,57.923.733/0001-15,"AV Joao Rodolfo Castelli Nº 1501 - Bloco 3 Apt 32 Bairro Putim, Sao Jose dos Campos SP",12228-000,legal@azoncontabil.com.br,,Gisele Lima Ribeiro de Oliveira,127157-F,2026-08-26 16:14:04
+,041006-J,Ativo,Glares Consultoria Imobiliária,47.141.606/0001-00,"AV Andromeda Nº 433 - Sala 616 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-001,lucimaralucas@gmail.com,,Lucimara Lucas Monteiro,271376-F,2026-08-26 16:14:42
+,021709-J,Ativo,,12.980.646/0001-61,"R Paraibuna Nº 200 - Lj 3 Bairro J Sao Dimas, Sao Jose dos Campos SP",12245-021,rodrigo.moura@gmimoveis.com,,Rodrigo Gonçalves Moura,096237-F,2026-08-26 16:15:44
+,034827-J,Ativo,Grupo Kaza Aquarius,35.742.652/0001-86,"AV Comendador de Vicente Paulo Penido Nº 444 - Sala 01 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-856,financeiro@grupokaza.com.br,,Evandro Marcio Scarpelli da Costa Alonso,096706-F,2026-08-26 16:17:37
+,036894-J,Ativo,Grupo Kaza Parque,41.219.762/0001-60,"R Bacabal Nº 580 Bairro Parque Industrial, Sao Jose dos Campos SP",12235-680,financeiro@grupokaza.com.br,,Evandro Marcio Scarpelli da Costa Alonso,096706-F,2026-08-26 16:19:14
+,031387-J,Ativo,Grupo Kaza Satelite,28.617.830/0001-81,"R Enseada Nº 391 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-630,financeiro@grupokaza.com.br,,Evandro Marcio Scarpelli da Costa Alonso,096706-F,2026-08-26 16:21:34
+,031388-J,Ativo,Grupo Kaza Urbanova,28.618.143/0001-80,"AV Shishima Hifumi Nº 1956 - Sala 03 Bairro Urbanova, Sao Jose dos Campos SP",12244-000,financeiro@grupokaza.com.br,,Evandro Marcio Scarpelli da Costa Alonso,096706-F,2026-08-26 16:22:55
+,033330-J,Ativo,,33.099.047/0001-03,"R Das Lobelias Nº 30 - Sala 11 Bairro Jd das Industrias, Sao Jose dos Campos SP",12240-460,goldimoveisadm@gmail.com,,Priscila Karine de Sousa,189753-F,2026-08-26 16:23:49
+,032693-J,Ativo,Golden Intermediacoes,30.860.905/0001-00,"AV Antonio Ferreira Vinhas Nº 790 Bairro Cj Res Galo Branco, Sao Jose dos Campos SP",12247-520,ladirosangela@hotmail.com,,Ladi Rosangela Fialho,125265-F,2026-08-26 16:24:38
+,016364-J,Ativo,,01.980.131/0001-45,"R Winston Churchill Nº 681 Bairro J das Industrias, Sao Jose dos Campos SP",12240-681,rinaldotolledo@hotmail.com,,Rinaldo Pereira de Toledo,051165-F,2026-08-26 16:25:58
+,050956-J,Ativo,Mais Real Estate Brasil,42.281.986/0001-65,"R Dos Piquiroes Nº 160 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-020,guilhermeaberle@gpraconsultoria.com,,Guilherme de Pontes Ribas Aberle,217991-F,2026-08-26 16:28:20
+,035269-J,Ativo,Grr Negócios Imobiliários,37.267.284/0001-97,"AV Aclimacao Nº 596 - Sala 02 Bairro Jardim Alvorada, Sao Jose dos Campos SP",12240-570,gustavo.rrusso@gmail.com,,Gustavo Rodrigues Russo,157727-F,2026-08-26 16:30:29
+,019211-J,Ativo,,01.604.076/0001-99,"R Comendador Remo Cesaroni Nº 162 - Sala 3 Bairro Vila Ema, Sao Jose dos Campos SP",12243-020,,,Paulo Augusto Iida,055292-F,2026-08-26 16:32:15
+,044106-J,Ativo,Gregorio House Imoveis,24.343.380/0001-25,"TV Herminio Intrieri Nº 221 - Bl 02 Ap 01 Bairro Vila Rangel, Sao Jose dos Campos SP",12211-463,gregorio.negocios@gmail.com,,Gregório Barbosa Machado,125252-F,2026-08-26 16:32:50
+,035459-J,Ativo,,24.340.964/0001-47,"AV Cidade Jardim Nº 3470 Bairro Bosque Eucaliptos, Sao Jose dos Campos SP",12233-002,grothe@grothelimaimoveis.com.br,,Cleber Soares de Lima,138069-F,2026-08-26 16:33:38
+,043560-J,Ativo,,50.758.029/0001-05,"R Santa Margarida Nº 71 Bairro Jardim Santa Madalen, Sao Jose dos Campos SP",12243-270,contabilidademontezuma@hotmail.com,,Stéfano Nogueira Cabral,192220-F,2026-08-26 16:34:27
+,037668-J,Ativo,Grupo Immobili,27.570.065/0001-29,"AV Mario Frigi Nº 329 - Salao 03 Bairro Res Bosque dos Ipes, Sao Jose dos Campos SP",12236-871,claudinei.marinho@gmail.com,,Claudinei Marinho de Freitas,123932-F,2026-08-26 16:35:14
+,054484-J,Ativo,Legado Negocios Imobiliarios,67.977.019/0001-63,"R Shizuko Iida Nº 38 Bairro Jardim America, Sao Jose dos Campos SP",12235-051,renan@imoveislegacy.com.br,,Renan William Monteiro Sbruzzi,246903-F,2026-08-26 16:36:18
+,018428-J,Ativo,,05.067.030/0001-39,"AV Anchieta Nº 195 Bairro J Nova Europa, Sao Jose dos Campos SP",12242-280,grupoterra@grupoterra.com.br,,Luiz Carrara Neto,067677-F,2026-08-26 16:37:06
+,034238-J,Ativo,,34.677.689/0001-05,"AV Anchieta Nº 195 Bairro Jardim Nova America, Sao Jose dos Campos SP",12242-280,luiz.carrara@grupoterra.com.br,,Luiz Carrara Neto,067677-F,2026-08-26 16:37:57
+,040749-J,Ativo,Grupo Planej,36.718.143/0001-80,"AV Heitor Villa Lobos Nº 1854 Bairro Vila Ema, Sao Jose dos Campos SP",12243-260,carla@artcon-premium.com.br,,Thiago Macedo de Souza,125745-F,2026-08-26 16:39:16
+,019651-J,Ativo,,00.896.410/0001-62,"AV Andromeda Nº 433 - S/116 1 Andar Bairro J Satelite, Sao Jose dos Campos SP",12230-000,hstressoldi@hstressoldi.com.br,,Herbert Tressoldi,066735-F,2026-08-26 16:40:05
+,035957-J,Ativo,,39.269.855/0001-58,"R Manoel Bandeira Nº 820 Bairro Jardim das Industria, Sao Jose dos Campos SP",12240-710,bascondir@terra.com.br,,Hamilton Bairros Scherer,175959-F,2026-08-26 16:41:38
+,022636-J,Ativo,,10.406.347/0001-92,"AV Iguape Nº 366 - Sala 6 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-720,diretoria@habitcia.com.br;contato@habitcia.com.br,,Andre Luiz Tursi Ribeiro,065189-F,2026-08-26 16:42:33
+,048496-J,Ativo,,30.099.598/0001-89,"R Coronel Jose Domingues de Vasconcelos Nº 61 - Apt 2 Bairro Vila Adyana, Sao Jose dos Campos SP",12243-840,mr.mackni@gmail.com,,Marcia Regina Machinievski,082920-F,2026-08-26 16:44:04
+,040387-J,Ativo,Hammer Corretores,43.926.199/0001-96,"AV Durval Messias Queiroga Nº 254 Bairro Cond Res Monaco, Sao Jose dos Campos SP",12244-142,contato@hammercorretores.com.br,,Guilherme Marcolino Pavret,183760-F,2026-08-26 16:44:49
+,032824-J,Ativo,,31.880.831/0001-29,"AV Paraiso Nº 186 Bairro Jardim Paraiso, Sao Jose dos Campos SP",12235-460,bruno@hbimobiliaria.com.br,,Anderson Fabiano Goncalves da Silva,097900-F,2026-08-26 16:45:37
+,022399-J,Ativo,Heloisa Imoveis,13.445.668/0001-94,"R Francisca Maria de Jesus Nº 347 - Sala 703 Bairro Floradas de Sao Jose, Sao Jose dos Campos SP",12230-083,heloisaimoveis97@yahoo.com.br,,Heloisa Eugenia Mitie Kishi,055400-F,2026-08-26 16:46:42
+,048089-J,Ativo,,49.648.356/0001-25,"AV Doutor Mario Galvao Nº 288 Bairro Jardim Bela Vista, Sao Jose dos Campos SP",12209-004,heferraz@icloud.com,,Heloisa Maria Ferraz e Santos,292665-F,2026-08-26 16:47:42
+,035241-J,Ativo,Sh Solucoes Imobiliaria,36.419.580/0001-01,"R Das Seringueiras Nº 82 Bairro Jardim das Industria, Sao Jose dos Campos SP",12241-180,shsolucoesimobiliaria@gmail.com,,Henrique Fabricio Carretoni,195439-F,2026-08-26 16:48:56
+,038654-J,Ativo,Rike Broker Imoveis,32.057.246/0001-96,"R Jose Cobra Nº 421 - Bl a Ap 11 Garage 10 Bairro Palmeiras de Sao Jos, Sao Jose dos Campos SP",12237-821,henriquegeraldo2603@gmail.com,,Henrique Geraldo de Oliveira,049561-F,2026-08-26 16:49:43
+,030649-J,Ativo,Hi Negocios,28.005.250/0001-33,"R Java Nº 174 - Ap 25 Bairro Jardim Paraiso, Sao Jose dos Campos SP",12235-500,felipe.creci@hotmail.com,,Felipe Toledo de Almeida,077666-F,2026-08-26 16:51:14
+,040551-J,Ativo,Hof Imoveis,45.396.020/0001-61,"R Das Baleias Nº 95 - Apt 96 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-290,diego@hofimoveis.com.br,,Luiz Diego de Oliveira Licurci,233989-F,2026-08-26 16:52:01
+,024621-J,Ativo,,10.894.953/0001-02,"R Jose Francisco Pereira Sales Nº 144 Bairro Jardim Veneza, Sao Jose dos Campos SP",12237-090,jorge.fonseca@houseci.com,,Jorge Luiz Fonseca da Silva,079783-F,2026-08-26 16:52:49
+,041896-J,Ativo,Prosperon,47.080.851/0001-55,"AV Nove de Julho Nº 95 - Sala 81 Bairro Jardim Apolo I, Sao Jose dos Campos SP",12243-000,contato@camposecanale.com.br,,Cristovão Sortino Lemos,223017-F,2026-08-26 16:53:56
+,047278-J,Ativo,Real Max 21 Negocios Imobiliarios,55.411.679/0001-01,"R Das Chacaras Nº 351 - Bl A1 Ap 41 Bairro Jardim Oriente, Sao Jose dos Campos SP",12236-080,legal@azoncontabil.com.br,,Isaias Roque de Oliveira,136915-F,2026-08-26 16:55:07
+,032655-J,Ativo,I9vale Imoveis Sjc,31.716.361/0001-62,"AV Sao Joao Nº 2375 - Sala 501 Bairro Jardim das Colinas, Sao Jose dos Campos SP",12242-000,contato@i9vale.com.br,,Maria Helena Faria de Mello,167574-F,2026-08-26 16:56:18
+,043352-J,Ativo,Cazzar Imoveis,50.589.271/0001-00,"R Hondo Nº 451 Bairro Jardim Oriente, Sao Jose dos Campos SP",12236-100,cazzarimoveis@gmail.com,,José Alves Neto,080455-F,2026-08-26 16:58:01
+,017926-J,Ativo,Maciel Negocios Imobiliarios,04.267.947/0001-14,"AV Sao Joao Nº 1654 Bairro V Higienopolis, Sao Jose dos Campos SP",12242-000,adm2.saojoao@imobiliariamaciel.com.br,,Ilson de Sene Maciel,038524-F,2026-08-26 16:58:59
+,026007-J,Ativo,Ideale Imoveis,20.436.947/0001-57,"AV Ironman Victor Garrido Nº 623 - Sala 7 Bairro Lot Urbanova Ii, Sao Jose dos Campos SP",12244-392,adm.idealeimoveis@hotmail.com,,Willem de Barros Rosa,121608-F,2026-08-26 16:59:48
+,054483-J,Ativo,I.m. Imoveis e Promocoes,82.672.643/0001-46,"R Barbara Knippelberg Loureiro Nº 103 - Bl a Apt 2102 Edif a Bairro Vila Ema, Sao Jose dos Campos SP",12243-040,idevalcimaia@uol.com.br,,Idevalci Ferreira Maia,265211-F,2026-08-26 17:01:12
+,047414-J,Ativo,Ihabitat,56.140.097/0001-92,"AV Andromeda Nº 3409 - Sala 07 Bairro Bosque dos Eucalipto, Sao Jose dos Campos SP",12233-000,loterias@loto3contabil.com.br,,Rafael Ferreira,270776-F,2026-08-26 17:03:17
+,043573-J,Ativo,,50.805.925/0001-88,"R Antonio Custodio dos Santos Nº 62 Bairro Res Bosque dos Ipes, Sao Jose dos Campos SP",12236-885,antunesiasd@gmail.com,,Fábio Antunes dos Santos Silva,244776-F,2026-08-26 17:05:28
+,036915-J,Ativo,Campo Brasil Imoveis,38.163.996/0001-29,"AV Princesa Isabel Nº 2125 Bairro Santana, Sao Jose dos Campos SP",12211-620,campobrasilimoveis@gmail.com,,Danilo Primo da Silva,172590-F,2026-08-26 17:06:44
+,050955-J,Ativo,Imobiliaria Cidadetop,62.093.544/0001-00,"R Cinco de Maio Nº 168 Bairro Jardim das Cerejeira, Sao Jose dos Campos SP",12225-581,imobiliariacidadetop@gmail.com,,Abner Alves Nobre Campos,213689-F,2026-08-26 17:08:05
+,013357-J,Ativo,,96.490.487/0001-07,"R Arariboia 245 Nº Bairro Jd Satelite, Sao Jose dos Campos SP",12230-350,,,Haroldo Ferreira,041142-F,2026-08-26 17:10:10
+,010727-J,Ativo,,61.291.704/0001-55,"AV Possidonio Jose de Freitas Nº 1401 Bairro Urbanova, Sao Jose dos Campos SP",12244-010,rozangela@conpac.com.br,,Walter Luongo,012636-F,2026-08-26 17:10:37
+,011348-J,Ativo,,61.872.156/0001-57,"AV Eng Francisco Jose Longo Nº 149 - Sl 96 Bairro J Sao Dimas, Sao Jose dos Campos SP",12245-000,imobiliariaencanto@gmail.com,,Rosydee de Azeredo Velloso,033829-F,2026-08-26 17:14:03
+,032415-J,Ativo,,31.080.800/0001-93,"R Benedito Osvaldo Lecques Nº 51 - Loja 08 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-021,financeiro@francaimobiliaria.com.br,,Carla de Sousa França,084239-F,2026-08-26 17:15:06
+,047604-J,Ativo,Imobiliária Franceschini,57.485.527/0001-70,"AV Sao Joao Nº 2375 - Sala 509 Bairro Jardim das Colinas, Sao Jose dos Campos SP",12242-000,katherinemazzeo@hotmail.com,,Katherine Denisy Carvalho de Souza Mazzeo,282324-F,2026-08-26 17:17:03
+,013521-J,Ativo,,,"R Humaita 50 Sala 05 Nº Bairro Centro, Sao Jose dos Campos SP",12245-040,,,Mario Fujita,022263-F,2026-08-26 17:18:07
+,028971-J,Ativo,Imobiliaria Metropolis,24.815.526/0001-98,"R Paraibuna Nº 330 Bairro Jardim Sao Dimas, Sao Jose dos Campos SP",12245-021,massahaki@ig.com.br,,Julio Satoshi Horie,059115-F,2026-08-26 17:18:28
+,034670-J,Ativo,Imobiliária Predial São José,23.375.701/0001-00,"AV Alfredo Ignacio Nogueira Penido Nº 255 - Sala 607 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-000,ronado@predialsaojose.com.br,,Ronaldo Vilas Boas Goulart de Andrade,124979-F,2026-08-26 17:19:26
+,047134-J,Ativo,Rancho Verde Imoveis,30.613.888/0001-07,"AV Princesa Isabel Nº 1529 Bairro Santana, Sao Jose dos Campos SP",12211-620,imobiliariaranchoverde@gmail.com,,Matilde Malva,202630-F,2026-08-26 17:21:19
+,007329-J,Ativo,,45.398.815/0001-09,"AV Cassiopeia Nº 243 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-011,ana@imobiliariaregional.com.br,,Ana Paula Bertolino,186775-F,2026-08-26 17:22:14
+,037556-J,Ativo,Alkova Imoveis,33.531.519/0001-55,"R Jurema Vieira Medrado Nº 88 - Sala 204 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-180,anapaulaalmeida.mendes@uol.com.br,,Verci Franciscone do Amaral,127686-F,2026-08-26 17:23:41
+,017728-J,Ativo,,03.931.265/0001-00,"AV Eng Francisco Jose Longo Nº 149 - Loja 3 Terreo Bairro J Sao Dimas, Sao Jose dos Campos SP",12245-900,imob.uniao@gmail.com,,José Aparecido dos Santos,019747-F,2026-08-26 17:24:52
+,031929-J,Ativo,New House Empreendimentos Imobiliarios,29.579.853/0001-01,"R Benedito Osvaldo Lecques Nº 51 - Sl Coml 1002 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-021,carlosvelloso7@gmail.com,,Antonio Carlos Azeredo Velloso,163542-F,2026-08-26 17:26:31
+,038485-J,Ativo,,43.408.628/0001-33,"R Turiacu Nº 377 - Sala 02 Bairro Parque Industrial, Sao Jose dos Campos SP",12235-650,processos@satelitecontabil.com.br,,Maria Elsa Villagra Arcos,170182-F,2026-08-26 17:27:28
+,032297-J,Ativo,Imov Negocios Imobiliarios,30.967.267/0001-13,"AV Alfredo Ignacio Nogueira Penido Nº 305 - Sala 304 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-000,adriana@imobiliariaimov.com.br,,Adriana Araujo dos Santos Pereira,194026-F,2026-08-26 17:28:56
+,040826-J,Ativo,,46.465.454/0001-39,"R Euclides Miragaia Nº 394 - Sala 1713 Bairro Centro, Sao Jose dos Campos SP",12245-820,processo@rcacontabilidade.com,,Caio Eduardo Ferreira Marta,082297-F,2026-08-26 17:30:28
+,026179-J,Ativo,Imoveis Aquarius,20.466.230/0001-58,"AV Alfredo Ignacio Nogueira Penido Nº 505 - Loja 03 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-000,fernando.cardoso@creci.org.br,,Fernando Luiz Cardoso,091920-F,2026-08-26 17:31:36
+,044113-J,Ativo,,51.382.142/0001-00,"AV Andromeda Nº 1423 - Sala 2 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-000,archanjo@imoveisarchanjo.com.br,,Regina Madalena Moreira Gonçalves,258799-F,2026-08-26 17:32:52
+,049332-J,Ativo,Imoveis Havan,58.413.664/0001-62,"R Realina de Sao Jose Domingos Nº 70 Bairro Loteamento Floresta, Sao Jose dos Campos SP",12226-354,escritoriolisboa@hotmail.com,,Harilme Miragaia Junior,293836-F,2026-08-26 17:33:44
+,048131-J,Ativo,,44.192.475/0001-00,"R Ipanema Nº 651 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-070,tiana.paulo@gmail.com,,Sebastiana das Gracas Paulo Carneiro,251900-F,2026-08-26 17:34:35
+,023854-J,Ativo,,16.798.604/0001-65,"R Corinto Nº 208 Bairro Bosque dos Eucalipto, Sao Jose dos Campos SP",12233-240,igcarretoni@gmail.com,,Cibele Cristine Campanhola Carretoni,108570-F,2026-08-26 17:35:34
+,019592-J,Ativo,Independence Imoveis,08.259.649/0001-33,"AV Andromeda Nº 433 - Sala 101 Bl Leste Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-000,andre@independenceimoveis.com.br,,Andre Aparecido da Silva,063092-F,2026-08-26 17:37:03
+,054656-J,Ativo,Infinity Imoveis Prime,64.299.976/0001-90,"BLV Villa-lobos Nº 41 - Apt 21 Bloco K Bairro Jardim Aquarius, Sao Jose dos Campos SP",12242-021,carlos.morales.creci147441@gmail.com,,Carlos Martín Morales,147441-F,2026-08-26 17:37:57
+,043960-J,Ativo,,51.409.592/0001-30,"R Gemini Nº 332 - Sala 01 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-180,contato@inovarimob.com.br,,Paula Cibeli de Lima,308513-F,2026-08-26 17:39:30
+,045650-J,Ativo,Inventiva Engenharia e Arquitetura Ltda,53.621.996/0001-19,"R Weber Hans Mahler Nº 140 - Bloco 4b Apt 204 Bairro Loteamento Portal Sa, Sao Jose dos Campos SP",12248-657,eng_alanvieira@outlook.com,,Alan dos Santos Vieira,270993-F,2026-08-26 17:40:30
+,008391-J,Ativo,Invest Imoveis Vp,53.322.459/0001-78,"AV Andromeda Nº 2870 Bairro Bque Eucaliptos, Sao Jose dos Campos SP",12233-001,aloisio@investimoveissjc.com.br,,Aloisio Barbosa Lopes,030229-F,2026-08-26 17:42:04
+,053648-J,Ativo,Invest Valle,30.787.229/0001-89,"AV Doutor Nelson D'avila Nº 1837 - Sala 207 Edif Eco To Bairro Jardim Sao Dimas, Sao Jose dos Campos SP",12245-030,investvalleempreendimento@hotmail.com,,Mateus Henrique dos Santos Gonçalves,234219-F,2026-08-26 17:42:57
+,032926-J,Ativo,Bax Investimentos Imobiliarios,31.832.623/0001-54,"AL Harvey C Weeks Nº 14 - Sala 15 Bairro Cidade Vista Verde, Sao Jose dos Campos SP",12223-830,imoveisaltopadrao@outlook.com,,William Miguel de Alvarenga,168922-F,2026-08-26 17:44:44
+,041585-J,Ativo,Ivanete Ferreira Imóveis,46.947.508/0001-00,"AV Joao Rodolfo Castelli Nº 745 - Sala 04 Bairro Putim, Sao Jose dos Campos SP",12228-000,ivaneteferreiracassemiro@gmail.com,,Ivanete Ferreira Cassemiro da Silva,175217-F,2026-08-26 17:45:38
+,045174-J,Ativo,Palacio Broker Imobiliária,52.844.634/0001-24,"AV Jose Augusto Teixeira Nº 727 Bairro Torrao de Ouro Ii, Sao Jose dos Campos SP",12229-840,palacioconsultoria@gmail.com,,Jeidzon Guimarães Palacio Almeida,267783-F,2026-08-26 17:46:50
+,034100-J,Ativo,Imperall Imóveis,19.677.986/0001-67,"R Doutor Orlando Feirabend Filho Nº 230 - Sala 1506 Torre C Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-190,jocimarlopes@uol.com.br,,Jocimar Lopes,135799-F,2026-08-26 17:48:41
+,024732-J,Ativo,,18.372.164/0001-05,"AV Iguape Nº 1013 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-720,contafarma@farmaconde.com.br,,Jose Roberto de Souza,127208-F,2026-08-26 17:49:57
+,052896-J,Ativo,Casanova Negocios Imobiliarios,21.187.464/0001-29,"R Doutor Orlando Feirabend Filho Nº 230 - Sala 809 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-190,j_ricardolopes@hotmail.com,,José Ricardo Lopes dos Santos,067671-F,2026-08-26 17:52:01
+,042196-J,Ativo,,48.756.598/0001-70,"AL Jose Paula da Silva Nº 41 Bairro Vila Betania, Sao Jose dos Campos SP",12245-489,josuekawanishi@remax.com.br,,Josué Tadashi Kawanishi,254444-F,2026-08-26 17:54:12
+,027754-J,Ativo,Silverio Imoveis,15.622.329/0001-61,"AV Andromeda Nº 2810 Bairro Bosque dos Eucalipto, Sao Jose dos Campos SP",12233-000,urbanova@outlook.com,,José Aparecido Silverio,082249-F,2026-08-26 17:56:01
+,033063-J,Ativo,,31.931.571/0001-73,"R Heitor Vieira Junior Nº 191 - Bl a - Ap 14 Bairro Altos do Esplanada, Sao Jose dos Campos SP",12246-013,juliano@vinac.com.br,,Juliano Carvalho Monteiro,188436-F,2026-08-26 17:57:11
+,034079-J,Ativo,Agencia Imobil,,"R Lamartine Maia da Silva Torres Nº 177 - Loja 07 Bairro Bq dos Eucaliptos, Sao Jose dos Campos SP",12232-380,agenciaimobilsjc@gmail.com,,Jorge Fonseca,173175-F,2026-08-26 17:57:59
+,033613-J,Ativo,,27.446.690/0001-63,"R Turmalina Nº 131 Bairro Jd Sao Jose Centro, Sao Jose dos Campos SP",12215-750,,,Juliano Govedice Resende,192767-F,2026-08-26 17:59:11
+,026576-J,Ativo,Menino do Rosario Imoveis,10.555.858/0001-76,"R Cisne Nº 360 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-140,meninodorosario@hotmail.com,,Juscemar Menino do Rosario,081166-F,2026-08-26 18:00:37
+,054686-J,Ativo,Maximus Transacoes Imobiliarias,52.502.664/0001-52,,12246-130,ronaldonascimento.cap@gmail.com,,José Ronaldo Santos do Nascimento,269717-F,2026-08-26 18:01:45
+,037433-J,Ativo,Atencao Investimentos Imobiliarios,35.752.299/0001-15,,12247-610,cleideguimaraes2311@gmail.com,,Jacinta de Fatima Sousa Guimarães,138161-F,2026-08-26 18:04:03
+,041092-J,Ativo,,46.528.544/0001-21,,12242-280,christiano.pereira@lwmail.com.br,,Thiago Amaro dos Santos,159474-F,2026-08-26 18:09:30
+,024516-J,Ativo,Horizonte Imoveis,07.026.363/0001-45,"AV Ironman Victor Garrido Nº 563 - Sala 07 Bairro Lot Urbanova Ii, Sao Jose dos Campos SP",12244-392,janelopesfaria@horizonteimoveis.com;janelopesfaria@hotmail.com,,Jane Cristina Lopes Faria,040594-F,2026-08-26 18:11:49
+,048906-J,Ativo,Jarbas & Lopes Negocios Imobiliarios,59.048.436/0001-01,"R Doutor Orlando Feirabend Filho Nº 230 - Sala 1506 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-190,consultoriajarbas@outlook.com,,Jarbas Lopes,156219-F,2026-08-26 18:13:19
+,052362-J,Ativo,Mangelli Consultoria Imobiliaria,64.472.767/0001-04,"AV Alfredo Ignacio Nogueira Penido Nº 335 - Sala 706 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-000,adm@mangelli.com.br,,Juliana Cristine Mangelli,311515-F,2026-08-26 18:15:28
+,042623-J,Ativo,Jeffer Mendes Imoveis,29.661.379/0001-62,"R Professora Maria Lima Cesar Nº 74 Bairro Jardim Paulista, Sao Jose dos Campos SP",12216-141,jefferm36@gmail.com,,Jeffer Mendes,191982-F,2026-08-26 18:16:57
+,031308-J,Ativo,J S Rodrigues,29.085.130/0001-56,"R Santarem Nº 303 - Ap 34 Bairro Parque Industrial, Sao Jose dos Campos SP",12235-550,jeffersonpericias45@gmail.com,,Jefferson de Cassia Rodrigues,086705-F,2026-08-26 18:18:47
+,052436-J,Ativo,Solenz Imoveis,46.316.837/0001-45,"R Corifeu de Azevedo Marques Nº 3303 - Apt 14 Bloco 14 Bairro Jardim das Industria, Sao Jose dos Campos SP",12241-040,corretora.ssilva@outlook.com,,Jennifer Aline Sousa Silva,251009-F,2026-08-26 18:19:54
+,026708-J,Ativo,,20.016.386/0001-37,"AV Cassiano Ricardo Nº 601 - Sala 84 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-870,denis@jhbimoveis.com.br,,Claudio da Costa,068181-F,2026-08-26 18:21:30
+,048707-J,Ativo,Grupo Jhfl Imoveis e Negocios,55.371.079/0001-59,"R Bacabal Nº 140 - Sala 21 Bairro Parque Industrial, Sao Jose dos Campos SP",12235-680,heitorbovis@gmail.com,,Jackson Amancio Pinto,286161-F,2026-08-26 18:22:30
+,042680-J,Ativo,,48.477.018/0001-05,"AV Cassiano Ricardo Nº 401 - Sala 904 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-870,raphaela.comercial@contabilnetvale.com.br,,Plinio Di Giaimo Cunha,241342-F,2026-08-26 18:23:37
+,037028-J,Ativo,Zona Sul Imoveis,41.352.390/0001-46,"AV Elisio Galdino Sobrinho Nº 566 Bairro Cidade Morumbi, Sao Jose dos Campos SP",12236-740,exatagama@hotmail.com,,Geane Maria dos Santos,163670-F,2026-08-26 18:24:59
+,033344-J,Ativo,I360v,33.128.332/0001-05,"R Siria Nº 71 - Sala 23 Bairro Jardim Oswaldo Cruz, Sao Jose dos Campos SP",12216-530,jerri@emplanej.com.br,,Jerri Lemes Santana,085565-F,2026-08-26 18:25:44
+,025400-J,Ativo,,10.449.739/0001-39,"R Juiz David Barrilli Nº 304 - 6º Andar Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-200,,,José Rodolfo Cury Faustino,030620-F,2026-08-26 18:26:58
+,051195-J,Ativo,Joanny Imoveis,61.359.445/0001-57,"R Doutor Tito Roberto Liberato Nº 83 - Sala 609 Bairro Parque Residencial a, Sao Jose dos Campos SP",12246-150,jopaulinha2025@gmail.com,,Sergio Yuji Tsuruda,176585-F,2026-08-26 18:27:38
+,053743-J,Ativo,Joao Ferreira Negocios Imobiliarios,66.843.086/0001-22,"R Emilio Marelo Nº 182 - Apt 703 Bloco 7 Bairro Jardim das Industria, Sao Jose dos Campos SP",12241-200,emaildojoao.sjc@gmail.com,,João Henrique Capdeville Albuquerque Ferreira,234934-F,2026-08-26 18:28:30
+,043031-J,Ativo,,48.582.535/0001-44,"R Leonardo Pinto da Cunha Nº 85 Bairro Vila Higienopolis, Sao Jose dos Campos SP",12243-760,joaoloboconsultor@gmail.com,,João Vicente Fernandes Lobo Miranda,242785-F,2026-08-26 18:29:40
+,046868-J,Ativo,J & J Investimentos e Negocios Imobiliar,12.205.445/0001-97,"R Padre Jose Maria da Silva Ramos Nº 281 Bairro Jd Paraiso do Sol, Sao Jose dos Campos SP",12225-160,jj.investimentosimobiliarios@gmail.com,,Joaquina Odete Rodrigues,254855-F,2026-08-26 18:30:41
+,034250-J,Ativo,Ferreira Imobiliaria,23.594.445/0001-42,"AV Joao Rodolfo Castelli Nº 1836 Bairro Putim, Sao Jose dos Campos SP",12228-000,jffcorretor@gmail.com,,José Ferreira Filho,128149-F,2026-08-26 18:32:06
+,029831-J,Ativo,Oten Imoveis,26.244.108/0001-13,"R Benedito Osvaldo Lecques Nº 51 - Sala 1207 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-021,adm@otenimoveis.com.br,,Jose Francisco de Oliveira Neto,161978-F,2026-08-26 18:33:00
+,030053-J,Ativo,Imobiliaria Nova Vale,27.091.748/0001-01,"R Capricornio Nº 12 Bairro Jardim da Granja, Sao Jose dos Campos SP",12227-370,joserpf@creci.org.br,,José Roberto Pereira da Fonseca,071868-F,2026-08-26 18:34:20
+,043102-J,Ativo,Joseense Imóveis e Contabilidade,49.947.169/0001-42,"R Pompeia Nº 92 Bairro Bosque dos Eucalipto, Sao Jose dos Campos SP",12233-440,cleberfsn@gmail.com,,Cleber Frediano Siqueira Nogueira,261009-F,2026-08-26 18:35:31
+,032231-J,Ativo,Bethel Lar Imoveis / Bl3 Gestao,13.502.144/0001-98,"R Aparecida do Norte Nº 265 - Ap 34 Bairro Vila Nova Conceicao, Sao Jose dos Campos SP",12231-080,bethellarimoveis@gmail.com,,Jarvesson Paulino Rodrigues,183542-F,2026-08-26 18:36:15
+,053731-J,Ativo,Thrifty Imoveis,63.552.072/0001-61,"R Haiti Nº 101 - Bloco a Apt 11 Bairro Jardim America, Sao Jose dos Campos SP",12235-070,joaodageracao@hotmail.com,,João Paulo de Souza,057280-F,2026-08-26 18:37:06
+,046101-J,Ativo,Jussara Gomes Investimentos Imobiliários,54.575.792/0001-51,"R Joao Fonseca dos Santos Nº 20 - Ap 93 Bairro Floradas de Sao Jose, Sao Jose dos Campos SP",12230-088,spereira.leonardop@gmail.com,,Jussara Gomes dos Santos,237946-F,2026-08-26 18:38:05
+,042190-J,Ativo,Kcl Imoveis,48.700.749/0001-78,"R Kiyoshi Enomoto Nº 158 - Bloco 2 Apt 65 Bairro Jardim San Marino, Sao Jose dos Campos SP",12235-831,legal@azoncontabil.com.br,,Karina Cardoso Lemos,225606-F,2026-08-26 18:38:51
+,048773-J,Ativo,Ela Consultoria Imobiliária,59.350.875/0001-66,"R Heitor Vieira Junior Nº 191 - Bloco B Apt 14 Bairro Altos do Esplanada, Sao Jose dos Campos SP",12246-013,piccinin.karen@gmail.com,,Karen Jaqueline Piccinin Costa,264619-F,2026-08-26 18:39:31
+,050572-J,Ativo,Katia Melo Imoveis,58.290.395/0001-94,"R Polar Nº 280 - Apto 62 Bairro Jardim Satelite, Sao Jose dos Campos SP",12230-240,imoveis.katiamelo@gmail.com,,Kátia Regina Brasil Melo,212705-F,2026-08-26 18:40:54
+,046955-J,Ativo,,55.671.346/0001-03,"R Sebastiao Humel Nº 171 - Sala 702 Bairro Centro, Sao Jose dos Campos SP",12210-200,kaizenimob@gmail.com,,Tainan Felipe Alves de Moraes,190425-F,2026-08-26 18:41:43
+,029281-J,Ativo,Grupo Kalos Negocios Imobiliarios,14.819.092/0001-40,"AV Alfredo Ignacio Nogueira Penido Nº 255 - Sala 604 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-000,rafaellanicodemos@innovaimob.com.br,,Debora Avelino dos Santos Silva,256185-F,2026-08-26 18:42:40
+,042192-J,Ativo,Kamoei Empreendimentos Imobiliarios,48.000.534/0001-44,"R Luiz Gonzaga Teixeira Leite Nº 14 Bairro Jardim Margareth, Sao Jose dos Campos SP",12243-550,juridico@camposecanale.com.br,,Fernanda Namiye Kamoei,228409-F,2026-08-26 18:43:48
+,025027-J,Ativo,Grupo Kaza Negocios Imobiliários,12.166.766/0001-20,"AV Nove de Julho Nº 1320 Bairro Jardim Apolo, Sao Jose dos Campos SP",12243-001,financeiro@grupokaza.com.br,,Evandro Marcio Scarpelli da Costa Alonso,096706-F,2026-08-26 18:44:43
+,028239-J,Ativo,Royal Consultoria Imobiliaria,20.799.625/0001-72,"R Jesus Garcia Nº 112 - Ap 124 Bairro Cond Royal Park, Sao Jose dos Campos SP",12246-875,keniara.investimentos@gmail.com,,Kenia Nascimento Di Salvo,141381-F,2026-08-26 18:45:54
+,045989-J,Ativo,Trindade Vale Imóveis,54.555.581/0001-57,"AV Vicente Carlos Corra Nº 60 - Sala 4 Bairro Loteamento Floresta, Sao Jose dos Campos SP",12226-397,trindadevale.sjc@gmail.com,,Kennedy Luiz Corrêa de Carvalho,266242-F,2026-08-26 18:46:39
+,011827-J,Ativo,,65.039.208/0001-60,"R Araraquara Nº 27 - S/7 Bairro Jd das Industrias, Sao Jose dos Campos SP",12240-270,bxf.belo@gmail.com,,Belarmino Xavier de Franca,036588-F,2026-08-26 18:47:29
+,019622-J,Ativo,Kogake Imoveis,03.612.692/0001-17,"R Justino Cobra Nº 90 Bairro V Ema, Sao Jose dos Campos SP",12243-030,,,Ronaldo Ken Kogake,067964-F,2026-08-26 18:48:24
+,031405-J,Ativo,,26.295.868/0001-50,"AV Alfredo Ignacio Nogueira Penido Nº 255 - Sala 1605 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-000,adm@kprnegocios.com.br,,Joao Francisco Sawaya de Lima,145703-F,2026-08-26 18:49:09
+,052120-J,Ativo,Karla Valente Negocios Imobiliarios,64.247.987/0001-26,"R Izola Gerdulo Poli Nº 58 - Apt 708 Bairro C R Colinas Paratehy, Sao Jose dos Campos SP",12244-101,karlpassos.valente@gmail.com,,Karla Passos Valente,237464-F,2026-08-26 18:50:01
+,027361-J,Ativo,Attiva Imoveis,22.476.548/0001-45,"AV Barao do Rio Branco Nº 264 Bairro Jardim Esplanada, Sao Jose dos Campos SP",12242-800,lazaro.attiva@gmail.com,,Cesar Augusto Hernandes Alves Ribeiro,070524-F,2026-08-26 18:50:45
+,031356-J,Ativo,Empretade Center,28.582.107/0001-04,"AV Jorge Zarur Nº 431 - Bl B Ap 1001 Bairro Vila Ema, Sao Jose dos Campos SP",12243-081,rabelo@martinierabelo.com.br,,Luiz Felipe Miragaia Rabelo,180123-F,2026-08-26 18:51:30
+,031300-J,Ativo,Vinhas Consultoria Imobiliaria,29.079.150/0001-14,"AV Alfredo Ignacio Nogueira Penido Nº 300 - Sala 12 Bairro Pq Res Aquarius, Sao Jose dos Campos SP",12246-000,contato@vinhasimobiliaria.com.br,,Luis Felipe Costa Vinhas,104928-F,2026-08-26 18:52:20
+,038277-J,Ativo,Lailson Teixeira Inteligencia Imobiliari,43.281.474/0001-61,"R Benedito da Silva Ramos Nº 20 - Sala 302 Bairro Jardim Esplanada Ii, Sao Jose dos Campos SP",12242-650,lailsonyoshua@gmail.com,,Lailson Teixeira de Souza,194128-F,2026-08-26 18:53:20
+,050120-J,Ativo,Landar Imoveis,59.903.746/0001-58,"AV Sao Joao Nº 2200 - Sala 416 Bairro Jardim das Colinas, Sao Jose dos Campos SP",12242-000,dilma.nogueira@yahoo.com.br,,Dilma Ramos Nogueira,236758-F,2026-08-26 18:54:21
+,045529-J,Ativo,Lar & Cia Sjc Negocios Imobiliarios,53.528.538/0001-30,"R Dom Gabriel Paulino Bueno do Couto Nº 30 Bairro Parque Santa Rita, Sao Jose dos Campos SP",12227-260,diretoria@larecompanhia.com.br,,Luciano Pinheiro dos Santos,257401-F,2026-08-26 18:55:12
+,051902-J,Ativo,,,,12225-751,,,Lara Oliveira de Santis,226530-F,2026-08-26 18:55:53
+,041662-J,Ativo,Lb Eficiencia e Consultoria,,,12242-650,,,Luciana Andrade Brito,063530-F,2026-08-26 18:56:20
+,052900-J,Ativo,Lc & Oliveira Negocios Imobiliarios,,,12244-541,,,Luis Cesar de Oliveira,105370-F,2026-08-26 18:56:43
+,049307-J,Ativo,Casa Nova Imóveis,,,12230-720,,,Leila Pires Araujo,078302-F,2026-08-26 18:57:06
+,019118-J,Ativo,Alvorada Consultoria de Imoveis,,,12240-540,,,Antonio Lemes dos Santos Filho,032134-F,2026-08-26 18:57:34
+,038991-J,Ativo,Levecasa,,,12235-680,,,Douglas Santos de Jesus,242138-F,2026-08-26 18:57:56
+,041594-J,Ativo,,,,12240-570,,,Luis Fernando da Silva,173430-F,2026-08-26 18:58:19
+,038850-J,Ativo,Otten Imoveis,,,12246-021,,,Leonardo Cezar Cursino Ramos,148085-F,2026-08-26 18:58:42
+,053350-J,Ativo,Fraiha,,,12240-760,,,Ligia Fraiha,225861-F,2026-08-26 18:59:05
+,037093-J,Ativo,Dna Imoveis,,,12246-190,,,João Cleber Maciel Soares de Lima,130746-F,2026-08-26 18:59:28
+,053118-J,Ativo,,,,12246-020,,,Carlos Roberto Silvério,162406-F,2026-08-26 18:59:55
+,043827-J,Ativo,Livia Rachid Imoveis,,,12244-857,,,Livia Rachid de Paula Oliveira,257851-F,2026-08-26 19:00:27
+,010740-J,Ativo,Leah Imobiliaria e Consultoria,,,12243-260,,,Lea Maria Barreto Boudet Fernandes,019540-F,2026-08-26 19:00:49
+,029765-J,Ativo,Localiza Negócios Imobiliários,,,12242-840,,,Juscelino Borges de Toledo,074837-F,2026-08-26 19:01:12
+,052939-J,Ativo,,,,12246-180,,,Dimas Benedito Azevedo,235107-F,2026-08-26 19:01:35
+,032332-J,Ativo,Lopes e Brum Imobiliaria,,,12246-190,,,Jarbas Lopes,156219-F,2026-08-26 19:01:57
+,054082-J,Ativo,Flq Imoveis,,,12210-131,,,Vanessa Lopes da Silva,303924-F,2026-08-26 19:02:25
+,042210-J,Ativo,Imoveis Advisors,,,12215-070,,,Lucas Tatsuo Midorikawa,114210-F,2026-08-26 19:02:48
+,036952-J,Ativo,Lw8 Imoveis,,,12248-450,,,Lucas William de Jesus,158771-F,2026-08-26 19:03:11
+,035906-J,Ativo,,,,12233-380,,,Luciana Santana Carneiro,141394-F,2026-08-26 19:03:33
+,045122-J,Ativo,House Vale Venda e Aluguel,,,12243-630,,,Luciano da Silva,054112-F,2026-08-26 19:04:01
+,046151-J,Ativo,Vinebili Consultoria Imobiliaria,,,12230-001,,,Lucimara Lucas Monteiro,271376-F,2026-08-26 19:04:24
+,048286-J,Ativo,,,,12236-481,,,Luis Alexandre Peixoto de Vasconcellos,213981-F,2026-08-26 19:04:52
+,044687-J,Ativo,Lj Imobiliaria,,,12236-442,,,Luiz Donizetti de Vasconcellos Jordao,067924-F,2026-08-26 19:05:14
+,040207-J,Ativo,Campos Imoveis,,,12237-000,,,Luiz Alberto Marques Campos,059437-F,2026-08-26 19:05:37
+,051263-J,Ativo,Brandani Consultoria Imobiliaria,,,12230-060,,,Luiz Paulo Alves,217756-F,2026-08-26 19:06:00
+,052860-J,Ativo,Lumea Curadoria Imobiliaria,,,12244-885,,,Ludmila Satie Tagawa,295728-F,2026-08-26 19:06:22
+,050659-J,Ativo,M & a Solucoes e Negocios Imobiliarios,,,12245-641,,,Michelle Maria da Silva Cardoso,202643-F,2026-08-26 19:06:45
+,034757-J,Ativo,,,,12209-002,,,Marina Aparecida Martins das Nevez,198050-F,2026-08-26 19:07:10
+,047156-J,Ativo,Imobiliaria Morada Sul,,,12233-593,,,Matilde Maria Guedes Alves de Oliveira,032972-F,2026-08-26 19:07:34
+,028534-J,Ativo,Moises Imoveis,,,12235-340,,,Moises Barbosa dos Santos,083968-F,2026-08-26 19:07:57
+,038646-J,Ativo,Brokerssjc,,,12242-000,,,Michelly Dayany Molas de Oliveira,127393-F,2026-08-26 19:08:19
+,043848-J,Ativo,Imobiliaria Araujo Guimaraes,,,12242-000,,,Marcelo Guimaraes da Silva,265227-F,2026-08-26 19:08:42
+,011956-J,Ativo,,,,12230-001,,,Ilson de Sene Maciel,038524-F,2026-08-26 19:09:06
+,051097-J,Ativo,Magalhaes e Valdirene Consultoria Imobil,,,12233-001,,,Brayan Cristian Aparecido da Silva Magalhães,305783-F,2026-08-26 19:09:28
+,044033-J,Ativo,Magali Imoveis de Leilao Judicial e Extr,,,12209-020,,,Magali dos Passos Moreira,113698-F,2026-08-26 19:09:51
+,028794-J,Ativo,,,,12243-750,,,Paula Yumi Takamori,141008-F,2026-08-26 19:10:14
+,053288-J,Ativo,Grupo Male,,,12242-650,,,Marcos Costa Betencorte,318089-F,2026-08-26 19:10:37
+,054671-J,Ativo,,,,12235-180,,,Marcelo Malentacchi Lacerda,137679-F,2026-08-26 19:11:00
+,052181-J,Ativo,Malone Negocios Imobiliarios,,,12246-250,,,Maurício de Castro Campos,236236-F,2026-08-26 19:11:23
+,017542-J,Ativo,,,,12242-000,,,Elizabete Fernandes Bacigalupo,054372-F,2026-08-26 19:11:46
+,030221-J,Ativo,A.x Negocios Imobiliarios,,,12221-709,,,Marcelo Xavier da Silva,116955-F,2026-08-26 19:12:08
+,027458-J,Ativo,Constancio Negocios Imobiliarios,,,12246-858,,,Marcos Antonio Constâncio,139166-F,2026-08-26 19:12:26
+,051974-J,Ativo,Lopes&bueno Consultoria e Negocios,,,12242-001,,,Marcos Bueno de Oliveira,290743-F,2026-08-26 19:12:50
+,043072-J,Ativo,Crisgandolpho Imoveis,,,12246-130,,,Maria Cristina de Morais Gandolpho,254244-F,2026-08-26 19:13:18
+,044881-J,Ativo,,,,12246-021,,,Maria de Fatima de Carvalho,201057-F,2026-08-26 19:13:48
+,053712-J,Ativo,,,,12243-260,,,Mariana Mahlmann de Almeida,316978-F,2026-08-26 19:14:16
+,038259-J,Ativo,Simoes Imoveis Sjc,,,12246-021,,,Mario Roberto Simoes Junior,114954-F,2026-08-26 19:14:40
+,054058-J,Ativo,Martelo Imoveis,,,12246-260,,,Miguel Rafael Barbosa de Morais,322562-F,2026-08-26 19:15:04
+,050411-J,Ativo,,,,12221-150,,,Guilherme Martini Ribeiro,245848-F,2026-08-26 19:15:29
+,037690-J,Ativo,Gs Dias Imoveis,,,12237-828,,,Silvia Cristina Martins Dias,133290-F,2026-08-26 19:15:54
+,052757-J,Ativo,,,,12215-090,,,Mateus Santos Teixeira,205501-F,2026-08-26 19:16:17

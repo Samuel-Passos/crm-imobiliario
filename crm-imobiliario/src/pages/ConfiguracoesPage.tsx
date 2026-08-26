@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { supabase } from '../lib/supabase'
 import './ConfiguracoesPage.css'
 
 const ROBO_URL = 'http://localhost:8766'
@@ -14,7 +15,7 @@ export function ConfiguracoesPage() {
     const [settings, setSettings] = useState<Settings | null>(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
-    const [activeTab, setActiveTab] = useState<'geral' | 'adb' | 'api' | 'infra'>('geral')
+    const [activeTab, setActiveTab] = useState<'geral' | 'adb' | 'api' | 'infra' | 'scraper'>('geral')
 
     // ── Status em tempo real (USB e Wi-Fi separados) ──────────────────────
     const [usbDevice, setUsbDevice] = useState<{ serial: string; model: string } | null>(null)
@@ -34,9 +35,11 @@ export function ConfiguracoesPage() {
     const [qrVisivel, setQrVisivel] = useState(false)
     const [diagRunning, setDiagRunning] = useState(false)
     const [savedWifiHost, setSavedWifiHost] = useState('')
+    const [scraperConfig, setScraperConfig] = useState<any>(null)
 
     useEffect(() => {
         carregarSettings()
+        carregarScraperConfig()
         carregarWifiHost()
         const timer = setInterval(checkStatus, 3000)
         return () => clearInterval(timer)
@@ -99,6 +102,7 @@ export function ConfiguracoesPage() {
         setSaving(true)
         const tid = toast.loading('Salvando alterações...')
         try {
+            if (activeTab === 'scraper') await salvarScraperConfig()
             const res = await fetch(`${ROBO_URL}/adb/settings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -109,6 +113,38 @@ export function ConfiguracoesPage() {
             else toast.error(data.mensagem || 'Erro ao salvar.', { id: tid })
         } catch { toast.error('Falha de conexão.', { id: tid }) }
         finally { setSaving(false) }
+    }
+
+    
+    async function carregarScraperConfig() {
+        try {
+            const res = await fetch(`${ROBO_URL}/scraper/config`)
+            const data = await res.json()
+            if (data.ok && data.config) setScraperConfig(data.config)
+        } catch (e) {
+            console.error("Catch Scraper Config:", e)
+        }
+    }
+
+    async function salvarScraperConfig() {
+        if (!scraperConfig) return
+        setSaving(true)
+        const tid = toast.loading('Salvando Configurações do Scraper...')
+        try {
+            const res = await fetch(`${ROBO_URL}/scraper/config`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(scraperConfig)
+            })
+            const data = await res.json()
+            if (!data.ok) throw new Error("Erro no backend")
+            toast.success('Configurações do Scraper aplicadas! 🚀', { id: tid })
+        } catch { toast.error('Erro ao salvar.', { id: tid }) }
+        finally { setSaving(false) }
+    }
+    
+    const handleScraperChange = (key: string, value: any) => {
+        setScraperConfig((prev: any) => prev ? { ...prev, [key]: value } : { url_coleta_padrao: '', limite_paginas_fase1: 100, limite_repetidos_fase1: 60, lote_fase2: 50, lote_fase2_5: 50, lote_geocoder: 20, lote_extracao: 5, lote_script1: 5, lote_script2: 5, lote_script3: 5, [key]: value })
     }
 
     const handleChange = (key: string, value: string | number) => {
@@ -284,6 +320,7 @@ export function ConfiguracoesPage() {
                     <Tab active={activeTab === 'adb'} onClick={() => setActiveTab('adb')} icon="📱" label="Celular (ADB)" />
                     <Tab active={activeTab === 'api'} onClick={() => setActiveTab('api')} icon="🔌" label="APIs & Chaves" />
                     <Tab active={activeTab === 'infra'} onClick={() => setActiveTab('infra')} icon="💾" label="Infraestrutura" />
+                    <Tab active={activeTab === 'scraper'} onClick={() => setActiveTab('scraper')} icon="🕷️" label="Robô Scraper" />
                 </nav>
 
                 <main className="config-section">
@@ -532,6 +569,42 @@ export function ConfiguracoesPage() {
                                     <Field label="Duração Chamada (s)" type="number" value={settings?.ADB_DELAY_ABERTURA_CALL} onChange={(v: any) => handleChange('ADB_DELAY_ABERTURA_CALL', parseInt(v))} />
                                     <Field label="SMS Limite Diário" type="number" value={settings?.SMS_LIMIT_DAILY} onChange={(v: any) => handleChange('SMS_LIMIT_DAILY', parseInt(v))} />
                                     <Field label="SMS Lote" type="number" value={settings?.SMS_BATCH_SIZE} onChange={(v: any) => handleChange('SMS_BATCH_SIZE', parseInt(v))} />
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    
+                    {/* ── Robô Scraper ── */}
+                    {activeTab === 'scraper' && (
+                        <>
+                            <div className="config-group">
+                                <div className="config-group-title">Base de Coleta (OLX)</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    <Field label="URL Padrão de Extração" value={scraperConfig?.url_coleta_padrao || ''} onChange={(v: any) => handleScraperChange('url_coleta_padrao', v)} placeholder="Cole o link da OLX..." />
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
+                                        <Field label="Limite de Páginas (Fase 1)" type="number" value={scraperConfig?.limite_paginas_fase1 || 0} onChange={(v: any) => handleScraperChange('limite_paginas_fase1', parseInt(v) || 0)} />
+                                        <Field label="Limite Anúncios Repetidos (Fase 1)" type="number" value={scraperConfig?.limite_repetidos_fase1 || 0} onChange={(v: any) => handleScraperChange('limite_repetidos_fase1', parseInt(v) || 0)} />
+                                        <Field label="Lote Extração (Fase 2)" type="number" value={scraperConfig?.lote_fase2 || 0} onChange={(v: any) => handleScraperChange('lote_fase2', parseInt(v) || 0)} />
+                                        <Field label="Lote Filtro (Fase 2.5)" type="number" value={scraperConfig?.lote_fase2_5 || 0} onChange={(v: any) => handleScraperChange('lote_fase2_5', parseInt(v) || 0)} />
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="config-group">
+                                <div className="config-group-title">Limites das Automações</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                                    <Field label="Lote Google Maps" type="number" value={scraperConfig?.lote_geocoder || 0} onChange={(v: any) => handleScraperChange('lote_geocoder', parseInt(v) || 0)} />
+                                    <Field label="Lote Extrator Telefone" type="number" value={scraperConfig?.lote_extracao || 0} onChange={(v: any) => handleScraperChange('lote_extracao', parseInt(v) || 0)} />
+                                </div>
+                            </div>
+                            
+                            <div className="config-group">
+                                <div className="config-group-title">Funil do Chat OLX</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                                    <Field label="Envios Script 1" type="number" value={scraperConfig?.lote_script1 || 0} onChange={(v: any) => handleScraperChange('lote_script1', parseInt(v) || 0)} />
+                                    <Field label="Envios Script 2" type="number" value={scraperConfig?.lote_script2 || 0} onChange={(v: any) => handleScraperChange('lote_script2', parseInt(v) || 0)} />
+                                    <Field label="Envios Script 3" type="number" value={scraperConfig?.lote_script3 || 0} onChange={(v: any) => handleScraperChange('lote_script3', parseInt(v) || 0)} />
                                 </div>
                             </div>
                         </>

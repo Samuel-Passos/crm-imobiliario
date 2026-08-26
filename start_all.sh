@@ -164,7 +164,7 @@ fi
 # ── Aguarda subir e verifica ──────────────────────────────────────────────────
 echo ""
 echo -e "${YELLOW}⏳ Aguardando serviços subirem...${NC}"
-sleep 6
+sleep 15
 
 echo ""
 echo -e "${BOLD}📋 Status dos serviços:${NC}"

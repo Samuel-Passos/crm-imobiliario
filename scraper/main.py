@@ -30,6 +30,8 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 logger = logging.getLogger("scraper")
 
 from contextlib import asynccontextmanager
+from config_db import get_config
+
 import tools.browser_manager as browser_manager
 
 @asynccontextmanager
@@ -134,7 +136,23 @@ async def extract_phone_batch(background_tasks: BackgroundTasks, lote: int = 10)
     Processa um lote de imóveis pendentes, usando a página persistente do Workspace 2.
     """
     background_tasks.add_task(process_batch_phone_extraction, lote)
-    return {"status": "started", "message": f"Extração de telefones em lote ({lote} imóveis) iniciada!"}
+    return {"status": "started", "message": f"Extração em lote de {lote} imóveis iniciada!"}
+
+@app.get("/scraper/config")
+async def get_scraper_config():
+    _cfg = get_config()
+    return {"ok": True, "config": _cfg}
+
+@app.post("/scraper/config")
+async def update_scraper_config(config: dict):
+    from config_db import supabase
+    if not supabase:
+        raise HTTPException(status_code=500, detail="Supabase not configured in backend")
+    try:
+        res = supabase.table("configuracoes_scraper").update(config).eq("id", 1).execute()
+        return {"ok": True, "message": "Updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/test-url")
 async def test_url(payload: UrlRequest):
@@ -408,31 +426,64 @@ async def run_nova_captacao_endpoint(background_tasks: BackgroundTasks):
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
         
-        print("🚀 INICIANDO NOVA CAPTAÇÃO (CAIXA DE ENTRADA)")
+        print("\n" + "🚀"*30)
+        print("🚀 INICIANDO NOVA CAPTAÇÃO (CAIXA DE ENTRADA) ROTINA COMPLETA")
+        print("🚀"*30 + "\n")
         try:
+            print("\n" + "="*60)
+            print("▶️ [INÍCIO] FASE 1: COLETA DE LINKS")
+            print("="*60)
             subprocess.run([python_exec, "olx_captacao/fase1_coleta_links.py"], cwd=cwd_path, env=env)
+            print("="*60)
+            print("⏹️ [FIM] FASE 1: COLETA DE LINKS")
+            print("="*60 + "\n")
             
-            from dotenv import load_dotenv
-            load_dotenv(os.path.join(cwd_path, "scraper", ".env"))
-            lote_fase2 = os.getenv("LOTE_FASE2", "50")
+            _cfg_fase2 = get_config()
+            lote_fase2 = str(_cfg_fase2.get("lote_fase2", 50))
+            
+            print("\n" + "="*60)
+            print(f"▶️ [INÍCIO] FASE 2: EXTRAÇÃO DE DADOS (Lote: {lote_fase2})")
+            print("="*60)
             subprocess.run([python_exec, "olx_captacao/fase2_extrai_dados.py", "--lote", lote_fase2], cwd=cwd_path, env=env)
+            print("="*60)
+            print("⏹️ [FIM] FASE 2: EXTRAÇÃO DE DADOS")
+            print("="*60 + "\n")
             
+            print("\n" + "="*60)
+            print("▶️ [INÍCIO] FASE 2.5: FILTRO DE MERCADO (LIMPEZA)")
+            print("="*60)
             subprocess.run([python_exec, "olx_captacao/fase2_5_filtro_mercado.py"], cwd=cwd_path, env=env)
+            print("="*60)
+            print("⏹️ [FIM] FASE 2.5: FILTRO DE MERCADO")
+            print("="*60 + "\n")
             
+            print("\n" + "="*60)
+            print("▶️ [INÍCIO] GEOREFERENCIAMENTO (GOOGLE MAPS)")
+            print("="*60)
             comando_maps = "import sys, os; sys.path.append('scraper'); from dotenv import load_dotenv; load_dotenv(os.path.join('scraper', '.env')); import asyncio; from tools.geocoder_maps_scraper import main; asyncio.run(main())"
             subprocess.run([python_exec, "-c", comando_maps], cwd=cwd_path, env=env)
+            print("="*60)
+            print("⏹️ [FIM] GEOREFERENCIAMENTO")
+            print("="*60 + "\n")
             
-            # Aciona APENAS a Extração de Telefones (via navegador oculto), sem enviar mensagens
-            print("🚀 INICIANDO EXTRAÇÃO DE TELEFONE (SEM MENSAGEM)")
+            print("\n" + "="*60)
+            print("▶️ [INÍCIO] EXTRATOR DE TELEFONES (BROWSER OCULTO)")
+            print("="*60)
             try:
+                _cfg = get_config()
+                _lote_extracao = _cfg.get("lote_extracao", 5)
                 import urllib.request
-                req = urllib.request.Request("http://localhost:8765/extract-phone/batch?lote=5", method="POST")
+                req = urllib.request.Request(f"http://localhost:8765/extract-phone/batch?lote={_lote_extracao}", method="POST")
                 urllib.request.urlopen(req)
             except Exception as ex:
                 print(f"Aviso ao iniciar extração de telefone: {ex}")            
-            print("\n" + "="*60)
-            print("✅ ROTINA FINALIZADA: A Nova Captação concluiu todas as suas fases com sucesso!")
+            print("="*60)
+            print("⏹️ [FIM] EXTRATOR DE TELEFONES (Requisição enviada ao background)")
             print("="*60 + "\n")
+
+            print("\n" + "✅"*30)
+            print("✅ ROTINA FINALIZADA: A Nova Captação acionou todas as suas fases com sucesso!")
+            print("✅"*30 + "\n")
         except Exception as e:
             print(f"Erro na nova captação: {e}")
 

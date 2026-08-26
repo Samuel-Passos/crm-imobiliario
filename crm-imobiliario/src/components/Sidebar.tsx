@@ -34,9 +34,13 @@ export function Sidebar() {
     const [roboOnline, setRoboOnline] = useState<boolean | null>(null)
     const [daemonOnline, setDaemonOnline] = useState<boolean | null>(null)
 
-    // Polling de status do robô e do daemon a cada 8s
+    // Polling de status do robô e do daemon
+    // Pausa automaticamente quando a aba está em background (economiza requests)
     useEffect(() => {
         const check = async () => {
+            // Só executa se a aba estiver visível
+            if (document.hidden) return
+
             // Checa robô principal
             try {
                 const res = await fetch(`${ROBO_URL}/status`, { signal: AbortSignal.timeout(2500) })
@@ -52,10 +56,23 @@ export function Sidebar() {
                 setDaemonOnline(false)
             }
         }
+
+        // Checa imediatamente ao montar
         check()
+
+        // Retoma a checagem quando a aba volta a ficar visível
+        const onVisible = () => { if (!document.hidden) check() }
+        document.addEventListener('visibilitychange', onVisible)
+
+        // Intervalo normal de 8s (o guard `if (document.hidden)` cuida do background)
         const iv = setInterval(check, 8000)
-        return () => clearInterval(iv)
+
+        return () => {
+            clearInterval(iv)
+            document.removeEventListener('visibilitychange', onVisible)
+        }
     }, [])
+
 
     const handleSubirTudo = async () => {
         setSubindo(true)

@@ -21,8 +21,35 @@ interface MapPoint {
     lat: number
     lng: number
     popupContent?: React.ReactNode
-    tooltipContent?: React.ReactNode
     onMarkerClick?: () => void
+    category?: 'autorizados' | 'funil' | 'mercado'
+}
+
+const createCustomIcon = (category?: 'autorizados' | 'funil' | 'mercado') => {
+    let color = '#3b82f6' // Azul padrão (mercado)
+    if (category === 'autorizados') color = '#ef4444' // Vermelho
+    if (category === 'funil') color = '#f97316' // Laranja
+
+    const svgIcon = `
+        <svg viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3" fill="white"></circle>
+        </svg>
+    `
+
+    return L.divIcon({
+        html: `<div style="width: 32px; height: 32px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3)); transform: translate(-16px, -32px);">${svgIcon}</div>`,
+        className: 'custom-map-icon',
+        iconSize: [0, 0], // Evita que o leaflet adicione estilos de tamanho que quebrem
+    })
+}
+
+// Pré-instanciar os ícones para evitar Memory Leaks e recriação em cada render do React (Crash do Browser)
+const CATEGORY_ICONS = {
+    autorizados: createCustomIcon('autorizados'),
+    funil: createCustomIcon('funil'),
+    mercado: createCustomIcon('mercado'),
+    default: DefaultIcon
 }
 
 interface MapViewProps {
@@ -30,6 +57,25 @@ interface MapViewProps {
     height?: string | number
     useClustering?: boolean
     onBoundsChange?: (bounds: L.LatLngBounds) => void
+}
+
+// GeoJSON cacheado em nível de módulo — carregado uma única vez e compartilhado entre
+// todas as instâncias do MapView. Evita re-fetch e re-parse a cada remontagem.
+let cachedGeoJson: any = null
+
+// MapEventHandler fora do MapView para evitar re-declaração a cada render
+function MapEventHandler({ onBoundsChange }: { onBoundsChange?: (b: L.LatLngBounds) => void }) {
+    const map = useMapEvents({
+        moveend: () => { if (onBoundsChange) onBoundsChange(map.getBounds()) },
+        zoomend: () => { if (onBoundsChange) onBoundsChange(map.getBounds()) },
+    })
+
+    useEffect(() => {
+        if (onBoundsChange && map) onBoundsChange(map.getBounds())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [map])
+
+    return null
 }
 
 function ChangeView({ points }: { points: MapPoint[] }) {
@@ -58,28 +104,18 @@ function ChangeView({ points }: { points: MapPoint[] }) {
 export function MapView({ points, height = '100%', useClustering = true, onBoundsChange }: MapViewProps) {
     const centroPadrao: [number, number] = [-23.1794, -45.8869]
 
-    const MapEventHandler = () => {
-        const map = useMapEvents({
-            moveend: () => { if (onBoundsChange) onBoundsChange(map.getBounds()) },
-            zoomend: () => { if (onBoundsChange) onBoundsChange(map.getBounds()) }
-        })
 
-        useEffect(() => {
-            if (onBoundsChange && map) {
-                onBoundsChange(map.getBounds())
-            }
-        }, [map, onBoundsChange])
-
-        return null
-    }
-
-    const [geoJsonData, setGeoJsonData] = useState<any>(null)
+    const [geoJsonData, setGeoJsonData] = useState<any>(cachedGeoJson)
 
     useEffect(() => {
+        if (cachedGeoJson) return // já carregado por instância anterior
         fetch('/sjc_bairros.geojson')
             .then(res => res.json())
-            .then(data => setGeoJsonData(data))
-            .catch(err => console.error("Erro ao carregar bairros", err))
+            .then(data => {
+                cachedGeoJson = data  // salva no cache de módulo
+                setGeoJsonData(data)
+            })
+            .catch(err => console.error('Erro ao carregar bairros', err))
     }, [])
 
     const geoJsonStyle = {
@@ -103,32 +139,6 @@ export function MapView({ points, height = '100%', useClustering = true, onBound
         })
     }
 
-    const renderMarkers = () => points.map(p => (
-        <Marker
-            key={p.id}
-            position={[p.lat, p.lng]}
-            icon={DefaultIcon}
-            eventHandlers={{
-                click: () => { if (p.onMarkerClick) p.onMarkerClick() }
-            }}
-        >
-            {p.tooltipContent && (
-                <Tooltip
-                    direction="top"
-                    offset={[0, -38]}
-                    opacity={1}
-                    sticky={false}
-                    className="map-pin-tooltip"
-                >
-                    {p.tooltipContent}
-                </Tooltip>
-            )}
-
-            {p.popupContent && !p.onMarkerClick && (
-                <Popup>{p.popupContent}</Popup>
-            )}
-        </Marker>
-    ))
 
     return (
         <div style={{ height, width: '100%', borderRadius: 'var(--m3-radius-xl)', overflow: 'hidden', border: '1px solid var(--m3-outline-variant)' }}>
@@ -142,8 +152,9 @@ export function MapView({ points, height = '100%', useClustering = true, onBound
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                <MapEventHandler />
+                <MapEventHandler onBoundsChange={onBoundsChange} />
                 <ChangeView points={points} />
+
 
                 {geoJsonData && (
                     <GeoJSON
@@ -159,25 +170,12 @@ export function MapView({ points, height = '100%', useClustering = true, onBound
                             <Marker
                                 key={p.id}
                                 position={[p.lat, p.lng]}
-                                icon={DefaultIcon}
+                                icon={p.category ? CATEGORY_ICONS[p.category] : CATEGORY_ICONS.default}
                                 eventHandlers={{
                                     click: () => { if (p.onMarkerClick) p.onMarkerClick() }
                                 }}
                             >
-                                {p.tooltipContent && (
-                                    <Tooltip
-                                        direction="top"
-                                        offset={[0, -38]}
-                                        opacity={1}
-                                        sticky={false}
-                                        className="map-pin-tooltip"
-                                    >
-                                        {p.tooltipContent}
-                                    </Tooltip>
-                                )}
-                                {p.popupContent && !p.onMarkerClick && (
-                                    <Popup>{p.popupContent}</Popup>
-                                )}
+                                {p.popupContent && <Popup>{p.popupContent}</Popup>}
                             </Marker>
                         ))}
                     </MarkerClusterGroup>
@@ -186,22 +184,11 @@ export function MapView({ points, height = '100%', useClustering = true, onBound
                         <Marker
                             key={p.id}
                             position={[p.lat, p.lng]}
-                            icon={DefaultIcon}
+                            icon={p.category ? CATEGORY_ICONS[p.category] : CATEGORY_ICONS.default}
                             eventHandlers={{
                                 click: () => { if (p.onMarkerClick) p.onMarkerClick() }
                             }}
                         >
-                            {p.tooltipContent && (
-                                <Tooltip
-                                    direction="top"
-                                    offset={[0, -38]}
-                                    opacity={1}
-                                    sticky={false}
-                                    className="map-pin-tooltip"
-                                >
-                                    {p.tooltipContent}
-                                </Tooltip>
-                            )}
                             {p.popupContent && !p.onMarkerClick && (
                                 <Popup>{p.popupContent}</Popup>
                             )}

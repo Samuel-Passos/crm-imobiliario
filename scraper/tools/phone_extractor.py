@@ -303,14 +303,14 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
                         print(f"  ℹ️ [JSON-LD] Erro na extração: {e_json}")
                         return False
 
-                async def _grupo_botao():
+                async def _grupo_botao(timeout_ms: int = 15000):
                     """Grupo A: Botão principal de telefone (price-box lateral)"""
                     try:
-                        print("  -> [BOTÃO] Aguardando botão principal de telefone...")
+                        print(f"  -> [BOTÃO] Aguardando botão principal de telefone (timeout {timeout_ms/1000}s)...")
                         await page.wait_for_selector(
                             f"xpath={XPATH_BTN_PRINCIPAL}",
                             state="visible",
-                            timeout=15000
+                            timeout=timeout_ms
                         )
                         btn = page.locator(f"xpath={XPATH_BTN_PRINCIPAL}").first
                         await btn.scroll_into_view_if_needed()
@@ -520,6 +520,7 @@ async def extract_phones_from_olx(url: str, page) -> Dict[str, Any]:
                 if not any(t["origem"] == "botao" for t in dados["telefones"]):
                     try:
                         print("  -> [FALLBACK] Retentativa do botão principal...")
+                        await _grupo_botao(timeout_ms=5000)
                         btn = page.locator(f"xpath={XPATH_BTN_PRINCIPAL}").first
                         if await btn.count() > 0 and await btn.is_visible():
                             await btn.scroll_into_view_if_needed()

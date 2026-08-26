@@ -246,15 +246,54 @@ async def onda_reversa(dry_run: bool = False, lote: int = 1, alvo_coluna: str = 
              print("   ⚠️ Não foi possível iniciar browser no Dry-Run. Histórico será pulado.")
              page = None
 
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), "..", "scraper"))
+    try:
+        from config_db import get_config
+        _cfg = get_config()
+        l_script1 = _cfg.get("lote_script1", lote)
+        l_script2 = _cfg.get("lote_script2", lote)
+        l_script3 = _cfg.get("lote_script3", lote)
+        l_extracao = _cfg.get("lote_extracao", lote)
+    except:
+        l_script1 = l_script2 = l_script3 = l_extracao = lote
+
     try:
         if alvo_coluna in ["ALL", "script3"]:
-            await processar_kanban("Script 3", KANBAN_IDS["SCRIPT_3"], KANBAN_IDS["SEM_RESPOSTA"], key_msg_final, templates_map, page, dry_run, limite_lote=lote)
+            print("\n" + "="*60)
+            print("▶️ [INÍCIO] MENSAGEM CHAT: SCRIPT 3")
+            print("="*60)
+            await processar_kanban("Script 3", KANBAN_IDS["SCRIPT_3"], KANBAN_IDS["SEM_RESPOSTA"], key_msg_final, templates_map, page, dry_run, limite_lote=l_script3)
+            print("="*60)
+            print("⏹️ [FIM] MENSAGEM CHAT: SCRIPT 3")
+            print("="*60 + "\n")
+            
         if alvo_coluna in ["ALL", "script2"]:
-            await processar_kanban("Script 2", KANBAN_IDS["SCRIPT_2"], KANBAN_IDS["SCRIPT_3"], key_msg3, templates_map, page, dry_run, limite_lote=lote)
+            print("\n" + "="*60)
+            print("▶️ [INÍCIO] MENSAGEM CHAT: SCRIPT 2")
+            print("="*60)
+            await processar_kanban("Script 2", KANBAN_IDS["SCRIPT_2"], KANBAN_IDS["SCRIPT_3"], key_msg3, templates_map, page, dry_run, limite_lote=l_script2)
+            print("="*60)
+            print("⏹️ [FIM] MENSAGEM CHAT: SCRIPT 2")
+            print("="*60 + "\n")
+            
         if alvo_coluna in ["ALL", "script1"]:
-            await processar_kanban("Script 1", KANBAN_IDS["SCRIPT_1"], KANBAN_IDS["SCRIPT_2"], key_msg2, templates_map, page, dry_run, limite_lote=lote)
+            print("\n" + "="*60)
+            print("▶️ [INÍCIO] MENSAGEM CHAT: SCRIPT 1")
+            print("="*60)
+            await processar_kanban("Script 1", KANBAN_IDS["SCRIPT_1"], KANBAN_IDS["SCRIPT_2"], key_msg2, templates_map, page, dry_run, limite_lote=l_script1)
+            print("="*60)
+            print("⏹️ [FIM] MENSAGEM CHAT: SCRIPT 1")
+            print("="*60 + "\n")
+            
         if alvo_coluna in ["ALL", "extracao"]:
-            await processar_kanban("Extração de Telefone", KANBAN_IDS["EXTRACAO_TELEFONE"], KANBAN_IDS["SCRIPT_1"], key_msg1, templates_map, page, dry_run, limite_lote=lote)
+            print("\n" + "="*60)
+            print("▶️ [INÍCIO] PRIMEIRO CONTATO: SCRIPT 0 (BOTAO ANÚNCIO)")
+            print("="*60)
+            await processar_kanban("Extração de Telefone", KANBAN_IDS["EXTRACAO_TELEFONE"], KANBAN_IDS["SCRIPT_1"], key_msg1, templates_map, page, dry_run, limite_lote=l_extracao)
+            print("="*60)
+            print("⏹️ [FIM] PRIMEIRO CONTATO: SCRIPT 0")
+            print("="*60 + "\n")
     finally:
         if page:
              print("\nFechando navegador e limpando processos...")

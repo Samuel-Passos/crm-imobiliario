@@ -684,6 +684,35 @@ async def adb_get_settings():
     except Exception as e:
         return {"ok": False, "mensagem": str(e)}
 
+@app.get("/scraper/config")
+async def get_scraper_config():
+    try:
+        import sys, os
+        scraper_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scraper"))
+        if scraper_dir not in sys.path:
+            sys.path.append(scraper_dir)
+        from config_db import get_config
+        _cfg = get_config()
+        return {"ok": True, "config": _cfg}
+    except Exception as e:
+        return {"ok": False, "mensagem": str(e)}
+
+@app.post("/scraper/config")
+async def update_scraper_config(request: Request):
+    try:
+        config = await request.json()
+        import sys, os
+        scraper_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scraper"))
+        if scraper_dir not in sys.path:
+            sys.path.append(scraper_dir)
+        from config_db import supabase
+        if not supabase:
+            return {"ok": False, "mensagem": "Supabase not configured in backend"}
+        supabase.table("configuracoes_scraper").update(config).eq("id", 1).execute()
+        return {"ok": True, "message": "Updated successfully"}
+    except Exception as e:
+        return {"ok": False, "mensagem": str(e)}
+
 @app.post("/adb/settings")
 async def adb_save_settings(request: Request):
     try:

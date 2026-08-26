@@ -8,6 +8,16 @@ def run_filtro_mercado():
     # Configura Supabase
     load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
     sup = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+
+    # Configurações dinâmicas
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), "..", "scraper"))
+    try:
+        from config_db import get_config
+        _cfg = get_config()
+        lote_2_5 = _cfg.get("lote_fase2_5", 50)
+    except:
+        lote_2_5 = 50
     
     # Pega os IDs da Caixa de Entrada e da nova coluna Anúncios de Mercado
     res_colunas = sup.table('kanban_colunas').select('id, nome').execute()
@@ -25,10 +35,10 @@ def run_filtro_mercado():
         print("Erro: Colunas Kanban não encontradas no banco de dados.")
         return
         
-    print(f"Buscando imóveis na Caixa de Entrada...")
+    print(f"Buscando imóveis na Caixa de Entrada (Lote: {lote_2_5})...")
     
     # Busca apenas na Caixa de Entrada, agora incluindo a cidade
-    res_imoveis = sup.table('imoveis').select('id, titulo, vendedor_nome, descricao, anuncio_profissional, cidade').eq('kanban_coluna_id', coluna_caixa_entrada).execute()
+    res_imoveis = sup.table('imoveis').select('id, titulo, vendedor_nome, descricao, anuncio_profissional, cidade').eq('kanban_coluna_id', coluna_caixa_entrada).limit(lote_2_5).execute()
     imoveis = res_imoveis.data
     
     if not imoveis:
@@ -51,6 +61,8 @@ def run_filtro_mercado():
             sup.table('imoveis').update({'kanban_coluna_id': coluna_anuncios_mercado}).eq('id', im_id).execute()
             movidos += 1
             continue
+            
+        print(f"[{im_id}] ✅ Cidade validada: {cidade.title()}")
         
         # Passo B (primeiro, conforme seu pedido): É profissional pela OLX?
         if im.get('anuncio_profissional') == True:

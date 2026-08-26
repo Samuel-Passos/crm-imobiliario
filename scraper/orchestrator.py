@@ -37,17 +37,18 @@ async def check_pause():
 # ==========================================
 # 1. FLUXO DE EXTRAÇÃO DE TELEFONES
 # ==========================================
-async def extract_phone_single_lead(imovel_id: int):
+async def extract_phone_single_lead(imovel_id: int, progress_str: str = ""):
     """Extrai telefone de 1 único imóvel e atualiza o BD.
     Se a API foi bloqueada pelo Cloudflare, NÃO marca como processado
     para que o link fique na fila e seja tentado novamente.
     """
-    print(f"\n[ORQUESTRADOR] Iniciando extração do imóvel {imovel_id}")
+    prefixo = f"{progress_str} " if progress_str else ""
+    print(f"\n{prefixo}[ORQUESTRADOR] Iniciando extração do imóvel {imovel_id}")
     
     # Busca a URL do banco
     res = supabase.table("imoveis").select("url").eq("id", imovel_id).execute()
     if not res.data:
-        print(f"❌ Imóvel {imovel_id} não encontrado.")
+        print(f"{prefixo}❌ Imóvel {imovel_id} não encontrado.")
         return {"bloqueado": False, "telefones": [], "erro": "Imovel nao encontrado"}
         
     url = res.data[0]["url"]
@@ -56,7 +57,7 @@ async def extract_phone_single_lead(imovel_id: int):
     page = browser_manager.get_page()
     lock = browser_manager.get_lock()
     if not page:
-        print("❌ [ORQUESTRADOR] Página global do browser não encontrada!")
+        print(f"{prefixo}❌ [ORQUESTRADOR] Página global do browser não encontrada!")
         return {"bloqueado": False, "telefones": [], "erro": "Browser não iniciado"}
         
     # Roda a ferramenta de IA/Browser
@@ -66,7 +67,7 @@ async def extract_phone_single_lead(imovel_id: int):
     # Se foi bloqueado pelo Cloudflare, NÃO atualiza o banco
     # O link permanece com telefone_pesquisado=false e volta à fila
     if resultado.get("bloqueado", False):
-        print(f"🚫 [ORQUESTRADOR] Imóvel {imovel_id} BLOQUEADO — não será marcado como processado.")
+        print(f"{prefixo}🚫 [ORQUESTRADOR] Imóvel {imovel_id} BLOQUEADO — não será marcado como processado.")
         return resultado
     
     # Atualiza o Banco
@@ -265,7 +266,7 @@ async def process_batch_phone_extraction(lote: int = 200):
     bloqueios_consecutivos = 0  # Anti-bot: para após 3 bloqueios seguidos
 
     try:
-        for imovel in imoveis:
+        for idx, imovel in enumerate(imoveis, start=1):
             if STOP_SIGNAL:
                 print("\n🛑 [LOTE EXTRAÇÃO] Parada solicitada pelo usuário.")
                 break
@@ -274,7 +275,8 @@ async def process_batch_phone_extraction(lote: int = 200):
             
             try:
                 start_lead = time.time()
-                resultado = await extract_phone_single_lead(imovel["id"])
+                progress_str = f"[{idx}/{total_leads}]"
+                resultado = await extract_phone_single_lead(imovel["id"], progress_str=progress_str)
                 duration_lead = int(time.time() - start_lead)
                 
                 # ── Anti-bot: detecta bloqueio Cloudflare ────────────
@@ -335,12 +337,16 @@ async def process_batch_phone_extraction(lote: int = 200):
 
                 if has_error:
                     erros += 1
+                    print(f"[{imovel['id']}] ❌ Erro: {resultado.get('erro')}")
                 elif is_exp:
                     count_exp += 1
+                    print(f"[{imovel['id']}] ⚠️ Expirado/Removido da OLX")
                 elif not has_tel:
                     count_sem += 1
+                    print(f"[{imovel['id']}] 📭 Sem telefone encontrado")
                 else:
                     count_com += 1
+                    print(f"[{imovel['id']}] 📞 Telefone extraído com sucesso! (Origem: {origem})")
                 
                 # Insere LOG DETALHADO
                 if stats_id:
@@ -373,6 +379,47 @@ async def process_batch_phone_extraction(lote: int = 200):
             await asyncio.sleep(5)  # Pausa humana
 
     finally:
+        print("\n" + "="*60)
+        print("📊 RELATÓRIO FINAL DA EXTRAÇÃO DE TELEFONES")
+        print("="*60)
+        print(f"   🔹 Processados:     {count_proc} / {total_leads}")
+        print(f"   📞 Com telefone:    {count_com} (Botão: {via_botao} | Descrição: {via_desc})")
+        print(f"   📭 Sem telefone:    {count_sem}")
+        print(f"   ⚠️ Expirados:       {count_exp}")
+        print(f"   ❌ Erros/Block:     {erros}")
+        print("="*60 + "\n")
+        
+        # --- NOVO: RESUMO GERAL DO SISTEMA ---
+        try:
+            print("\n" + "🏆"*30)
+            print("🏆 RESUMO GERAL DO FUNIL DE CAPTAÇÃO")
+            print("🏆"*30)
+            
+            res_links = supabase.table("links_anuncios").select("id", count="exact").eq("status", "pendente").execute()
+            links_pendentes = res_links.count if res_links else 0
+            
+            res_caixa = supabase.table("imoveis").select("id", count="exact").eq("kanban_coluna_id", "68636746-953b-4cd3-a17f-44deafb2082b").execute()
+            caixa_entrada = res_caixa.count if res_caixa else 0
+            
+            res_extracao = supabase.table("imoveis").select("id", count="exact").eq("kanban_coluna_id", "9cfb9d98-89cb-4169-88e1-db399f3ce877").execute()
+            fila_extracao = res_extracao.count if res_extracao else 0
+            
+            res_mercado = supabase.table("imoveis").select("id", count="exact").eq("kanban_coluna_id", "45903b4d-0e4a-4eef-bbf1-8397a6bb9b0a").execute()
+            anuncios_mercado = res_mercado.count if res_mercado else 0
+
+            res_geo = supabase.table("imoveis").select("id", count="exact").not_.is_("latitude", "null").execute()
+            georeferenciados = res_geo.count if res_geo else 0
+
+            print(f"   🔗 FASE 1 (Links pendentes p/ extrair dados): {links_pendentes}")
+            print(f"   🏠 FASE 2 (Caixa de Entrada - Imóveis):       {caixa_entrada}")
+            print(f"   🧹 FASE 2.5 (Descartados / Mercado):          {anuncios_mercado}")
+            print(f"   📍 GEOREFERENCIADOS (Total na base):          {georeferenciados}")
+            print(f"   📱 FASE 3 (Prontos p/ scripts/chat):          {fila_extracao}")
+            print("🏆"*30 + "\n")
+        except Exception as e_res:
+            print(f"Aviso: Não foi possível gerar o resumo geral: {e_res}")
+        # ------------------------------------
+
         # Finaliza o registro
         if stats_id:
             supabase.table("estatisticas_scraper").update({

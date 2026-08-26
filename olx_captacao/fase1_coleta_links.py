@@ -21,6 +21,7 @@ Uso:
   python fase1_coleta_links.py --max-paginas 5
 """
 import asyncio
+import sys
 import os
 import random
 import argparse
@@ -37,9 +38,17 @@ from supabase_client import supabase
 from parser_olx import extrair_links_do_datalayer, extrair_links_do_html
 
 # ── Configurações ──────────────────────────────────────────────────────────────
-URL_BASE = "https://www.olx.com.br/imoveis/estado-sp/vale-do-paraiba-e-litoral-norte/sao-jose-dos-campos?sf=1&f=p"
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "scraper"))
+try:
+    from config_db import get_config
+    _cfg = get_config()
+    URL_BASE = _cfg.get("url_coleta_padrao")
+    MAX_PAGINAS = _cfg.get("limite_paginas_fase1")
+except ImportError:
+    URL_BASE = "https://www.olx.com.br/imoveis/estado-sp/vale-do-paraiba-e-litoral-norte/sao-jose-dos-campos?sf=1&f=p"
+    MAX_PAGINAS = int(os.getenv("MAX_PAGINAS", "100"))
+
 CHROME_PROFILE = os.getenv("CHROME_PROFILE_PATH", "/home/samuel/.config/google-chrome")
-MAX_PAGINAS = int(os.getenv("MAX_PAGINAS", "100"))
 DELAY_MIN = float(os.getenv("DELAY_MIN_SEGUNDOS", "3"))
 DELAY_MAX = float(os.getenv("DELAY_MAX_SEGUNDOS", "6"))
 
@@ -108,7 +117,16 @@ def _salvar_links_supabase(links: list[dict], limite_repetidos: int, repetidos_a
                 novos += 1
                 repetidos_atuais = 0  # Zera a contagem ao encontrar um novo!
             except Exception as e:
-                print(f"  ⚠️ Erro ao inserir {url}: {e}")
+                # O OLX às vezes muda a URL de um anúncio que tem o mesmo list_id
+                # Se bater na constraint de list_id único, significa que já existe
+                error_str = str(e)
+                if 'links_anuncios_list_id_key' in error_str or 'duplicate key value' in error_str:
+                    existiam += 1
+                    repetidos_atuais += 1
+                    if repetidos_atuais >= limite_repetidos:
+                        limite_atingido = True
+                else:
+                    print(f"  ⚠️ Erro inesperado ao inserir {url}: {e}")
 
     return novos, existiam, repetidos_atuais, limite_atingido
 
@@ -211,7 +229,16 @@ async def coletar_links(max_paginas: int = 50, url_base: str = None) -> dict:
     total_novos = 0
     total_existiam = 0
     repetidos_consecutivos = 0
-    LIMITE_REPETIDOS_CONSECUTIVOS = 10
+    
+    try:
+        import sys, os
+        sys.path.append(os.path.join(os.path.dirname(__file__), "..", "scraper"))
+        from config_db import get_config
+        _cfg = get_config()
+        LIMITE_REPETIDOS_CONSECUTIVOS = int(_cfg.get("limite_repetidos_fase1", 60))
+    except:
+        LIMITE_REPETIDOS_CONSECUTIVOS = 60
+        
     num_pagina = 0
     url_alvo = url_base if url_base else URL_BASE
 
@@ -277,16 +304,20 @@ async def coletar_links(max_paginas: int = 50, url_base: str = None) -> dict:
                 total_novos += novos
                 total_existiam += existiam
 
-                print(f"  ✅ Salvos: {novos} novos | {existiam} já existiam (Sequência repetidos: {repetidos_consecutivos}/{LIMITE_REPETIDOS_CONSECUTIVOS})")
+                print(f"  ⭐ NOVOS SALVOS: {novos} | 🔄 Repetidos: {existiam} (Seq: {repetidos_consecutivos}/{LIMITE_REPETIDOS_CONSECUTIVOS})")
 
                 if limite_atingido:
                     print(f"  🛑 {LIMITE_REPETIDOS_CONSECUTIVOS} anúncios repetidos seguidos encontrados! Interrompendo coleta incremental na hora.")
                     break
 
-                # Verifica próxima página via botão DOM
+                # Verifica próxima página buscando o texto do link
                 has_next = await page.evaluate('''() => {
-                    const btn = document.querySelector('[data-testid="next-page"]');
-                    return btn && !btn.hasAttribute('disabled');
+                    const links = Array.from(document.querySelectorAll('a'));
+                    return links.some(a => 
+                        a.textContent.trim() === 'Próxima página' && 
+                        !a.hasAttribute('aria-disabled') && 
+                        a.hasAttribute('href')
+                    );
                 }''')
                 if not has_next:
                     print(f"  ✅ Fim da paginação alcançado de forma precisa (botão 'Próxima' inativo/inexistente).")

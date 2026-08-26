@@ -17,6 +17,9 @@ Este script é feito para ser invocado pelo orquestrador.
 import os
 import re
 import asyncio
+import signal
+import sys
+from config_db import get_config
 import random
 from urllib.parse import quote_plus
 from dotenv import load_dotenv
@@ -29,6 +32,15 @@ from tools.geocoder import remover_sufixo_ibge
 
 load_dotenv()
 signals = geocode_signals
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+try:
+    from config_db import get_config
+    _cfg = get_config()
+    LOTE_GEOCODER = _cfg.get("lote_geocoder", 20)
+except ImportError:
+    LOTE_GEOCODER = 20
+
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -225,7 +237,7 @@ async def main():
         if col_id:
             query = query.eq("kanban_coluna_id", col_id)
             
-        response = query.limit(20).execute()
+        response = query.limit(LOTE_GEOCODER).execute()
         imoveis = response.data
         
         if not imoveis:
